@@ -1,0 +1,32 @@
+# Manual-only for now (workflow_dispatch). Switch the trigger to
+# `push: branches: [main]` once this repo (and org Actions generally) is ready
+# to go live. Also requires: Settings -> Pages -> Source = "GitHub Actions",
+# and the org-level Actions permission enabled (currently disabled fleet-wide).
+name: Deploy Pages
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./site
+      - id: deployment
+        uses: actions/deploy-pages@v4
