@@ -38,6 +38,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    outputs:
+      pages_ready: ${{ steps.probe.outputs.ready }}
     steps:
       - uses: actions/checkout@v4
 
@@ -48,14 +50,23 @@ jobs:
 
       - run: npm ci
 
-      - name: Check the vendored content is current
-        # ADVISORY HERE, blocking nowhere. This compares content/ against the sibling
-        # code repositories, which a Pages runner has neither checked out nor any
-        # credential for — every hugmesh-* repo is PRIVATE. With no source reachable
-        # the script reports "unreachable" and exits 0, so this step is a placeholder
-        # that becomes meaningful the day the repos are public. The REAL guard is the
-        # same command run by a maintainer before committing (npm run check:content),
-        # documented in the README.
+      - name: Verify content integrity
+        # BLOCKING, and it means something on a bare runner: it verifies every file
+        # under content/ against content/.sync.lock.json — no network, no sibling
+        # checkouts, no credential. It fails if a vendored document was hand-edited,
+        # if an unlisted file appeared under content/, if the lock is missing or
+        # covers nothing, or if a page the manifest promises is absent. Every one of
+        # those is a failure rather than a skip: a gate that can report "nothing to
+        # check" and still pass is not a gate.
+        run: npm run check:integrity
+
+      - name: Check the vendored content against upstream
+        # ADVISORY, and it can only ever be. This compares content/ against sibling
+        # code repositories that are PRIVATE and not checked out here, so it reports
+        # "unreachable" and exits 0 on this runner. It is kept because it becomes
+        # meaningful the day the repositories are public, and because the same
+        # command is the maintainer's pre-commit check. The integrity gate above is
+        # what actually protects the site.
         run: npm run check:content
         continue-on-error: true
 
@@ -83,14 +94,56 @@ jobs:
           echo "404 fallback OK · CNAME $(cat CNAME) · $pages content files"
           [ "$pages" -gt 10 ] || { echo "::error::content payload looks empty"; exit 1; }
 
+      - id: probe
+        name: Is Pages configured on this repository?
+        # The site cannot deploy until somebody sets Settings -> Pages -> Source =
+        # "GitHub Actions" (and makes the repo public, for the custom domain). That
+        # is deliberately an OPERATOR decision — publishing a site is outward-facing,
+        # and `configure-pages` has an `enablement` flag that would do it silently.
+        # We do not use it.
+        #
+        # But we also do not let the workflow sit permanently red waiting for that: a
+        # main branch that always fails is a signal people stop reading, and it would
+        # mask a genuine build break. So the prerequisite is PROBED, the deploy is
+        # skipped with an explicit summary saying what is missing, and the build above
+        # still runs as a real gate on every push.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh api "repos/${GITHUB_REPOSITORY}/pages" >/dev/null 2>&1; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "Pages is configured — deploying."
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            {
+              echo '## Site built, not deployed'
+              echo
+              echo 'GitHub Pages is not yet enabled on this repository, so the deploy step was skipped.'
+              echo 'The build itself passed and the artifact was verified.'
+              echo
+              echo 'To publish, once:'
+              echo
+              echo '1. Make the repository **public** (Pages custom domains require it on this plan).'
+              echo '2. Settings → Pages → Source = **GitHub Actions**.'
+              echo '3. Set the custom domain to `hugmesh.net`, and enable Enforce HTTPS once DNS resolves.'
+              echo '4. Add a proxied Cloudflare `CNAME` `hugmesh.net` → `hugmesh.github.io`.'
+              echo
+              echo 'The next push to `main` will then deploy.'
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::notice::Pages is not enabled on this repository — built and verified, deploy skipped."
+          fi
+
       - uses: actions/configure-pages@v5
+        if: steps.probe.outputs.ready == 'true'
 
       - uses: actions/upload-pages-artifact@v3
+        if: steps.probe.outputs.ready == 'true'
         with:
           path: dist/browser
 
   deploy:
     needs: build
+    if: needs.build.outputs.pages_ready == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment:

@@ -34,6 +34,12 @@ jobs:
 
       - run: npm ci
 
+      - name: Verify content integrity
+        # Blocking, offline. See the note in pages.yml — this is the gate that
+        # catches a hand-edited vendored document, which is the failure that silently
+        # desyncs the site from the code it documents.
+        run: npm run check:integrity
+
       - name: Render the content payload
         # Fails loudly if docs.manifest.json lists a page whose Markdown is missing
         # from content/, or if a section id in the manifest is not one the router
