@@ -1,0 +1,53 @@
+<main id="maincontent" class="search-page">
+  <h1>Search the documentation</h1>
+
+  <form role="search" (submit)="submit($event, field.value)">
+    <label class="sr" for="search-field">Search terms</label>
+    <input
+      #field
+      id="search-field"
+      type="search"
+      name="q"
+      [value]="query()"
+      placeholder="e.g. argocd, luks, first boot, &quot;route access&quot;"
+      autocomplete="off"
+      autofocus
+      data-testid="search-field"
+    />
+    <button type="submit">Search</button>
+  </form>
+
+  <p class="field-help">
+    Matches are ranked by where they appear: a page title outranks a heading, and a
+    heading outranks the body. Wrap words in double quotes to search for the exact
+    phrase.
+  </p>
+
+  <p class="sr" role="status" aria-live="polite">{{ liveMessage() }}</p>
+
+  @if (loading() && query()) {
+    <p class="state">Loading the search index…</p>
+  } @else if (!query()) {
+    <p class="state">Type something above to search every published page.</p>
+  } @else if (hits().length === 0) {
+    <p class="state">
+      Nothing matches <strong>{{ query() }}</strong>. Every term has to appear on a
+      page for it to be listed, so try fewer words — or
+      <a href="https://github.com/search?q=org%3Ahugmesh" target="_blank" rel="noopener noreferrer"
+        >search the source repositories</a
+      >, which hold documentation that is not published here.
+    </p>
+  } @else {
+    <ol class="results" data-testid="search-results">
+      @for (hit of hits(); track hit.doc.route) {
+        <li>
+          <a [routerLink]="hit.doc.route">
+            <p class="crumb">{{ sectionTitle(hit.doc.section) }}</p>
+            <h2>{{ hit.doc.title }}</h2>
+            <p class="excerpt">{{ hit.excerpt }}</p>
+          </a>
+        </li>
+      }
+    </ol>
+  }
+</main>

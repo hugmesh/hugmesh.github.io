@@ -1,0 +1,292 @@
+@use 'tokens' as t;
+
+// ── Rendered-markdown styles ─────────────────────────────────────────────────
+// These MUST be global, not component-scoped. The document HTML is inserted with
+// [innerHTML], so Angular never stamps it with the component's _ngcontent
+// attribute and every emulated-encapsulation selector would miss it. Scoping is
+// done the old way instead: everything is nested under `.prose`, which only the
+// document renderer puts on the page.
+
+.prose {
+  max-width: var(--hug-measure);
+  font-size: 1.0625rem;
+
+  > :first-child {
+    margin-top: 0;
+  }
+
+  h2, h3, h4, h5, h6 {
+    margin-top: 2rem;
+    // Anchors sit under the sticky header without this; scroll-margin is the
+    // per-element counterpart to html{scroll-padding-top}.
+    scroll-margin-top: calc(var(--hug-header-h) + 1rem);
+    position: relative;
+  }
+
+  h2 {
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid var(--hug-border);
+  }
+
+  // Deep-link affordance: a permalink that is ALWAYS in the accessibility tree
+  // (it is a real link with an accessible name) and revealed visually on hover
+  // or keyboard focus, so the heading is not permanently cluttered.
+  .heading-anchor {
+    position: absolute;
+    inset-inline-start: -1.15em;
+    width: 1em;
+    text-align: center;
+    color: var(--hug-text-muted);
+    text-decoration: none;
+    opacity: 0;
+    transition: opacity t.$transition-base;
+
+    &:focus-visible {
+      opacity: 1;
+    }
+  }
+
+  h2:hover .heading-anchor,
+  h3:hover .heading-anchor,
+  h4:hover .heading-anchor {
+    opacity: 1;
+  }
+
+  ul, ol {
+    padding-inline-start: 1.4rem;
+  }
+
+  li + li {
+    margin-top: 0.3rem;
+  }
+
+  li > ul,
+  li > ol {
+    margin-top: 0.3rem;
+    margin-bottom: 0;
+  }
+
+  blockquote {
+    margin-inline: 0;
+    padding: 0.1rem 0 0.1rem 1rem;
+    border-inline-start: 3px solid var(--hug-accent);
+    color: var(--hug-text-muted);
+  }
+
+  // Inline code. Deliberately NOT the same surface as a code block: an inline
+  // token inside a sentence needs to stay legible at the prose line-height.
+  :not(pre) > code {
+    padding: 0.15em 0.4em;
+    background: var(--hug-bg-2);
+    border: 1px solid var(--hug-border);
+    border-radius: 0.3rem;
+    color: #f0d8ff;
+    white-space: nowrap;
+  }
+
+  kbd {
+    padding: 0.1em 0.4em;
+    background: var(--hug-bg-2);
+    border: 1px solid var(--hug-border);
+    border-bottom-width: 2px;
+    border-radius: 0.3rem;
+    font-size: 0.85em;
+  }
+
+  details {
+    margin-bottom: 1.15rem;
+    padding: 0.75rem 1rem;
+    background: var(--hug-bg-1);
+    border: 1px solid var(--hug-border);
+    border-radius: t.$radius-sm;
+
+    summary {
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    > :last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  // Wide content scrolls INSIDE its own box. Without this a reference table or a
+  // long command line makes the whole page scroll sideways on a phone, which
+  // also breaks the sticky header.
+  .table-scroll {
+    max-width: 100%;
+    overflow-x: auto;
+    margin-bottom: 1.15rem;
+    border: 1px solid var(--hug-border);
+    border-radius: t.$radius-sm;
+    // Keyboard users must be able to reach a scroll container; tabindex is set
+    // by the renderer component, this just makes the focus visible.
+    &:focus-visible {
+      outline-offset: -3px;
+    }
+  }
+
+  table {
+    width: 100%;
+    // A floor, not a fixed width. Several docs use a two-column "label | prose"
+    // table whose first column holds words like "In-cluster identity"; with
+    // `width:100%` and auto layout the browser squeezes that column to its
+    // narrowest fit and hyphenates it down a character at a time. The min-width
+    // gives the columns room and lets .table-scroll do what it is for.
+    min-width: 32rem;
+    margin: 0;
+    border-collapse: collapse;
+    font-size: 0.9375rem;
+  }
+
+  th, td {
+    padding: 0.5rem 0.75rem;
+    text-align: start;
+    border-bottom: 1px solid var(--hug-border);
+    vertical-align: top;
+    // `body { overflow-wrap: anywhere }` is right for a long URL in a paragraph
+    // and wrong inside a table, where it breaks ordinary words mid-syllable to
+    // avoid widening a column. Reset it to the normal rule here.
+    overflow-wrap: break-word;
+  }
+
+  th {
+    background: var(--hug-bg-1);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  // A leading label column reads as a header even when the markdown made it a
+  // plain cell (these tables are usually written with an empty header row).
+  td:first-child {
+    color: var(--hug-text);
+  }
+
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  // A cross-reference whose target is not published on this site. The words are
+  // kept (they are usually a file path the reader can look for in their own
+  // checkout); the dotted underline says "this was a link in the source, and
+  // there is nowhere public to send you". The `title` carries the target.
+  .unpublished {
+    border-bottom: 1px dotted var(--hug-text-muted);
+    color: var(--hug-text-muted);
+    cursor: help;
+  }
+
+  .ext-link::after {
+    content: '↗';
+    display: inline-block;
+    margin-inline-start: 0.2em;
+    font-size: 0.8em;
+    text-decoration: none;
+  }
+}
+
+// ── Code blocks ──────────────────────────────────────────────────────────────
+.prose .code-block {
+  position: relative;
+  max-width: 100%;
+  margin-bottom: 1.15rem;
+  padding: 0.9rem 1rem;
+  overflow-x: auto;
+  background: var(--hug-bg-2);
+  border: 1px solid var(--hug-border);
+  border-radius: t.$radius-sm;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  tab-size: 2;
+
+  code {
+    display: block;
+    white-space: pre;
+  }
+
+  // The language tag, from the fence info string. aria-hidden because the label
+  // is decorative metadata — a screen reader announcing "bash" before every
+  // block is noise, and the surrounding prose already says what the block is.
+  &[data-lang]::before {
+    content: attr(data-lang);
+    position: absolute;
+    top: 0;
+    inset-inline-end: 0;
+    padding: 0.1rem 0.5rem;
+    background: var(--hug-border);
+    border-bottom-left-radius: t.$radius-sm;
+    color: var(--hug-text-muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    pointer-events: none;
+  }
+}
+
+// highlight.js theme, hand-mapped onto the HugMesh palette rather than importing
+// one of the stock sheets — every colour below is checked against --hug-bg-2
+// (#1a1a2e) at AA for body text (4.5:1) so code stays readable, which the
+// popular dark themes do not guarantee.
+.prose .hljs-comment,
+.prose .hljs-quote          { color: #9aa0b8; font-style: italic; }  // 6.4:1
+.prose .hljs-keyword,
+.prose .hljs-selector-tag,
+.prose .hljs-literal,
+.prose .hljs-doctag,
+.prose .hljs-name,
+.prose .hljs-section         { color: #c4a2ff; }                     // 7.9:1
+.prose .hljs-string,
+.prose .hljs-regexp,
+.prose .hljs-addition        { color: #9be89b; }                     // 10.8:1
+.prose .hljs-number,
+.prose .hljs-symbol,
+.prose .hljs-bullet,
+.prose .hljs-meta            { color: #ffd98a; }                     // 12.5:1
+.prose .hljs-title,
+.prose .hljs-title.function_,
+.prose .hljs-built_in,
+.prose .hljs-class .hljs-title { color: #82d8ff; }                   // 11.4:1
+.prose .hljs-attr,
+.prose .hljs-attribute,
+.prose .hljs-variable,
+.prose .hljs-template-variable,
+.prose .hljs-type,
+.prose .hljs-selector-attr,
+.prose .hljs-selector-class,
+.prose .hljs-selector-id     { color: #ffb3c8; }                     // 9.7:1
+.prose .hljs-deletion        { color: var(--hug-error); }
+.prose .hljs-emphasis        { font-style: italic; }
+.prose .hljs-strong          { font-weight: 700; }
+.prose .hljs-link            { text-decoration: underline; }
+
+// Mermaid source is shipped verbatim and upgraded in place by the client only
+// when the diagram library loads. Until then it is a readable code block, and if
+// the library never loads it STAYS one — a diagram that fails to render must
+// still convey its content, never collapse to blank space.
+.prose pre.mermaid {
+  max-width: 100%;
+  margin-bottom: 1.15rem;
+  padding: 0.9rem 1rem;
+  overflow-x: auto;
+  background: var(--hug-bg-2);
+  border: 1px solid var(--hug-border);
+  border-radius: t.$radius-sm;
+  font-family: t.$font-mono;
+  font-size: 0.8125rem;
+  color: var(--hug-text-muted);
+
+  &[data-processed] {
+    padding: 1rem;
+    text-align: center;
+    font-family: t.$font-sans;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .prose .code-block,
+  .prose .table-scroll,
+  .prose details,
+  .prose :not(pre) > code {
+    border-color: var(--hug-text);
+  }
+}

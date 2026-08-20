@@ -1,0 +1,73 @@
+@use 'tokens' as t;
+
+@keyframes bg-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+:host {
+  position: fixed;
+  inset: 0;
+  // MUST be negative. This is a full-viewport position:fixed element whose
+  // nearest stacking-context ancestor is the root, so at z-index 0 it paints in
+  // step 8 of CSS 2.1 Appendix E — above the in-flow content of every
+  // non-positioned sibling. pointer-events:none hides the damage from click
+  // tests, and a contrast probe still reads a healthy ratio because it resolves
+  // the backdrop by walking up to <body>. Only a screenshot shows it.
+  z-index: t.$z-background;
+  display: block;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.wash,
+.effect {
+  position: absolute;
+  inset: 0;
+}
+
+// Tier 1: the CSS wash. Painted immediately, on every machine, and the fallback
+// every failure path in background.component.ts returns to.
+.wash {
+  background: linear-gradient(
+    135deg,
+    t.$black 0%,
+    #12121e 22%,
+    rgba(t.$pastel-lavender, 0.16) 45%,
+    rgba(t.$pastel-sky, 0.12) 62%,
+    #12121e 82%,
+    t.$black 100%
+  );
+  background-size: 300% 300%;
+  animation: bg-shift 42s ease-in-out infinite;
+}
+
+// Tier 2: the Vanta canvas, when it loads. It stacks OVER the wash and is
+// deliberately translucent, so the wash's colour still shows through and a
+// half-initialised effect never reads as a blank rectangle.
+.effect {
+  opacity: 0.55;
+}
+
+// Reduced motion stops the wash too, not just the effect layer (which is never
+// started at all — see start()). A stationary gradient is still a fine backdrop.
+@media (prefers-reduced-motion: reduce) {
+  .wash {
+    animation: none;
+    background-position: 30% 50%;
+  }
+}
+
+// The reader asked for maximum contrast: drop the decoration to a flat field so
+// nothing competes with the text.
+@media (prefers-contrast: more) {
+  .wash {
+    animation: none;
+    background: t.$black;
+  }
+
+  .effect {
+    display: none;
+  }
+}

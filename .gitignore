@@ -1,0 +1,24 @@
+# Angular / Node
+node_modules/
+dist/
+.angular/
+coverage/
+out-tsc/
+npm-debug.log*
+
+# GENERATED from content/ by scripts/build-content.mjs on every build (prebuild).
+# Deliberately not committed: it is a mechanical projection of content/ and would
+# otherwise double the diff of every documentation change with a second, derived copy.
+src/assets/content/
+
+# Written by the studio-release workflow and copied in by a maintainer. The committed
+# file is src/assets/releases.json.example, which documents the shape; the real one is
+# per-release data, and the Downloads page renders a clear "nothing published yet"
+# state when it is absent.
+src/assets/releases.json
+
+# Editors
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store

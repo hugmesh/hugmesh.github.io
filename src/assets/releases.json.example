@@ -1,0 +1,27 @@
+{
+  "version": "1.0.0",
+  "published": "2026-01-01",
+  "notesUrl": "https://github.com/hugmesh/hugmesh-generator/releases/tag/studio-v1.0.0",
+  "installers": [
+    {
+      "platform": "windows",
+      "kind": "msi",
+      "label": "Windows installer (x64)",
+      "file": "hugmesh-studio-1.0.0-x64.msi",
+      "url": "https://github.com/hugmesh/hugmesh-generator/releases/download/studio-v1.0.0/hugmesh-studio-1.0.0-x64.msi",
+      "size": "78 MB",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "notes": "Per-user install, no administrator rights required. Adds a Start-menu entry and a tray launcher."
+    },
+    {
+      "platform": "linux",
+      "kind": "flatpak",
+      "label": "Flatpak bundle (x86_64)",
+      "file": "hugmesh-studio-1.0.0-x86_64.flatpak",
+      "url": "https://github.com/hugmesh/hugmesh-generator/releases/download/studio-v1.0.0/hugmesh-studio-1.0.0-x86_64.flatpak",
+      "size": "112 MB",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "notes": "Runs on any distribution with Flatpak and the GNOME runtime. Install with: flatpak install --user ./hugmesh-studio-1.0.0-x86_64.flatpak"
+    }
+  ]
+}

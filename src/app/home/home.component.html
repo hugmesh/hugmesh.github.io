@@ -1,0 +1,179 @@
+<main id="maincontent">
+  <section class="hero">
+    <p class="eyebrow">Open source · Self-hosted · MIT licensed</p>
+    <h1>Run your own community platform.<br />Not someone else's.</h1>
+    <p class="lede">
+      HugMesh is a generator-first platform for standing up a full social stack — chat,
+      fediverse, wiki, forum, video, and a game studio — on hardware you own, under a
+      domain you control, behind an identity provider you run. One USB key and a small
+      cluster is all it takes.
+    </p>
+    <div class="cta-row">
+      <a class="btn btn-primary" routerLink="/tutorials">Start the tutorials</a>
+      <a class="btn btn-ghost" routerLink="/architecture">How it works</a>
+      <a class="btn btn-ghost" routerLink="/downloads">Get the Studio</a>
+    </div>
+    <p class="hero-note">
+      Multi-tenant. Federation-first. Security load-bearing, not bolted on.
+    </p>
+  </section>
+
+  @if (indexFailed()) {
+    <p class="notice" role="alert">
+      The documentation index could not be loaded, so the section listings below are
+      empty. The pages themselves are unaffected — the sources live in the
+      <a href="https://github.com/hugmesh" target="_blank" rel="noopener noreferrer"
+        >HugMesh repositories</a
+      >.
+    </p>
+  }
+
+  @if (firstSteps().length) {
+    <section class="start" aria-labelledby="start-here">
+      <h2 id="start-here">Start here</h2>
+      <p class="section-lede">
+        The tutorial track goes from installing the Studio to a branded, federated mesh
+        serving its own domain. Each step ends with something that works.
+      </p>
+      <ol class="steps">
+        @for (doc of firstSteps(); track doc.route; let i = $index) {
+          <li>
+            <a [routerLink]="doc.route">
+              <span class="step-num" aria-hidden="true">{{ i + 1 }}</span>
+              <span class="step-body">
+                <strong>{{ doc.title }}</strong>
+                <em>{{ doc.summary }}</em>
+              </span>
+            </a>
+          </li>
+        }
+      </ol>
+    </section>
+  }
+
+  <section class="sections" aria-labelledby="all-sections">
+    <h2 id="all-sections">Browse the documentation</h2>
+    @if (totalPages()) {
+      <p class="section-lede">{{ totalPages() }} pages, generated from the Markdown that lives beside the code.</p>
+    }
+    <ul>
+      @for (section of sections; track section.id) {
+        <li>
+          <a [routerLink]="['/', section.id]" [attr.data-testid]="'home-' + section.id">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path fill="currentColor" [attr.d]="section.icon" />
+            </svg>
+            <span class="card-body">
+              <strong>{{ section.title }}</strong>
+              <em>{{ section.blurb }}</em>
+            </span>
+            @if (counts().get(section.id); as n) {
+              <span class="count">{{ n }}</span>
+            }
+          </a>
+        </li>
+      }
+    </ul>
+  </section>
+
+  <section class="repos" aria-labelledby="repos-title">
+    <h2 id="repos-title">Everything is source</h2>
+    <p class="section-lede">
+      Every service is a separate repository with its own build and its own release.
+      Start with the generator if you are standing up a cluster; the
+      <a routerLink="/reference">Reference section</a> has a page per service.
+    </p>
+    <ul class="repo-grid">
+      @for (repo of repos; track repo.name) {
+        <li>
+          <a [href]="'https://github.com/hugmesh/' + repo.name" target="_blank" rel="noopener noreferrer">
+            <code>{{ repo.name }}</code>
+            <em>{{ repo.blurb }}</em>
+          </a>
+        </li>
+      }
+    </ul>
+    <p class="field-help">
+      The repositories are currently private. The documentation on this site is
+      generated from the Markdown inside them.
+    </p>
+  </section>
+
+  <section class="tiers" aria-labelledby="tiers-title">
+    <h2 id="tiers-title">Free and open, with a managed option</h2>
+    <p class="section-lede">
+      HugMesh is MIT-licensed and will always have a fully free, self-hosted tier. For
+      teams who want a managed cluster, support SLAs, or custom-domain multi-tenancy at
+      scale, an Enterprise Platform option is available.
+    </p>
+    <div class="tier-grid">
+      <article>
+        <h3>Community</h3>
+        <p class="price">Free forever</p>
+        <ul>
+          <li>Full source, MIT licensed</li>
+          <li>Self-hosted on your own hardware</li>
+          <li>Community support via GitHub issues</li>
+          <li>All core services: chat, fediverse, wiki, forum, video, games</li>
+        </ul>
+        <a class="btn btn-ghost" routerLink="/tutorials">Start here</a>
+      </article>
+      <article class="featured">
+        <p class="badge">Enterprise Platform</p>
+        <h3>Managed &amp; supported</h3>
+        <p class="price">Contact us for pricing</p>
+        <ul>
+          <li>Managed cluster provisioning &amp; upgrades</li>
+          <li>Multi-tenant custom-domain onboarding</li>
+          <li>SLA-backed support &amp; incident response</li>
+          <li>Private roadmap input &amp; priority features</li>
+        </ul>
+        <a class="btn btn-primary" href="mailto:sales@hugmesh.net">Contact sales</a>
+      </article>
+    </div>
+  </section>
+
+  <section class="platform" aria-labelledby="platform-title">
+    <h2 id="platform-title">A generator-first platform, not a SaaS you rent</h2>
+    <p class="section-lede">
+      The <code>hugmesh-generator</code> repository builds hardened OS images for every
+      cluster role and provisions everything from a single FAT32 <code>KEYS</code> USB
+      partition at first boot. Once the cluster is up you manage it through role-gated
+      UIs and BFF APIs — no direct cluster access required after day one.
+    </p>
+    <div class="arch-grid">
+      <article>
+        <h3>Frontend</h3>
+        <p>
+          Angular micro-frontends loaded at runtime via native federation. Login, user,
+          mod, admin, Matrix, fediverse, forum, wiki, video, games — each its own
+          deployable remote, greyed out automatically when a service is not installed.
+        </p>
+      </article>
+      <article>
+        <h3>Backend</h3>
+        <p>
+          Spring WebFlux BFFs, one per surface, each scoped to exactly what its role
+          needs. A single Spring Cloud Gateway validates every request and enforces a
+          data-driven, per-brand route-access policy before anything reaches a service.
+        </p>
+      </article>
+      <article>
+        <h3>Identity &amp; control plane</h3>
+        <p>
+          Casdoor as the OIDC IdP behind a native login flow — the browser never sees a
+          redirect or a raw token, only an opaque session cookie. Cassandra, Vault and a
+          private mesh network round out the control plane.
+        </p>
+      </article>
+      <article>
+        <h3>Multi-tenant by design</h3>
+        <p>
+          One deployment, many brands. Each tenant gets its own namespace, mTLS
+          boundary, identity issuer and role hierarchy — provisioned at runtime through
+          the superadmin Service Catalog, no redeploy required.
+        </p>
+      </article>
+    </div>
+  </section>
+</main>

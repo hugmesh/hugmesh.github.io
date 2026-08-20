@@ -1,0 +1,227 @@
+@use 'tokens' as t;
+
+:host {
+  position: sticky;
+  top: 0;
+  z-index: t.$z-nav;
+  display: block;
+  background: rgba(t.$black, 0.86);
+  border-bottom: 1px solid var(--hug-border);
+}
+
+@supports (backdrop-filter: blur(8px)) or (-webkit-backdrop-filter: blur(8px)) {
+  :host {
+    background: rgba(t.$black, 0.66);
+    backdrop-filter: blur(12px) saturate(130%);
+    -webkit-backdrop-filter: blur(12px) saturate(130%);
+  }
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  max-width: 92rem;
+  min-height: var(--hug-header-h);
+  margin: 0 auto;
+  padding: 0 clamp(0.75rem, 2vw, 1.5rem);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex: 0 0 auto;
+  color: var(--hug-text);
+  font-weight: 700;
+  font-size: 1.05rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.brand-mark {
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 0.4rem;
+  // The three-dot mark from the original static landing page, kept so the docs
+  // site and the marketing page share an identity.
+  background:
+    radial-gradient(circle at 32% 38%, var(--hug-accent) 0 28%, transparent 29%),
+    radial-gradient(circle at 68% 38%, var(--hug-accent-soft) 0 28%, transparent 29%),
+    radial-gradient(circle at 50% 68%, #{t.$neon} 0 28%, transparent 29%),
+    #{t.$black};
+}
+
+.brand-sub {
+  margin-inline-start: 0.35rem;
+  padding: 0.1rem 0.35rem;
+  border: 1px solid var(--hug-border);
+  border-radius: 0.3rem;
+  color: var(--hug-text-muted);
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+.primary {
+  flex: 1 1 auto;
+  // Without min-width:0 a flex item refuses to shrink below its content's
+  // min-content width, so eleven nav labels push the search field and the
+  // GitHub link off the end of the bar instead of scrolling inside their own rail.
+  min-width: 0;
+
+  ul {
+    display: flex;
+    gap: 0.15rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    // A nine-section nav does not fit every laptop. Scrolling the RAIL beats
+    // wrapping it into a second row that shoves the page content down, and beats
+    // hiding entries behind an overflow menu nobody opens.
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+}
+
+.nav-link {
+  display: block;
+  padding: 0.4rem 0.5rem;
+  border-radius: t.$radius-sm;
+  color: var(--hug-text-muted);
+  font-size: 0.875rem;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover,
+  &:focus-visible {
+    background: rgba(t.$offwhite, t.$opacity-ghost);
+    color: var(--hug-text);
+  }
+
+  // The active section is marked by WEIGHT and an underline as well as colour —
+  // colour alone fails WCAG 1.4.1 for anyone who cannot see the accent.
+  &.active {
+    color: var(--hug-accent-soft);
+    font-weight: 700;
+    box-shadow: inset 0 -2px 0 0 var(--hug-accent-soft);
+  }
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  flex: 0 1 13rem;
+  gap: 0.25rem;
+  padding: 0.15rem 0.15rem 0.15rem 0.6rem;
+  background: var(--hug-bg-1);
+  border: 1px solid var(--hug-border);
+  border-radius: 999px;
+
+  &:focus-within {
+    border-color: var(--hug-accent-soft);
+  }
+
+  input {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0.35rem 0;
+    background: transparent;
+    border: 0;
+    color: var(--hug-text);
+    font-size: 0.875rem;
+
+    &::placeholder {
+      color: var(--hug-text-muted);
+    }
+
+    &:focus {
+      outline: none; // the ring is drawn on .search via :focus-within
+    }
+  }
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    background: transparent;
+    border: 0;
+    border-radius: 50%;
+    color: var(--hug-text-muted);
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+      color: var(--hug-text);
+    }
+  }
+}
+
+.gh {
+  flex: 0 0 auto;
+  display: inline-flex;
+  color: var(--hug-text-muted);
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--hug-text);
+  }
+}
+
+.menu-toggle {
+  display: none;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: transparent;
+  border: 1px solid var(--hug-border);
+  border-radius: t.$radius-sm;
+  color: var(--hug-text);
+  cursor: pointer;
+}
+
+// ── Narrow viewports ─────────────────────────────────────────────────────────
+// Below $bp-lg the section rail moves into a disclosure panel under the bar. The
+// search field stays in the bar: on a phone, search is the primary way people
+// navigate a documentation site, so burying it behind a second tap is the wrong
+// trade.
+@media (max-width: t.$bp-xl) {
+  .menu-toggle {
+    display: inline-flex;
+    order: 3;
+  }
+
+  .brand { order: 1; }
+  .search { order: 2; flex: 1 1 8rem; }
+  .gh { display: none; }
+
+  .primary {
+    order: 4;
+    flex: 1 0 100%;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height t.$transition-base;
+
+    &.open {
+      max-height: 22rem;
+      overflow-y: auto;
+      padding-bottom: 0.5rem;
+    }
+
+    ul {
+      flex-direction: column;
+      overflow-x: visible;
+    }
+  }
+
+  .nav-link {
+    padding: 0.6rem;
+  }
+}

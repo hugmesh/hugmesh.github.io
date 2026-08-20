@@ -1,11 +1,27 @@
-# Manual-only for now (workflow_dispatch). Switch the trigger to
-# `push: branches: [main]` once this repo (and org Actions generally) is ready
-# to go live. Also requires: Settings -> Pages -> Source = "GitHub Actions",
-# and the org-level Actions permission enabled (currently disabled fleet-wide).
+# Build and deploy the HugMesh documentation site to GitHub Pages.
+#
+# This replaces a workflow that uploaded `./site` — a single hand-written static page.
+# The site is now an Angular application whose pages are generated from the Markdown
+# vendored under `content/`, so the artifact has to be built rather than copied.
+#
+# TRIGGER: `push` to main, unlike the fleet's workflow_dispatch-only convention. That
+# convention exists for the 25 GHCR image-push workflows, where an accidental run
+# publishes an image; here the "side effect" is that the documentation matches main,
+# which is the entire point. workflow_dispatch stays for manual re-deploys.
+#
+# PREREQUISITES on the repository, all one-time and all outside this file:
+#   1. the repository is public (Pages custom domains require it on this plan);
+#   2. Settings -> Pages -> Source = "GitHub Actions";
+#   3. custom domain hugmesh.net, with "Enforce HTTPS" once DNS resolves;
+#   4. Cloudflare CNAME hugmesh.net -> hugmesh.github.io, proxied.
+# The CNAME file in src/ is copied into the artifact by the build; losing it silently
+# unbinds the domain, so scripts/spa-fallback.mjs asserts it is present.
 name: Deploy Pages
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
 
 permissions:
   contents: read
@@ -14,19 +30,72 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  # NOT cancel-in-progress: cancelling a half-finished deploy can leave Pages serving
+  # a partially-updated site. A superseded run costs a minute; a broken site does not.
+  cancel-in-progress: false
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Check the vendored content is current
+        # ADVISORY HERE, blocking nowhere. This compares content/ against the sibling
+        # code repositories, which a Pages runner has neither checked out nor any
+        # credential for — every hugmesh-* repo is PRIVATE. With no source reachable
+        # the script reports "unreachable" and exits 0, so this step is a placeholder
+        # that becomes meaningful the day the repos are public. The REAL guard is the
+        # same command run by a maintainer before committing (npm run check:content),
+        # documented in the README.
+        run: npm run check:content
+        continue-on-error: true
+
+      - name: Build
+        # prebuild renders content/ -> src/assets/content; postbuild writes the SPA
+        # fallback, .nojekyll and asserts the CNAME survived.
+        run: npm run build
+
+      - name: Verify the Pages artifact
+        # GitHub Pages has no rewrite rules: a cold load of any deep link is served
+        # 404.html. If that file is not a byte-copy of index.html, every deep link
+        # into the documentation is broken — and it would be broken ONLY in
+        # production, where nothing else exercises it. Cheap to assert, expensive to
+        # discover.
+        run: |
+          cd dist/browser
+          for f in index.html 404.html CNAME .nojekyll; do
+            [ -f "$f" ] || { echo "::error::$f missing from the Pages artifact"; exit 1; }
+          done
+          if ! cmp -s index.html 404.html; then
+            echo "::error::404.html is not a copy of index.html — deep links will 404"
+            exit 1
+          fi
+          pages=$(find assets/content -name '*.json' | wc -l)
+          echo "404 fallback OK · CNAME $(cat CNAME) · $pages content files"
+          [ "$pages" -gt 10 ] || { echo "::error::content payload looks empty"; exit 1; }
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/browser
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./site
       - id: deployment
         uses: actions/deploy-pages@v4

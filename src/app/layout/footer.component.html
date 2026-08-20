@@ -1,0 +1,45 @@
+<div class="inner">
+  <div class="col brand-col">
+    <p class="wordmark">HugMesh</p>
+    <p class="field-help">
+      Self-hosted community infrastructure. Chat, fediverse, forum, wiki, video and
+      games — on hardware you own, under a domain you control.
+    </p>
+  </div>
+
+  <nav class="col" aria-label="Documentation sections">
+    <p class="col-title">Documentation</p>
+    <ul>
+      @for (section of sections; track section.id) {
+        <li><a [routerLink]="['/', section.id]">{{ section.title }}</a></li>
+      }
+    </ul>
+  </nav>
+
+  <nav class="col" aria-label="Project links">
+    <p class="col-title">Project</p>
+    <ul>
+      <li><a routerLink="/downloads">Downloads</a></li>
+      <li><a routerLink="/search">Search the docs</a></li>
+      <li>
+        <a href="https://github.com/hugmesh" target="_blank" rel="noopener noreferrer">
+          GitHub organisation
+        </a>
+      </li>
+      <li>
+        <a
+          href="https://github.com/hugmesh/hugmesh.github.io"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          This site's source
+        </a>
+      </li>
+    </ul>
+  </nav>
+</div>
+
+<p class="legal">
+  © {{ year }} HugMesh · MIT licensed · Documentation generated from the Markdown
+  that lives beside the code it documents.
+</p>

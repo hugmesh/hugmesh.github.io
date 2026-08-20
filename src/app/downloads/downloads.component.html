@@ -1,0 +1,95 @@
+<main id="maincontent" class="downloads">
+  <header>
+    <h1>Get HugMesh Studio</h1>
+    <p class="lede">
+      Studio is the desktop app that builds HugMesh images with a wizard, and runs a
+      mesh from your system tray — under Docker, on Kubernetes, or inside an emulated
+      QEMU cluster — with CPU and GPU limits you set.
+    </p>
+  </header>
+
+  @if (loading()) {
+    <p class="state" role="status" aria-live="polite">Loading release information…</p>
+  } @else if (!info()) {
+    <div class="state notice">
+      <h2>No release has been published yet</h2>
+      <p>
+        The installer workflows are in place but no build has been released. Until then,
+        run Studio from a checkout — see
+        <a routerLink="/studio">the Studio documentation</a>.
+      </p>
+    </div>
+  } @else {
+    @let rel = info()!;
+    <p class="version">
+      Version <strong>{{ rel.version }}</strong>
+      <span aria-hidden="true">·</span>
+      published {{ rel.published }}
+      @if (rel.notesUrl) {
+        <span aria-hidden="true">·</span>
+        <a [href]="rel.notesUrl" target="_blank" rel="noopener noreferrer">release notes</a>
+      }
+    </p>
+
+    @for (group of [
+      { title: 'Windows', items: windows() },
+      { title: 'Linux', items: linux() }
+    ]; track group.title) {
+      @if (group.items.length) {
+        <section class="platform">
+          <h2>{{ group.title }}</h2>
+          <ul>
+            @for (item of group.items; track item.file) {
+              <li>
+                <div class="head">
+                  <h3>{{ item.label }}</h3>
+                  <a class="btn" [href]="item.url" [attr.download]="item.file">Download</a>
+                </div>
+                <p class="notes">{{ item.notes }}</p>
+                <dl class="facts">
+                  <dt>File</dt>
+                  <dd><code>{{ item.file }}</code></dd>
+                  <dt>Size</dt>
+                  <dd>{{ item.size }}</dd>
+                  <dt>SHA-256</dt>
+                  <dd class="sha">
+                    <code>{{ item.sha256 }}</code>
+                    <button type="button" (click)="copy(item.sha256)">
+                      {{ copied() === item.sha256 ? 'Copied' : 'Copy' }}
+                      <span class="sr">SHA-256 checksum for {{ item.file }}</span>
+                    </button>
+                  </dd>
+                </dl>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+    }
+
+    <section class="verify">
+      <h2>Verify what you downloaded</h2>
+      <p>
+        Compare the checksum above with the file you received. A mismatch means the
+        download is corrupt or is not the file this page describes — do not run it.
+      </p>
+      <pre class="code-block" data-lang="powershell"><code>Get-FileHash .\hugmesh-studio-{{ rel.version }}-x64.msi -Algorithm SHA256</code></pre>
+      <pre class="code-block" data-lang="bash"><code>sha256sum hugmesh-studio-{{ rel.version }}-x86_64.flatpak</code></pre>
+    </section>
+  }
+
+  <section class="from-source">
+    <h2>Or run it from a checkout</h2>
+    <p>
+      Studio needs no installer to run. From a <code>hugmesh-generator</code> checkout:
+    </p>
+    <pre class="code-block" data-lang="bash"><code>cd studio
+python3 -m venv .venv &amp;&amp; . .venv/bin/activate
+pip install -r requirements.txt
+./hugmesh-studio            # Windows: hugmesh-studio.bat</code></pre>
+    <p class="field-help">
+      The installers exist so the app is available to people who do not want a Python
+      environment — they package the same code.
+    </p>
+  </section>
+</main>

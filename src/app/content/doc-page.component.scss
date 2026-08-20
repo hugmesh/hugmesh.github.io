@@ -1,0 +1,321 @@
+@use 'tokens' as t;
+
+:host {
+  display: block;
+  position: relative;
+  z-index: t.$z-content;
+}
+
+// Three columns: section rail, prose, contents rail. The prose column is
+// `minmax(0, …)` so a wide code block shrinks it rather than blowing the grid
+// out — `1fr` alone has a min-content floor and would let one long line push the
+// whole page into horizontal scroll.
+.doc-layout {
+  display: grid;
+  grid-template-columns: t.$sidebar-width minmax(0, 1fr) t.$toc-width;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  max-width: 92rem;
+  margin: 0 auto;
+  padding: 1.5rem clamp(0.75rem, 2vw, 1.5rem) 0;
+}
+
+.doc {
+  min-width: 0;
+  padding: clamp(1rem, 2.5vw, 2rem);
+  background: rgba(t.$black, 0.72);
+  border: 1px solid var(--hug-border);
+  border-radius: t.$radius-page;
+}
+
+@supports (backdrop-filter: blur(8px)) or (-webkit-backdrop-filter: blur(8px)) {
+  .doc {
+    background: rgba(t.$black, 0.6);
+    backdrop-filter: blur(10px) saturate(120%);
+    -webkit-backdrop-filter: blur(10px) saturate(120%);
+  }
+}
+
+// The reader asked for more contrast or less motion: drop the translucency
+// entirely rather than merely deepening it, so no moving gradient is ever the
+// backdrop for body text.
+@media (prefers-contrast: more), (prefers-reduced-motion: reduce) {
+  .doc {
+    background: rgba(t.$black, 0.95);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+.crumbs {
+  margin-bottom: 0.75rem;
+
+  ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.8125rem;
+    color: var(--hug-text-muted);
+  }
+
+  li + li::before {
+    content: '/';
+    margin-inline-end: 0.4rem;
+    color: var(--hug-border);
+  }
+
+  a {
+    color: var(--hug-text-muted);
+    text-decoration: none;
+
+    &:hover,
+    &:focus-visible {
+      color: var(--hug-text);
+      text-decoration: underline;
+    }
+  }
+}
+
+.doc-head {
+  margin-bottom: 1.5rem;
+
+  h1 {
+    margin-bottom: 0.35rem;
+  }
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0;
+  color: var(--hug-text-muted);
+  font-size: 0.8125rem;
+
+  .provenance a,
+  .provenance code {
+    color: inherit;
+    font-family: t.$font-mono;
+  }
+}
+
+.notice {
+  margin-bottom: 1rem;
+  padding: 0.6rem 0.85rem;
+  background: rgba(255, 215, 0, 0.08);
+  border: 1px solid rgba(255, 215, 0, 0.35);
+  border-radius: t.$radius-sm;
+  font-size: 0.875rem;
+}
+
+// ── Contents rails ───────────────────────────────────────────────────────────
+.toc {
+  min-width: 0;
+
+  ul {
+    position: sticky;
+    top: calc(var(--hug-header-h) + 3rem);
+    max-height: calc(100vh - var(--hug-header-h) - 5rem);
+    overflow-y: auto;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-inline-start: 1px solid var(--hug-border);
+    scrollbar-width: thin;
+  }
+}
+
+.toc-title {
+  position: sticky;
+  top: calc(var(--hug-header-h) + 1rem);
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hug-text-muted);
+}
+
+.toc li a,
+.toc-inline li a {
+  display: block;
+  padding: 0.25rem 0.7rem;
+  color: var(--hug-text-muted);
+  font-size: 0.85rem;
+  line-height: 1.35;
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--hug-text);
+    text-decoration: underline;
+  }
+}
+
+.toc li.sub a,
+.toc-inline li.sub a {
+  padding-inline-start: 1.5rem;
+  font-size: 0.8rem;
+}
+
+.toc-inline {
+  display: none;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 0.85rem;
+  background: var(--hug-bg-1);
+  border: 1px solid var(--hug-border);
+  border-radius: t.$radius-sm;
+
+  summary {
+    cursor: pointer;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--hug-text-muted);
+  }
+
+  ul {
+    margin: 0.5rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+}
+
+// ── Pager ────────────────────────────────────────────────────────────────────
+.pager {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--hug-border);
+}
+
+.pager-link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.75rem 1rem;
+  background: var(--hug-bg-1);
+  border: 1px solid var(--hug-border);
+  border-radius: t.$radius-sm;
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--hug-accent-soft);
+  }
+
+  &.next {
+    text-align: end;
+  }
+}
+
+.pager-dir {
+  color: var(--hug-text-muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pager-title {
+  color: var(--hug-text);
+  font-weight: 700;
+}
+
+.source-note {
+  margin-top: 1.5rem;
+}
+
+.missing code {
+  padding: 0.15em 0.4em;
+  background: var(--hug-bg-2);
+  border-radius: 0.3rem;
+  font-family: t.$font-mono;
+}
+
+// ── Loading skeleton ─────────────────────────────────────────────────────────
+.skeleton {
+  height: 1rem;
+  margin-bottom: 0.75rem;
+  background: linear-gradient(90deg, var(--hug-bg-1) 25%, var(--hug-bg-2) 50%, var(--hug-bg-1) 75%);
+  background-size: 200% 100%;
+  border-radius: 0.3rem;
+  animation: skeleton-sweep 1.4s ease-in-out infinite;
+
+  &--title {
+    height: 2rem;
+    width: 60%;
+    margin-bottom: 1.5rem;
+  }
+
+  &--short {
+    width: 40%;
+  }
+}
+
+@keyframes skeleton-sweep {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+// ── Responsive ───────────────────────────────────────────────────────────────
+// Two breakpoints, two things dropped. The contents rail goes first (it is the
+// least load-bearing), then the section rail — which is safe to drop only
+// because the header nav can still reach every section.
+@media (max-width: t.$bp-xl) {
+  .doc-layout {
+    grid-template-columns: t.$sidebar-width minmax(0, 1fr);
+  }
+
+  .toc {
+    display: none;
+  }
+
+  .toc-inline {
+    display: block;
+  }
+}
+
+@media (max-width: t.$bp-lg) {
+  .doc-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rail {
+    display: none;
+  }
+}
+
+@media (max-width: t.$bp-sm) {
+  .pager {
+    grid-template-columns: 1fr;
+  }
+
+  .pager-link.next {
+    text-align: start;
+  }
+}
+
+@media print {
+  .doc-layout {
+    display: block;
+  }
+
+  .rail,
+  .toc,
+  .toc-inline,
+  .pager,
+  .crumbs {
+    display: none;
+  }
+
+  .doc {
+    background: none;
+    border: 0;
+    padding: 0;
+  }
+}

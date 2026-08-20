@@ -1,0 +1,2559 @@
+{
+  "meta": {
+    "description": "Publication allowlist for hugmesh.net. Every hugmesh-* code repo is PRIVATE and this site is public, so nothing is published unless it is listed here.",
+    "generated": "from a full inventory of the workspace; 40 further documents were reviewed and deliberately withheld as internal."
+  },
+  "docs": [
+    {
+      "section": "overview",
+      "slug": "what-is-hugmesh",
+      "title": "HugMesh",
+      "summary": "The public org profile and best elevator pitch: a self-hosted multi-tenant community platform on hardened Gentoo and Kubernetes run from a USB key and a few Pi 5 nodes.",
+      "repo": ".github",
+      "path": "profile/README.md",
+      "order": 0
+    },
+    {
+      "section": "tutorials",
+      "slug": "first-run-bootstrap",
+      "title": "First-run bootstrap (issue #49)",
+      "summary": "The idempotent advisory-only per-user bootstrap running on the first Studio or CLI invocation.",
+      "repo": "hugmesh-generator",
+      "path": "docs/FIRST-RUN.md",
+      "order": 0
+    },
+    {
+      "section": "tutorials",
+      "slug": "documentation-index",
+      "title": "hugmesh-generator docs index",
+      "summary": "Curated index of the generator doc set grouped by operating, architecture, security, optional services, cloud, client images and testing, with a shipped/in-flight/planned state key.",
+      "repo": "hugmesh-generator",
+      "path": "docs/README.md",
+      "order": 1
+    },
+    {
+      "section": "tutorials",
+      "slug": "serve-your-mesh",
+      "title": "Serve your mesh \u2014 from nothing to a reachable login page",
+      "summary": "End-to-end path from nothing to a reachable login page, then optionally exposing it via Tor, DDNS or a tunnel.",
+      "repo": "hugmesh-generator",
+      "path": "docs/SERVE-YOUR-MESH.md",
+      "order": 2
+    },
+    {
+      "section": "tutorials",
+      "slug": "local-lan-testing",
+      "title": "Local LAN testing (ENV=test)",
+      "summary": "Testing a whole fleet on a LAN with ENV=test, needing no public internet, Cloudflare, OAuth or SMTP; the default build posture.",
+      "repo": "hugmesh-generator",
+      "path": "docs/LOCAL-TESTING.md",
+      "order": 3
+    },
+    {
+      "section": "tutorials",
+      "slug": "nixos-steamos-launchers",
+      "title": "NixOS / SteamOS / gaming-distro launchers",
+      "summary": "Running the Studio wizard and ncurses menu on NixOS, SteamOS, Arch, Debian and Fedora where python3, make or FHS are absent.",
+      "repo": "hugmesh-generator",
+      "path": "docs/NIXOS-STEAMOS.md",
+      "order": 4
+    },
+    {
+      "section": "tutorials",
+      "slug": "local-docker-stack",
+      "title": "Run the ENTIRE HugMesh stack locally (docker-compose)",
+      "summary": "Brings the entire platform up on one x86_64 machine via docker-compose, building every first-party service from its cloned repo.",
+      "repo": "hugmesh-generator",
+      "path": "docs/LOCAL-STACK.md",
+      "order": 5
+    },
+    {
+      "section": "tutorials",
+      "slug": "run-a-mesh",
+      "title": "RUNNING \u2014 build, key, flash and provision a HugMesh fleet",
+      "summary": "The primary new-operator runbook: prerequisites, clone, configure, build, keys and KEYS USB, flash, provision, cluster bring-up.",
+      "repo": "hugmesh-generator",
+      "path": "docs/RUNNING.md",
+      "order": 6
+    },
+    {
+      "section": "tutorials",
+      "slug": "generator-overview",
+      "title": "Generator overview",
+      "summary": "Master README for the image/infra layer: crossdev builds of hardened Gentoo images for Pi 5 and x86 GPU hosts plus the GitOps payload.",
+      "repo": "hugmesh-generator",
+      "path": "README.md",
+      "order": 7
+    },
+    {
+      "section": "architecture",
+      "slug": "tenant-branding",
+      "title": "HugMesh tenant branding",
+      "summary": "What a tenant's rendered generator copy rebrands and never touches, and how this file is itself re-filed per tenant.",
+      "repo": "hugmesh-generator",
+      "path": "docs/BRANDING.md",
+      "order": 0
+    },
+    {
+      "section": "architecture",
+      "slug": "heavy-tier",
+      "title": "Heavy tier \u2014 the amd64 datastores + the lean/heavy test split",
+      "summary": "How amd64-only heavy datastores (Kafka, ClickHouse, Uptrace) split from the Pi availability floor and are expressed in GitOps.",
+      "repo": "hugmesh-generator",
+      "path": "docs/HEAVY-TIER.md",
+      "order": 1
+    },
+    {
+      "section": "architecture",
+      "slug": "route-access-control",
+      "title": "Per-gateway role\u2192URL external access control",
+      "summary": "The gateway_route_access model letting admins control per gateway which roles or users reach which URLs from outside.",
+      "repo": "hugmesh-generator",
+      "path": "docs/ROUTE-ACCESS.md",
+      "order": 2
+    },
+    {
+      "section": "architecture",
+      "slug": "brand-profiles",
+      "title": "brands/ \u2014 drop-in brand profiles",
+      "summary": "Drop-in brand profiles: a shell file the builders source to rewrite every namespace, hostname, gateway, ingress host and title.",
+      "repo": "hugmesh-generator",
+      "path": "brands/README.md",
+      "order": 3
+    },
+    {
+      "section": "architecture",
+      "slug": "tenant-repo-publishing",
+      "title": "Mesh Repo-Templating",
+      "summary": "Phase 5 decisions for the first tailnet-internal publish of rendered tenant repos to Forgejo with signed provenance.",
+      "repo": "hugmesh-generator",
+      "path": "docs/PHASE5-DECISIONS.md",
+      "order": 4
+    },
+    {
+      "section": "architecture",
+      "slug": "test-architecture",
+      "title": "Test architecture",
+      "summary": "How the generated platform tests itself against real in-cluster services and how prod-hygiene and seed gates block a sync rather than passing silently.",
+      "repo": "hugmesh-generator",
+      "path": "docs/TEST-ARCHITECTURE.md",
+      "order": 5
+    },
+    {
+      "section": "architecture",
+      "slug": "federation-walkthrough",
+      "title": "Federation examples \u2014 the module-federation walkthrough",
+      "summary": "End-to-end tour of native-federation using the four runnable archetype example codebases, covering the runtime mount side.",
+      "repo": "hugmesh-generator",
+      "path": "docs/FEDERATION-EXAMPLES.md",
+      "order": 6
+    },
+    {
+      "section": "architecture",
+      "slug": "platform-topology",
+      "title": "Platform Topology \u2014 where this host sits",
+      "summary": "Where the host shell sits in the multi-tier topology: gateway in front, Casdoor as issuer, Cassandra for revocation and URL-registry cache.",
+      "repo": "hugmesh-host-shell",
+      "path": "docs/platform-topology.md",
+      "order": 7
+    },
+    {
+      "section": "architecture",
+      "slug": "reserved-prefixes",
+      "title": "Reserved usernames / prefixes",
+      "summary": "The canonical rule for reserved usernames and route prefixes and every layer enforcing it, so a handle cannot shadow a gateway route.",
+      "repo": "hugmesh-generator",
+      "path": "docs/RESERVED-PREFIXES.md",
+      "order": 8
+    },
+    {
+      "section": "architecture",
+      "slug": "remote-fragment",
+      "title": "Remote fragment",
+      "summary": "The sync-and-serve-static fragment fleet serving federated bundles so a tenant can mount remotes it does not build itself.",
+      "repo": "hugmesh-remote-fragment",
+      "path": "README.md",
+      "order": 9
+    },
+    {
+      "section": "architecture",
+      "slug": "gateway-roadmap",
+      "title": "HugMesh Gateway \u2014 Roadmap",
+      "summary": "The platform-wide gateway roadmap, stressing it is a fleet-wide component rather than a games-only slice.",
+      "repo": "hugmesh-gateway",
+      "path": "ROADMAP.md",
+      "order": 10
+    },
+    {
+      "section": "architecture",
+      "slug": "pki-gateway",
+      "title": "Pki gateway",
+      "summary": "The identity-tier gateway instance fronting Casdoor and headscale, internal-only and never internet-facing.",
+      "repo": "hugmesh-pki-gateway",
+      "path": "README.md",
+      "order": 11
+    },
+    {
+      "section": "architecture",
+      "slug": "backend-gateway",
+      "title": "Backend gateway",
+      "summary": "The per-brand backend front door sitting in front of the backend API and the social homeservers.",
+      "repo": "hugmesh-be-gateway",
+      "path": "README.md",
+      "order": 12
+    },
+    {
+      "section": "architecture",
+      "slug": "frontend-gateway",
+      "title": "Frontend gateway",
+      "summary": "The frontend front door deployed in front of the web host shell and its module-federated remotes.",
+      "repo": "hugmesh-fe-gateway",
+      "path": "README.md",
+      "order": 13
+    },
+    {
+      "section": "architecture",
+      "slug": "gateway",
+      "title": "Gateway",
+      "summary": "The Spring Cloud Gateway that is the platform's public front door, where one image runs as the PKI, backend or frontend gateway depending on role.",
+      "repo": "hugmesh-gateway",
+      "path": "README.md",
+      "order": 14
+    },
+    {
+      "section": "architecture",
+      "slug": "host-shell",
+      "title": "hugmesh.net \u2014 host shell",
+      "summary": "The native-federation host shell owning the chrome, auth surface and remote mounting; the user-facing front door behind the gateway.",
+      "repo": "hugmesh-host-shell",
+      "path": "README.md",
+      "order": 15
+    },
+    {
+      "section": "architecture",
+      "slug": "cluster-architecture",
+      "title": "HugMesh cluster architecture",
+      "summary": "Full cluster topology: per-namespace Spring Cloud Gateways validating one internal Casdoor JWT, identity, multi-tenancy, superadmin and the role cascade.",
+      "repo": "hugmesh-generator",
+      "path": "docs/ARCHITECTURE.md",
+      "order": 16
+    },
+    {
+      "section": "architecture",
+      "slug": "mesh-repo-templating",
+      "title": "Mesh repo-templating \u2014 current state (Phases 1\u20137)",
+      "summary": "The Handlebars render engine and guardrails for multi-tenant mesh repo-templating through Phase 7 including cross-mesh decentralization.",
+      "repo": "hugmesh-generator",
+      "path": "docs/MESH-TEMPLATING.md",
+      "order": 17
+    },
+    {
+      "section": "architecture",
+      "slug": "federation-api",
+      "title": "Federation api",
+      "summary": "The dynamic-federation registry and manifest API: the authoritative catalog of federated remote modules the host shells bootstrap from.",
+      "repo": "hugmesh-federation-api",
+      "path": "README.md",
+      "order": 18
+    },
+    {
+      "section": "operations",
+      "slug": "home-seed-stack",
+      "title": "HugMesh stack in your home",
+      "summary": "Short note for boxes built with --home-seed-code on running the stack locally in Docker or joining a tailnet as a dockerized node.",
+      "repo": "hugmesh-generator",
+      "path": "specs/usr/share/hugmesh/stack/README.md",
+      "order": 0
+    },
+    {
+      "section": "operations",
+      "slug": "tor-hidden-service",
+      "title": "Tor v3 Hidden Service (onion gateway) \u2014 generator-side",
+      "summary": "Exposing the in-cluster fe-gateway as a Tor v3 onion service so users reach a domain with no public IP, DDNS or Cloudflare.",
+      "repo": "hugmesh-generator",
+      "path": "docs/TOR-HIDDEN-SERVICE.md",
+      "order": 1
+    },
+    {
+      "section": "operations",
+      "slug": "cloud-image-packaging",
+      "title": "Cloud image packaging \u2014 scripts/cloud-package.sh",
+      "summary": "The standalone post-build step converting a built raw x86 img into qcow2, fixed VHD or checksummed raw for cloud importers.",
+      "repo": "hugmesh-generator",
+      "path": "docs/CLOUD-IMAGE-PACKAGING.md",
+      "order": 2
+    },
+    {
+      "section": "operations",
+      "slug": "games-appstore",
+      "title": "Games App Store (games-services control plane)",
+      "summary": "The per-domain catalog of dockerized FOSS game servers with superadmin curation, per-domain enablement and runner-driven instance lifecycle.",
+      "repo": "hugmesh-generator",
+      "path": "docs/GAMES-APPSTORE.md",
+      "order": 3
+    },
+    {
+      "section": "operations",
+      "slug": "image-build-progress",
+      "title": "Image-gen worker progress side channel",
+      "summary": "The optional non-terminal progress side channel filling the web progress bar between the build worker's start frame and terminal result.",
+      "repo": "hugmesh-generator",
+      "path": "docs/IMAGE-GEN-PROGRESS.md",
+      "order": 4
+    },
+    {
+      "section": "operations",
+      "slug": "mesh-device-visibility",
+      "title": "Mesh device visibility \u2014 the friends decision",
+      "summary": "Why a mesh device set to visibility=friends deliberately behaves as private today and what must be decided before it ships.",
+      "repo": "hugmesh-generator",
+      "path": "docs/MESH-VISIBILITY.md",
+      "order": 5
+    },
+    {
+      "section": "operations",
+      "slug": "identity-providers",
+      "title": "Identity providers \u2014 Casdoor (built-in) and external OIDC",
+      "summary": "Choosing between the built-in Casdoor IdP (default) and external OIDC providers for token validation.",
+      "repo": "hugmesh-generator",
+      "path": "docs/IDENTITY-PROVIDERS.md",
+      "order": 6
+    },
+    {
+      "section": "operations",
+      "slug": "per-domain-idp",
+      "title": "Per-domain identity provider (issue #47 \u2014 Domain.idp)",
+      "summary": "The per-domain Domain.idp axis and why it must not be conflated with the mesh-level identity stack chosen at build time.",
+      "repo": "hugmesh-generator",
+      "path": "docs/DOMAIN-IDP.md",
+      "order": 7
+    },
+    {
+      "section": "operations",
+      "slug": "backup-recovery-worker",
+      "title": "Backup & Recovery worker \u2014 manifests + operator follow-up",
+      "summary": "The Kubernetes Job manifests and operator follow-up backing the admin BFF's cloud backup and restore feature.",
+      "repo": "hugmesh-admin-bff-api",
+      "path": "src/main/resources/jobs/README.md",
+      "order": 8
+    },
+    {
+      "section": "operations",
+      "slug": "devops-namespace",
+      "title": "DevOps platform (devops namespace, x86_64 host)",
+      "summary": "The devops namespace pinned to the x86_64 host running GitOps, CI, forge and binhost tooling, reachable only over the VPN.",
+      "repo": "hugmesh-generator",
+      "path": "docs/DEVOPS.md",
+      "order": 9
+    },
+    {
+      "section": "operations",
+      "slug": "superadmin-mesh-access",
+      "title": "Superadmin mesh client \u2014 join & SSH reach (v1)",
+      "summary": "Operator runbook for a superadmin joining the tailnet mesh and reaching nodes over SSH using the seeded bootstrap identity.",
+      "repo": "hugmesh-generator",
+      "path": "docs/SUPERADMIN-MESH-CLIENT.md",
+      "order": 10
+    },
+    {
+      "section": "operations",
+      "slug": "cloud-deploy",
+      "title": "Cloud deploy \u2014 publish a built x86 image to a cloud provider",
+      "summary": "Publishing a built x86 image to AWS, Azure, OpenShift or any qcow2 host via offline-rendered plans; in-flight, every front-end reports driver-not-found honestly.",
+      "repo": "hugmesh-generator",
+      "path": "docs/CLOUD-DEPLOY.md",
+      "order": 11
+    },
+    {
+      "section": "operations",
+      "slug": "emerge-plan-preview",
+      "title": "Emerge plan preview \u2014 the resolved package list, up front",
+      "summary": "The record of showing the resolved package list up front, collapsed, before the emerge stage compiles anything.",
+      "repo": "hugmesh-generator",
+      "path": "docs/EMERGE-PLAN-PREVIEW.md",
+      "order": 12
+    },
+    {
+      "section": "operations",
+      "slug": "meshtastic-bridge",
+      "title": "Meshtastic LoRa mesh \u2194 Matrix bridge (meshbridge)",
+      "summary": "Bridging Meshtastic LoRa radio traffic into Matrix rooms over USB-serial, TCP or MQTT as a default-off runtime service.",
+      "repo": "hugmesh-generator",
+      "path": "docs/MESHTASTIC-BRIDGE.md",
+      "order": 13
+    },
+    {
+      "section": "operations",
+      "slug": "xr-chat",
+      "title": "XR chat",
+      "summary": "The default-off XR chat room and Character Forge 3D slug covering WebXR/Quest and desktop face-tracking architecture and the coturn dependency.",
+      "repo": "hugmesh-generator",
+      "path": "docs/XR-CHAT.md",
+      "order": 14
+    },
+    {
+      "section": "operations",
+      "slug": "node-storage",
+      "title": "Node Storage",
+      "summary": "Attaching node-pinned storage to a specific mesh node so services placed on that pool run and bind where the disk lives.",
+      "repo": "hugmesh-generator",
+      "path": "docs/NODE-STORAGE.md",
+      "order": 15
+    },
+    {
+      "section": "operations",
+      "slug": "docker-mesh-node",
+      "title": "HugMesh Docker mesh-node (FD-09)",
+      "summary": "Turning any Linux or Windows machine already running Docker into a background mesh node with no OS flash or reinstall.",
+      "repo": "hugmesh-generator",
+      "path": "clients/docker-mesh-node/README.md",
+      "order": 16
+    },
+    {
+      "section": "operations",
+      "slug": "admin-consoles",
+      "title": "Admin consoles",
+      "summary": "Live-probed inventory of every admin and moderation console with URL, opening role, and an honest statement of which panels are dark.",
+      "repo": "hugmesh-generator",
+      "path": "docs/ADMIN-CONSOLES.md",
+      "order": 17
+    },
+    {
+      "section": "operations",
+      "slug": "coturn-turn-relay",
+      "title": "coturn \u2014 TURN/STUN relay for Matrix (tuwunel) audio/video",
+      "summary": "The default-off TURN/STUN relay for Matrix audio and video and what enabling it changes for client ICE behaviour.",
+      "repo": "hugmesh-generator",
+      "path": "docs/COTURN.md",
+      "order": 18
+    },
+    {
+      "section": "operations",
+      "slug": "cloud-backups",
+      "title": "Cloud backups \u2014 generator (GitOps) leg",
+      "summary": "The generator half of per-domain and total-cloud backups: Velero install, backup destination, credentials, RBAC and status sweep.",
+      "repo": "hugmesh-generator",
+      "path": "docs/CLOUD-BACKUPS.md",
+      "order": 19
+    },
+    {
+      "section": "operations",
+      "slug": "managed-backing-services",
+      "title": "Managed backing services",
+      "summary": "Pointing an in-mesh backing datastore at a hosted AWS or Azure equivalent instead of running it in-cluster; additive and opt-in.",
+      "repo": "hugmesh-generator",
+      "path": "docs/MANAGED-SERVICES.md",
+      "order": 20
+    },
+    {
+      "section": "operations",
+      "slug": "lorawan-mesh-sync",
+      "title": "LoRaWAN for the platform: WAN reach + near-mesh sync (design)",
+      "summary": "Design-only phase 1 of 4 for LoRaWAN WAN reach and near-mesh sync; nothing is implemented yet.",
+      "repo": "hugmesh-generator",
+      "path": "docs/LORAWAN-MESH-SYNC.md",
+      "order": 21
+    },
+    {
+      "section": "operations",
+      "slug": "egress-vpn",
+      "title": "Egress VPN (split-tunnel, fail-closed) \u2014 generator-side",
+      "summary": "Importing provider WireGuard or OpenVPN configs so nodes route outgoing public-facing traffic through a fail-closed split tunnel.",
+      "repo": "hugmesh-generator",
+      "path": "docs/EGRESS-VPN.md",
+      "order": 22
+    },
+    {
+      "section": "operations",
+      "slug": "keys-usb",
+      "title": "KEYS USB template",
+      "summary": "Template for the FAT32 KEYS USB partition the image reads at first boot and how to populate it with secrets before booting.",
+      "repo": "hugmesh-generator",
+      "path": "keys-template/README.md",
+      "order": 23
+    },
+    {
+      "section": "operations",
+      "slug": "gitops-payload",
+      "title": "HugMesh cluster GitOps payload",
+      "summary": "The cluster GitOps payload baked into every image at /var/lib/hugmesh/cluster, the single source of truth ArgoCD syncs from.",
+      "repo": "hugmesh-generator",
+      "path": "specs/cluster/README.md",
+      "order": 24
+    },
+    {
+      "section": "operations",
+      "slug": "edge-ai-node",
+      "title": "Edge-AI \u2014 GPU inference node serving a model API to the mesh",
+      "summary": "Adding a GPU inference node running Ollama and exposing an OpenAI-compatible model API to the whole mesh.",
+      "repo": "hugmesh-generator",
+      "path": "docs/EDGE-AI.md",
+      "order": 25
+    },
+    {
+      "section": "operations",
+      "slug": "kind-local-bringup",
+      "title": "kind-local \u2014 local kind bring-up",
+      "summary": "Local kind bring-up of Vault, PKI, Casdoor and Harbor, with KIND_PROFILE=sso extending it to the full native-login path.",
+      "repo": "hugmesh-generator",
+      "path": "specs/cluster/bootstrap/kind-local/README.md",
+      "order": 26
+    },
+    {
+      "section": "operations",
+      "slug": "go-live-wizard",
+      "title": "Superadmin go-live wizard",
+      "summary": "The superadmin go-live wizard with five implemented providers and three front-ends (CLI, ncurses, Studio GUI).",
+      "repo": "hugmesh-generator",
+      "path": "docs/GO-LIVE-WIZARD.md",
+      "order": 27
+    },
+    {
+      "section": "operations",
+      "slug": "optional-services",
+      "title": "Optional Services",
+      "summary": "The add/remove-by-command framework splitting always-present core architecture from optional Akkoma, tuwunel, phpBB, games and owncast services.",
+      "repo": "hugmesh-generator",
+      "path": "docs/OPTIONAL-SERVICES.md",
+      "order": 28
+    },
+    {
+      "section": "developer-guide",
+      "slug": "archetype-gateway",
+      "title": "gateway archetype",
+      "summary": "The archetype rendering the gateway and infra class, templating the CI include plus a brand-parameterized kustomize deploy overlay.",
+      "repo": "hugmesh-generator",
+      "path": "templates/archetypes/gateway/README.md",
+      "order": 0
+    },
+    {
+      "section": "developer-guide",
+      "slug": "art-pipeline",
+      "title": "art-pipeline",
+      "summary": "How the chibi art pass was assembled from per-artist fragment manifests rather than hand-edited, and how to run another.",
+      "repo": "hugmesh-character-studio-ui",
+      "path": "tools/art-pipeline/README.md",
+      "order": 1
+    },
+    {
+      "section": "developer-guide",
+      "slug": "scaffold-remote-fragment",
+      "title": "{{BRAND_TITLE}} \u2014 {{REPO_NAME}} (remote-fragment placeholder)",
+      "summary": "The deliberate placeholder for the remote-fragment archetype, which ships no runnable skeleton by design.",
+      "repo": "hugmesh-admin-bff-api",
+      "path": "src/main/resources/scaffold/remote-fragment/README.md",
+      "order": 2
+    },
+    {
+      "section": "developer-guide",
+      "slug": "edge-ai-analysis-image",
+      "title": "edge-ai-analysis image",
+      "summary": "Container source for the stateless FastAPI wrapper turning the edge-AI model server into task-oriented analysis verdicts.",
+      "repo": "hugmesh-generator",
+      "path": "specs/cluster/manifests/edge-ai-analysis/image/README.md",
+      "order": 3
+    },
+    {
+      "section": "developer-guide",
+      "slug": "archetype-spring-bff",
+      "title": "spring-bff archetype",
+      "summary": "The archetype rendering any Spring Boot 4 Java BFF from one recipe, seeded from the admin-bff exemplar.",
+      "repo": "hugmesh-generator",
+      "path": "templates/archetypes/spring-bff/README.md",
+      "order": 4
+    },
+    {
+      "section": "developer-guide",
+      "slug": "archetype-remote-fragment",
+      "title": "remote-fragment archetype",
+      "summary": "The archetype rendering the remote-fragment class serving published federation bundles so a tenant can mount remotes it does not build.",
+      "repo": "hugmesh-generator",
+      "path": "templates/archetypes/remote-fragment/README.md",
+      "order": 5
+    },
+    {
+      "section": "developer-guide",
+      "slug": "scaffold-angular-mfe",
+      "title": "{{BRAND_TITLE}}",
+      "summary": "A runnable minimal Angular native-federation remote skeleton rendered when the upstream base repo is not pullable.",
+      "repo": "hugmesh-admin-bff-api",
+      "path": "src/main/resources/scaffold/angular-mfe/README.md",
+      "order": 6
+    },
+    {
+      "section": "developer-guide",
+      "slug": "service-catalog-builder",
+      "title": "service-catalog-builder \u2014 in-cluster Kaniko image builder",
+      "summary": "The in-cluster Kaniko builder backing the SUPERADMIN Service Catalog's four service sources.",
+      "repo": "hugmesh-generator",
+      "path": "specs/cluster/manifests/service-catalog-builder/README.md",
+      "order": 7
+    },
+    {
+      "section": "developer-guide",
+      "slug": "scaffold-angular-host",
+      "title": "{{BRAND_TITLE}}",
+      "summary": "A runnable minimal Angular native-federation host skeleton rendered when the upstream host-shell base is not pullable.",
+      "repo": "hugmesh-admin-bff-api",
+      "path": "src/main/resources/scaffold/angular-host/README.md",
+      "order": 8
+    },
+    {
+      "section": "developer-guide",
+      "slug": "archetype-angular-mfe",
+      "title": "angular-mfe archetype",
+      "summary": "The archetype rendering any Angular native-federation micro-frontend from one recipe parameterized by a per-repo identity row.",
+      "repo": "hugmesh-generator",
+      "path": "templates/archetypes/angular-mfe/README.md",
+      "order": 9
+    },
+    {
+      "section": "developer-guide",
+      "slug": "login-ui-e2e",
+      "title": "hugmesh-login-ui e2e \u2014 Playwright + playwright-bdd (Gherkin)",
+      "summary": "The BDD-only Playwright harness for the auth entry point with feature specs and a shared fixture catalogue.",
+      "repo": "hugmesh-login-ui",
+      "path": "e2e/README.md",
+      "order": 10
+    },
+    {
+      "section": "developer-guide",
+      "slug": "translation-catalogs",
+      "title": "Translation catalogs",
+      "summary": "How the generated source translation template and per-locale XLF catalogs work, and why the template is never hand-edited.",
+      "repo": "hugmesh-login-ui",
+      "path": "src/locale/README.md",
+      "order": 11
+    },
+    {
+      "section": "developer-guide",
+      "slug": "scaffold-spring-bff",
+      "title": "{{BRAND_TITLE}}",
+      "summary": "A runnable minimal Spring Boot 4 WebFlux BFF skeleton that builds, tests and runs, unlike the older placeholder.",
+      "repo": "hugmesh-admin-bff-api",
+      "path": "src/main/resources/scaffold/spring-bff/README.md",
+      "order": 12
+    },
+    {
+      "section": "developer-guide",
+      "slug": "scaffold-archetypes",
+      "title": "Embedded scaffold archetype codebases",
+      "summary": "The embedded starter codebases the Service Store scaffold surface renders and hands to a brand as a downloadable ZIP.",
+      "repo": "hugmesh-admin-bff-api",
+      "path": "src/main/resources/scaffold/README.md",
+      "order": 13
+    },
+    {
+      "section": "developer-guide",
+      "slug": "tube-ui-e2e",
+      "title": "hugmesh-tube-ui \u2014 e2e (Playwright + playwright-bdd)",
+      "summary": "The Gherkin-driven harness for the tube-ui remote, the feature-gated optional tube service UI.",
+      "repo": "hugmesh-tube-ui",
+      "path": "e2e/README.md",
+      "order": 14
+    },
+    {
+      "section": "developer-guide",
+      "slug": "org-mainline-integration",
+      "title": "Org-mainline integration (build-the-graph-from-source)",
+      "summary": "A safety net for the failure per-repo CI cannot see: a shared library changing its API while republished under the same version.",
+      "repo": "hugmesh-generator",
+      "path": "tests/ci/README.md",
+      "order": 15
+    },
+    {
+      "section": "developer-guide",
+      "slug": "forum-ui-e2e",
+      "title": "hugmesh-forum-ui \u2014 e2e (Playwright + playwright-bdd)",
+      "summary": "The Gherkin BDD harness for the forum-ui remote, containing pure test code only.",
+      "repo": "hugmesh-forum-ui",
+      "path": "e2e/README.md",
+      "order": 16
+    },
+    {
+      "section": "developer-guide",
+      "slug": "archetype-angular-host",
+      "title": "angular-host archetype",
+      "summary": "The archetype rendering the native-federation host shell class, exemplified by the site shell that mounts every remote.",
+      "repo": "hugmesh-generator",
+      "path": "templates/archetypes/angular-host/README.md",
+      "order": 17
+    },
+    {
+      "section": "developer-guide",
+      "slug": "keda-latency-autoscaling",
+      "title": "DARK latency/RPS autoscaling (KEDA ScaledObjects)",
+      "summary": "The deferred KEDA latency and RPS ScaledObjects second pass layered on the CPU and memory HPAs already live.",
+      "repo": "hugmesh-generator",
+      "path": "specs/cluster/manifests/autoscaling-latency/README.md",
+      "order": 18
+    },
+    {
+      "section": "developer-guide",
+      "slug": "selinux-test-fixture",
+      "title": "Pinned refpolicy header tree",
+      "summary": "A pinned byte-for-byte refpolicy header tree from a green Pi 5 build so the SELinux policy-install test compiles without a sysroot.",
+      "repo": "hugmesh-generator",
+      "path": "tests/fixtures/selinux/README.md",
+      "order": 19
+    },
+    {
+      "section": "developer-guide",
+      "slug": "multi-issuer-slice-owncast",
+      "title": "Multi-issuer security-slice",
+      "summary": "The owncast-BFF copy of the multi-issuer security-slice pattern.",
+      "repo": "hugmesh-owncast-bff-api",
+      "path": "docs/testing/MULTI-ISSUER-SLICE.md",
+      "order": 20
+    },
+    {
+      "section": "developer-guide",
+      "slug": "multi-issuer-slice-mod",
+      "title": "Multi-issuer security-slice \u2014 the moderator-BFF replica",
+      "summary": "The moderator-BFF replica of the multi-issuer security-slice pattern.",
+      "repo": "hugmesh-mod-bff-api",
+      "path": "docs/testing/MULTI-ISSUER-SLICE.md",
+      "order": 21
+    },
+    {
+      "section": "developer-guide",
+      "slug": "mod-ui-e2e",
+      "title": "hugmesh-mod-ui \u2014 e2e (Playwright + playwright-bdd)",
+      "summary": "The Gherkin-driven Playwright harness for the mod-ui federated remote.",
+      "repo": "hugmesh-mod-ui",
+      "path": "e2e/README.md",
+      "order": 22
+    },
+    {
+      "section": "developer-guide",
+      "slug": "owncast-ui-e2e",
+      "title": "hugmesh-owncast-ui \u2014 e2e (Playwright + playwright-bdd)",
+      "summary": "The Gherkin-driven Playwright harness for the owncast-ui federated remote.",
+      "repo": "hugmesh-owncast-ui",
+      "path": "e2e/README.md",
+      "order": 23
+    },
+    {
+      "section": "developer-guide",
+      "slug": "test-runner-bundle",
+      "title": "test-runner \u2014 the test-generated architecture (ENV=test ONLY)",
+      "summary": "The runtime test harness running against real in-cluster services, forbidden in prod by the prod-hygiene gate.",
+      "repo": "hugmesh-generator",
+      "path": "specs/cluster/manifests/test-runner/README.md",
+      "order": 24
+    },
+    {
+      "section": "developer-guide",
+      "slug": "wiki-ui-e2e",
+      "title": "hugmesh-wiki-ui \u2014 e2e (Playwright + playwright-bdd)",
+      "summary": "The Gherkin-driven Playwright harness for the wiki-ui federated remote.",
+      "repo": "hugmesh-wiki-ui",
+      "path": "e2e/README.md",
+      "order": 25
+    },
+    {
+      "section": "developer-guide",
+      "slug": "multi-issuer-slice-character-forge",
+      "title": "Multi-issuer security slice",
+      "summary": "The character-forge replica of the multi-issuer security-slice pattern.",
+      "repo": "hugmesh-character-forge-bff-api",
+      "path": "docs/testing/MULTI-ISSUER-SLICE.md",
+      "order": 26
+    },
+    {
+      "section": "developer-guide",
+      "slug": "in-cluster-image-builder",
+      "title": "image-builder",
+      "summary": "The opt-in generic in-cluster Kaniko pipeline that replaced the CI echo stub so first-party app images build in-cluster.",
+      "repo": "hugmesh-generator",
+      "path": "specs/cluster/manifests/image-builder/README.md",
+      "order": 27
+    },
+    {
+      "section": "developer-guide",
+      "slug": "face-tracking-e2e",
+      "title": "face-track e2e \u2014 real camera\u2192worker\u2192MediaPipe pipeline",
+      "summary": "The desktop face-tracking e2e playing a committed video clip into a headless Chromium fake camera through the real tracking service.",
+      "repo": "hugmesh-matrix-ui",
+      "path": "e2e/face-track/README.md",
+      "order": 28
+    },
+    {
+      "section": "developer-guide",
+      "slug": "multi-issuer-slice-federation",
+      "title": "Multi-issuer security-slice",
+      "summary": "The federation-api replica of the multi-issuer security-slice pattern proving unknown issuers fail closed.",
+      "repo": "hugmesh-federation-api",
+      "path": "docs/testing/MULTI-ISSUER-SLICE.md",
+      "order": 29
+    },
+    {
+      "section": "developer-guide",
+      "slug": "user-ui-e2e",
+      "title": "hugmesh-user-ui \u2014 e2e (Playwright + playwright-bdd)",
+      "summary": "The BDD e2e harness for the user-ui remote where every resource is owner-equals-subject.",
+      "repo": "hugmesh-user-ui",
+      "path": "e2e/README.md",
+      "order": 30
+    },
+    {
+      "section": "developer-guide",
+      "slug": "multi-issuer-slice-forum",
+      "title": "Multi-issuer security-slice tests",
+      "summary": "The forum-BFF replica of the multi-issuer security-slice pattern.",
+      "repo": "hugmesh-forum-bff-api",
+      "path": "docs/testing/MULTI-ISSUER-SLICE.md",
+      "order": 31
+    },
+    {
+      "section": "developer-guide",
+      "slug": "admin-ui-e2e",
+      "title": "hugmesh-admin-ui \u2014 e2e (Playwright + playwright-bdd)",
+      "summary": "The Gherkin-driven Playwright harness for the admin-ui remote, copied from the games e2e pattern.",
+      "repo": "hugmesh-admin-ui",
+      "path": "e2e/README.md",
+      "order": 32
+    },
+    {
+      "section": "developer-guide",
+      "slug": "multi-issuer-slice-pattern",
+      "title": "Multi-issuer security-slice \u2014 the reusable test pattern",
+      "summary": "The reference test pattern proving a WebFlux OAuth2 resource server fails closed on an unknown issuer and isolates per-brand tokens.",
+      "repo": "hugmesh-gateway",
+      "path": "docs/testing/MULTI-ISSUER-SLICE.md",
+      "order": 33
+    },
+    {
+      "section": "developer-guide",
+      "slug": "media-poisoner-worker",
+      "title": "hugmesh-media-poisoner (worker)",
+      "summary": "The optional heavy-tier worker applying an AI-cloak perturbation to image bytes before the homeserver ingests them.",
+      "repo": "hugmesh-generator",
+      "path": "specs/cluster/manifests/media-poisoner/worker/README.md",
+      "order": 34
+    },
+    {
+      "section": "developer-guide",
+      "slug": "edge-ai-tts-image",
+      "title": "edge-ai-tts image \u2014 CPU-default Piper TTS + viseme timeline",
+      "summary": "Container source for the CPU-default Piper TTS service returning synthesized speech plus a viseme timeline for visual-novel voice.",
+      "repo": "hugmesh-generator",
+      "path": "specs/cluster/manifests/edge-ai-tts/image/README.md",
+      "order": 35
+    },
+    {
+      "section": "developer-guide",
+      "slug": "shared-build-config",
+      "title": "Shared build config",
+      "summary": "A resource-only JAR carrying the ecosystem's shared static-analysis rulesets.",
+      "repo": "hugmesh-build-config",
+      "path": "README.md",
+      "order": 36
+    },
+    {
+      "section": "developer-guide",
+      "slug": "host-shell-e2e",
+      "title": "hugmesh.net \u2014 e2e (Nightwatch 3 + Cucumber)",
+      "summary": "The Nightwatch and Cucumber Gherkin end-to-end harness for the host shell that mounts the role-home and social remotes.",
+      "repo": "hugmesh-host-shell",
+      "path": "e2e/README.md",
+      "order": 37
+    },
+    {
+      "section": "developer-guide",
+      "slug": "actions-e2e",
+      "title": "hugmesh-actions e2e suite",
+      "summary": "The Playwright and BDD suite verifying cross-stack admin role sync propagates between Casdoor instances.",
+      "repo": "hugmesh-actions",
+      "path": "e2e/README.md",
+      "order": 38
+    },
+    {
+      "section": "developer-guide",
+      "slug": "mastodon-ui-e2e",
+      "title": "hugmesh-mastodon-ui \u2014 e2e (Playwright + playwright-bdd)",
+      "summary": "The Gherkin e2e harness for the Mastodon and Akkoma social remote.",
+      "repo": "hugmesh-mastodon-ui",
+      "path": "e2e/README.md",
+      "order": 39
+    },
+    {
+      "section": "developer-guide",
+      "slug": "character-forge-asset-pipeline",
+      "title": "Character Forge 3D asset pipeline",
+      "summary": "The reproducible fetch, convert, audit and manifest pipeline for the vendored 3D character packs, none of which are hand-edited.",
+      "repo": "hugmesh-character-forge-bff-api",
+      "path": "tools/asset-pipeline/README.md",
+      "order": 40
+    },
+    {
+      "section": "developer-guide",
+      "slug": "shared-commons",
+      "title": "Shared commons",
+      "summary": "The canonical shared security, tenancy, config and web building blocks that replaced classes previously duplicated into every reactive BFF.",
+      "repo": "hugmesh-commons",
+      "path": "README.md",
+      "order": 41
+    },
+    {
+      "section": "developer-guide",
+      "slug": "matrix-ui-e2e",
+      "title": "hugmesh-matrix-ui \u2014 e2e (Playwright + playwright-bdd)",
+      "summary": "The Gherkin e2e harness for the Matrix chat remote, covering only the harness rather than the remote itself.",
+      "repo": "hugmesh-matrix-ui",
+      "path": "e2e/README.md",
+      "order": 42
+    },
+    {
+      "section": "developer-guide",
+      "slug": "qemu-integration-test",
+      "title": "QEMU integration test",
+      "summary": "Boots a built Pi 5 image under qemu-system-aarch64 with a synthetic KEYS disk and asserts first-boot provisioning worked end to end.",
+      "repo": "hugmesh-generator",
+      "path": "tests/qemu/README.md",
+      "order": 43
+    },
+    {
+      "section": "developer-guide",
+      "slug": "maven-parent-pom",
+      "title": "Maven parent pom",
+      "summary": "The ecosystem metapom consolidating the shared Spring Boot, Spring Cloud and Java baseline so every service inherits one audited set of versions.",
+      "repo": "hugmesh-parent",
+      "path": "README.md",
+      "order": 44
+    },
+    {
+      "section": "developer-guide",
+      "slug": "shared-auth-core",
+      "title": "Shared auth core",
+      "summary": "The shared stateful auth core providing account, session, MFA and Casdoor-admin infrastructure to both the user and admin BFFs.",
+      "repo": "hugmesh-auth-core",
+      "path": "README.md",
+      "order": 45
+    },
+    {
+      "section": "troubleshooting",
+      "slug": "kind-sso-e2e-findings",
+      "title": "Kind SSO e2e \u2014 what the first real cluster run found",
+      "summary": "What the first real kind SSO cluster run found: 16 fresh-cluster blockers including no gateway reaching Ready and Casdoor on its default admin password.",
+      "repo": "hugmesh-generator",
+      "path": "docs/KIND-SSO-E2E-FINDINGS.md",
+      "order": 0
+    },
+    {
+      "section": "troubleshooting",
+      "slug": "arm-firewalld-unresolvable",
+      "title": "FINDINGS",
+      "summary": "Investigation of the ARM firewalld unresolvable introspection dependency chain plus sendfile triage, probed read-only against a failed 8-image build.",
+      "repo": "hugmesh-generator",
+      "path": "FINDINGS.md",
+      "order": 1
+    },
+    {
+      "section": "troubleshooting",
+      "slug": "build-uniformity-survey",
+      "title": "Platform build uniformity \u2014 the measured survey",
+      "summary": "Measured survey of how eight platforms' build structures diverge, classifying 24 divergences and proposing a canonical stage ladder.",
+      "repo": "hugmesh-generator",
+      "path": "docs/PLATFORM-BUILD-UNIFORMITY.md",
+      "order": 2
+    },
+    {
+      "section": "troubleshooting",
+      "slug": "python-targets-seed-drift",
+      "title": "PYTHON_TARGETS and stage3 seed drift \u2014 root-cause analysis",
+      "summary": "Root-cause analysis of two mirror-image fleet build failures caused by hardcoding python3_NN instead of deriving PYTHON_TARGETS from the stage3 seed.",
+      "repo": "hugmesh-generator",
+      "path": "docs/PYTHON-TARGETS-SEED-DRIFT.md",
+      "order": 3
+    },
+    {
+      "section": "studio",
+      "slug": "overview",
+      "title": "HugMesh Image Studio",
+      "summary": "The cross-platform desktop app building images with a Calamares-style wizard and running a local mesh node from the system tray.",
+      "repo": "hugmesh-generator",
+      "path": "studio/README.md",
+      "order": 0
+    },
+    {
+      "section": "studio",
+      "slug": "wizard-flow",
+      "title": "Studio image-build wizard \u2014 the 4-choice \u2192 7-step flow (v1)",
+      "summary": "The Studio image-build wizard's four-choice to seven-step flow, per-path page map, and the parity TODO for ncurses, CLI and web channels.",
+      "repo": "hugmesh-generator",
+      "path": "docs/STUDIO-WIZARD-FLOW.md",
+      "order": 1
+    },
+    {
+      "section": "security",
+      "slug": "reporting-a-vulnerability",
+      "title": "Security Policy",
+      "summary": "Org-wide disclosure policy directing reporters to GitHub private vulnerability reporting rather than public issues.",
+      "repo": ".github",
+      "path": "SECURITY.md",
+      "order": 0
+    },
+    {
+      "section": "security",
+      "slug": "host-shell-security",
+      "title": "Security Policy",
+      "summary": "Vulnerability policy for the host shell, noting it exposes no feature surface of its own since authorization is enforced at the gateway and role BFFs.",
+      "repo": "hugmesh-host-shell",
+      "path": "SECURITY.md",
+      "order": 1
+    },
+    {
+      "section": "security",
+      "slug": "user-bff-security",
+      "title": "Security \u2014 hugmesh-user-bff-api",
+      "summary": "The defence layers on the user BFF including owner-equals-subject enforcement scoping every owner-keyed resource.",
+      "repo": "hugmesh-user-bff-api",
+      "path": "SECURITY.md",
+      "order": 2
+    },
+    {
+      "section": "security",
+      "slug": "mod-bff-security",
+      "title": "Security \u2014 hugmesh-mod-bff-api",
+      "summary": "The defence layers on the moderator BFF including bearer re-validation before propagation to federation.",
+      "repo": "hugmesh-mod-bff-api",
+      "path": "SECURITY.md",
+      "order": 3
+    },
+    {
+      "section": "security",
+      "slug": "actions-security",
+      "title": "Security \u2014 hugmesh-actions",
+      "summary": "Security notes for the actions service, including that it deploys in-cluster under a different name and mTLS identity than its repo name.",
+      "repo": "hugmesh-actions",
+      "path": "SECURITY.md",
+      "order": 4
+    },
+    {
+      "section": "security",
+      "slug": "admin-bff-security",
+      "title": "Security \u2014 hugmesh-admin-bff-api",
+      "summary": "The two independent defence layers on the admin BFF, where every request re-validates its Casdoor JWT before any mutation.",
+      "repo": "hugmesh-admin-bff-api",
+      "path": "SECURITY.md",
+      "order": 5
+    },
+    {
+      "section": "security",
+      "slug": "encryption-at-rest",
+      "title": "Encryption at rest \u2014 every storage layer the cloud touches",
+      "summary": "Mechanism, key custody and unlock flow for every storage layer, plus an honest list of layers that cannot be encrypted today.",
+      "repo": "hugmesh-generator",
+      "path": "docs/ENCRYPTION-AT-REST.md",
+      "order": 6
+    },
+    {
+      "section": "security",
+      "slug": "federation-api-security",
+      "title": "Security \u2014 hugmesh-federation-api",
+      "summary": "The two independent defence layers protecting the federation registry, with fine-grained role checks on modules and overrides.",
+      "repo": "hugmesh-federation-api",
+      "path": "SECURITY.md",
+      "order": 7
+    },
+    {
+      "section": "security",
+      "slug": "cert-chain-hierarchy",
+      "title": "001 \u2014 Cert-chain hierarchy across HugMesh stacks",
+      "summary": "Why per-stack self-signed CAs are acceptable in development but must not leave every tier trusting its own root in production.",
+      "repo": "hugmesh-gateway",
+      "path": "docs/decisions/001-cert-chain-hierarchy.md",
+      "order": 8
+    },
+    {
+      "section": "security",
+      "slug": "domain-lock",
+      "title": "Domain-lock (force local-only / no-federation)",
+      "summary": "The generator half of domain-lock, keeping a Matrix or Mastodon user fully local while blocking outbound federation.",
+      "repo": "hugmesh-generator",
+      "path": "docs/DOMAIN-LOCK.md",
+      "order": 9
+    },
+    {
+      "section": "security",
+      "slug": "username-confusables",
+      "title": "Username uniqueness + confusable rejection",
+      "summary": "The two registration-time rules protecting the username namespace: exact reserved-label rejection and Unicode confusable rejection at the Casdoor pre-signup gate.",
+      "repo": "hugmesh-generator",
+      "path": "docs/USERNAME-CONFUSABLE.md",
+      "order": 10
+    },
+    {
+      "section": "security",
+      "slug": "crypto-audit",
+      "title": "Cryptography audit & post-quantum / SHA-3 migration",
+      "summary": "Audit of every cryptographic choice the repo controls plus post-quantum and SHA-3 readiness, aiming at crypto agility.",
+      "repo": "hugmesh-generator",
+      "path": "docs/CRYPTO-AUDIT.md",
+      "order": 11
+    },
+    {
+      "section": "security",
+      "slug": "selinux-module-loading",
+      "title": "SELinux node-policy module loading",
+      "summary": "Implemented spec for wiring SELinux node-policy module loading into all ten stage4 build scripts, with its test gate.",
+      "repo": "hugmesh-generator",
+      "path": "docs/selinux-module-loading.md",
+      "order": 12
+    },
+    {
+      "section": "security",
+      "slug": "device-registry-key-rotation",
+      "title": "Device-Registry Signing-Key Rotation Runbook",
+      "summary": "Superadmin runbook for rotating the Ed25519 signing key behind device-license export, where order of operations is load-bearing.",
+      "repo": "hugmesh-generator",
+      "path": "docs/DEVICE-REGISTRY-KEY-ROTATION.md",
+      "order": 13
+    },
+    {
+      "section": "security",
+      "slug": "postgres-hardening",
+      "title": "Postgres hardening, per-machine-user roles, and opt-in Citus sharding",
+      "summary": "Per-machine-user least-privilege Postgres roles with their own credentials, general hardening, and opt-in Citus sharding.",
+      "repo": "hugmesh-generator",
+      "path": "docs/POSTGRES-HARDENING.md",
+      "order": 14
+    },
+    {
+      "section": "security",
+      "slug": "security-model",
+      "title": "HugMesh security model",
+      "summary": "The platform security model: every UI/API a distinct identity at three layers, with SELinux, mTLS and the role cascade confining runtime and network.",
+      "repo": "hugmesh-generator",
+      "path": "docs/SECURITY.md",
+      "order": 15
+    },
+    {
+      "section": "security",
+      "slug": "cluster-hardening",
+      "title": "Cluster Hardening \u2014 Sequenced Rollout Plan",
+      "summary": "The sequenced blast-radius-bounded rollout for config-sensitive hardening items excluded from the safe hardening PR.",
+      "repo": "hugmesh-generator",
+      "path": "docs/CLUSTER-HARDENING-PLAN.md",
+      "order": 16
+    },
+    {
+      "section": "security",
+      "slug": "mfa-rollout",
+      "title": "MFA rollout \u2014 operator runbook",
+      "summary": "Operator runbook for enabling the gateway mfa_required floor and admin-bff step-up, with lockout preconditions and rollback.",
+      "repo": "hugmesh-generator",
+      "path": "docs/MFA-ROLLOUT.md",
+      "order": 17
+    },
+    {
+      "section": "games",
+      "slug": "realtime-sim-wiring",
+      "title": "P4 \u2014 wiring the Rust sim cores into the BFF (decision record)",
+      "summary": "Decision record for swapping the real Rust RTS and FPS engines in behind the genre-agnostic SimCore boundary.",
+      "repo": "hugmesh-games",
+      "path": "docs/realtime-sim-wiring-p4.md",
+      "order": 0
+    },
+    {
+      "section": "games",
+      "slug": "shadows-of-the-net-tests",
+      "title": "shadows-of-the-net headless regression suites",
+      "summary": "How to run the headless Godot regression suites for the chat-chamber game.",
+      "repo": "hugmesh-games",
+      "path": "games/shadows-of-the-net/tests/README.md",
+      "order": 1
+    },
+    {
+      "section": "games",
+      "slug": "realtime-server-authoritative",
+      "title": "Server-authoritative real-time (FPS / RTS)",
+      "summary": "Design record for FPS and RTS genres, which are server-authoritative unlike the host-authoritative board and puzzle games.",
+      "repo": "hugmesh-games",
+      "path": "docs/realtime-server-authoritative-design.md",
+      "order": 2
+    },
+    {
+      "section": "games",
+      "slug": "wiki-index",
+      "title": "HugMesh Games \u2014 Wiki",
+      "summary": "Index of the Markdown wiki mirroring the LaTeX-typeset reference without requiring a TeX install.",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/README.md",
+      "order": 3
+    },
+    {
+      "section": "games",
+      "slug": "godot-export-tools",
+      "title": "Godot export tools (real maker builds)",
+      "summary": "How the maker services export a generated Godot project to a playable WASM bundle via a headless Godot release export.",
+      "repo": "hugmesh-games",
+      "path": "tools/godot-export/README.md",
+      "order": 4
+    },
+    {
+      "section": "games",
+      "slug": "multi-user-e2e-harness",
+      "title": "Multi-user games architecture e2e (games-arch)",
+      "summary": "A committed re-runnable harness proving the fourteen web-native games work in the deployed architecture with real users.",
+      "repo": "hugmesh-games",
+      "path": "e2e/games-arch/README.md",
+      "order": 5
+    },
+    {
+      "section": "games",
+      "slug": "game-ports-backlog",
+      "title": "Game-ports backlog \u2014 kdegames, FPS, RTS \u2192 the HugMesh platform",
+      "summary": "A planning backlog of open-source games worth porting, each row a future epic rather than built work.",
+      "repo": "hugmesh-games",
+      "path": "docs/game-ports-backlog.md",
+      "order": 6
+    },
+    {
+      "section": "games",
+      "slug": "multiplayer-chess-design",
+      "title": "Multiplayer chess",
+      "summary": "Design record for multiplayer chess, keystoned on reimplementing the engine in Rust rather than depending on GNU Chess at runtime.",
+      "repo": "hugmesh-games",
+      "path": "docs/multiplayer-chess-design.md",
+      "order": 7
+    },
+    {
+      "section": "games",
+      "slug": "hugmesh-bridge-addon",
+      "title": "HugMesh Bridge \u2014 Godot addon",
+      "summary": "The reusable Godot addon routing all network traffic through a JavaScript message channel when a WASM bundle runs inside the Angular host.",
+      "repo": "hugmesh-games",
+      "path": "extensions/hugmesh-bridge/addons/hugmesh_bridge/README.md",
+      "order": 8
+    },
+    {
+      "section": "games",
+      "slug": "publishing-pipeline",
+      "title": "HugMesh Games \u2014 publishing pipeline",
+      "summary": "The pipeline producing three families of artefacts (LaTeX PDFs, slides, generated Javadoc) documenting and introducing the project.",
+      "repo": "hugmesh-games",
+      "path": "docs/publishing/README.md",
+      "order": 9
+    },
+    {
+      "section": "games",
+      "slug": "shared-web-game-shell",
+      "title": "games/_shared/ \u2014 the reusable web-native game shell",
+      "summary": "The three vanilla-JS ES modules every web-native game frontend reuses, served as static files with no build step.",
+      "repo": "hugmesh-games",
+      "path": "games/_shared/README.md",
+      "order": 10
+    },
+    {
+      "section": "games",
+      "slug": "shadows-of-the-net",
+      "title": "Shadows of the Net \u2013 CHAT (shadows-of-the-net)",
+      "summary": "The noir virtual chat chamber shipped as a Godot 4 WASM game with media plates, wall screens, a stage and a sixteen-seat ring.",
+      "repo": "hugmesh-games",
+      "path": "games/shadows-of-the-net/README.md",
+      "order": 11
+    },
+    {
+      "section": "games",
+      "slug": "godot-game-template",
+      "title": "Godot game template",
+      "summary": "The canonical recipe for turning a web-native game plus its Rust core into a Godot 4 project reusing the same core via the bridge extension.",
+      "repo": "hugmesh-games",
+      "path": "games/_godot-template/README.md",
+      "order": 12
+    },
+    {
+      "section": "games",
+      "slug": "godot-developer-guide",
+      "title": "Godot Developer Guide",
+      "summary": "How work inside a game directory compiles into the shapes the rest of the stack expects: slugs, export paths, asset registrations, scene DTOs and manifests.",
+      "repo": "hugmesh-games",
+      "path": "docs/GODOT_DEVELOPER_GUIDE.md",
+      "order": 13
+    },
+    {
+      "section": "games",
+      "slug": "overview",
+      "title": "HugMesh Game Studio",
+      "summary": "The Game Studio front door: a self-hosted multi-game portal with RPG and visual-novel makers, a 19-title catalog, an Angular shell and a Spring Boot gaming BFF.",
+      "repo": "hugmesh-games",
+      "path": "README.md",
+      "order": 14
+    },
+    {
+      "section": "games",
+      "slug": "overview-games",
+      "title": "01 \u2014 Overview",
+      "summary": "A browser-native multi-game portal where one Angular shell loads a 19-title catalog on demand behind a streaming Spring Boot BFF.",
+      "group": "architecture",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/architecture/01-overview.md",
+      "order": 15
+    },
+    {
+      "section": "games",
+      "slug": "extending",
+      "title": "07 \u2014 Extending the portal",
+      "summary": "Quick index of common extension tasks and the canonical contract the how-to recipes follow.",
+      "group": "architecture",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/architecture/07-extending.md",
+      "order": 16
+    },
+    {
+      "section": "games",
+      "slug": "build-and-deploy",
+      "title": "06 \u2014 Build and deploy",
+      "summary": "The root Makefile as canonical entry point with every target idempotent and safe to re-run.",
+      "group": "architecture",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/architecture/06-build-and-deploy.md",
+      "order": 17
+    },
+    {
+      "section": "games",
+      "slug": "module-federation",
+      "title": "03 \u2014 Module Federation",
+      "summary": "How the host shell loads everything above the WASM iframe through native federation and what adding a route-bearing remote requires.",
+      "group": "architecture",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/architecture/03-federation.md",
+      "order": 18
+    },
+    {
+      "section": "games",
+      "slug": "runtime",
+      "title": "02 \u2014 Runtime architecture",
+      "summary": "The three-tier runtime data flow from the player's browser through the federated host and WASM iframe to the BFF.",
+      "group": "architecture",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/architecture/02-runtime.md",
+      "order": 19
+    },
+    {
+      "section": "games",
+      "slug": "data-model",
+      "title": "04 \u2014 Data model",
+      "summary": "Postgres for canonical relational state with Cassandra as a write-through cross-pod cache and audit log.",
+      "group": "architecture",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/architecture/04-data-model.md",
+      "order": 20
+    },
+    {
+      "section": "games",
+      "slug": "api-reference",
+      "title": "05 \u2014 API + service reference",
+      "summary": "Markdown companion to the generated Javadoc covering the API and service surface of the gaming BFF.",
+      "group": "architecture",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/architecture/05-api-reference.md",
+      "order": 21
+    },
+    {
+      "section": "games",
+      "slug": "002-r2dbc-jdbc-coexistence",
+      "title": "002 \u2014 R2DBC + JDBC coexistence in one BFF",
+      "summary": "Running R2DBC and JDBC pools against one Postgres because WebFlux needs non-blocking IO while Liquibase will never be reactive.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/decisions/002-r2dbc-jdbc-coexistence.md",
+      "order": 22
+    },
+    {
+      "section": "games",
+      "slug": "001-native-federation",
+      "title": "001 \u2014 Native federation over Webpack ModuleFederation",
+      "summary": "Choosing native federation over the Webpack ModuleFederation plugin because Angular moved to esbuild for application builds.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/decisions/001-native-federation.md",
+      "order": 23
+    },
+    {
+      "section": "games",
+      "slug": "008-casdoor-internal",
+      "title": "008 \u2014 Casdoor never exposed; BFF reverse-proxies the login flow",
+      "summary": "Keeping Casdoor reachable only inside the compose network and reverse-proxying the entire login flow through the BFF.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/decisions/008-casdoor-internal.md",
+      "order": 24
+    },
+    {
+      "section": "games",
+      "slug": "005-launch-uid-versioning",
+      "title": "005 \u2014 Launch-UID + version-pinning for hot uploads",
+      "summary": "Minting a launch UID per game launch pinning the current version directory so in-flight launches keep reading a stable bundle.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/decisions/005-launch-uid-versioning.md",
+      "order": 25
+    },
+    {
+      "section": "games",
+      "slug": "004-graalvm-native",
+      "title": "004 \u2014 GraalVM native-image as an opt-in build path",
+      "summary": "Treating the GraalVM native image as an opt-in additional artifact rather than a replacement for the default fat JAR.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/decisions/004-graalvm-native.md",
+      "order": 26
+    },
+    {
+      "section": "games",
+      "slug": "007-cassandra-position-cache",
+      "title": "007 \u2014 Cassandra position cache, keyed by (character, chapter)",
+      "summary": "Tracking player position per character-and-chapter pair through a three-tier write-through cache ending in Postgres.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/decisions/007-cassandra-position-cache.md",
+      "order": 27
+    },
+    {
+      "section": "games",
+      "slug": "012-debug-mode-gate",
+      "title": "012 \u2014 Admin-only debug-mode gate on WASM console capture",
+      "summary": "Gating WASM console capture behind both an admin JWT and a database flag, with either gate failing rejecting the request.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/decisions/012-debug-mode-gate.md",
+      "order": 28
+    },
+    {
+      "section": "games",
+      "slug": "003-autocancel-false",
+      "title": "003 \u2014 Sinks.many(autoCancel=false) everywhere",
+      "summary": "Requiring every Sinks.Many to pass autoCancel=false explicitly, with no exceptions, as a load-bearing rule.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/decisions/003-autocancel-false.md",
+      "order": 29
+    },
+    {
+      "section": "games",
+      "slug": "010-per-session-sse-sinks",
+      "title": "010 \u2014 Per-session SSE sink isolation",
+      "summary": "Isolating SSE sinks per session alongside the legacy global sinks so control events scope to one session.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/decisions/010-per-session-sse-sinks.md",
+      "order": 30
+    },
+    {
+      "section": "games",
+      "slug": "013-player-view-channel",
+      "title": "013 \u2014 Per-player view egress channel for admin observation",
+      "summary": "Adding a per-player view SSE channel carrying camera and orientation samples for admin observation.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/decisions/013-player-view-channel.md",
+      "order": 31
+    },
+    {
+      "section": "games",
+      "slug": "009-game-access-scopes",
+      "title": "009 \u2014 Three additive scopes for game_access",
+      "summary": "Enforcing per-game visibility through three additive access scopes that union together.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/decisions/009-game-access-scopes.md",
+      "order": 32
+    },
+    {
+      "section": "games",
+      "slug": "011-mod-publisher-rbac",
+      "title": "011 \u2014 Mod / publisher roles with per-game Postgres scoping",
+      "summary": "Splitting mod and publisher authority so Casdoor owns role membership while Postgres owns per-game scope.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/decisions/011-mod-publisher-rbac.md",
+      "order": 33
+    },
+    {
+      "section": "games",
+      "slug": "006-naming-rename",
+      "title": "006 \u2014 level \u2192 chapter, spell \u2192 instant rename",
+      "summary": "The level-to-chapter and spell-to-instant rename, and which remaining uses of level legitimately mean XP or logging.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/decisions/006-naming-rename.md",
+      "order": 34
+    },
+    {
+      "section": "games",
+      "slug": "014-bridge-routed-networking",
+      "title": "014 \u2014 All Godot networking flows through the HostBridge",
+      "summary": "Forbidding Godot game code from calling HTTPRequest directly, routing every API call through the HostBridge instead.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/decisions/014-bridge-routed-networking.md",
+      "order": 35
+    },
+    {
+      "section": "games",
+      "slug": "025-bff-domain-guard",
+      "title": "Decision 025 \u2014 BFF-side per-instance domain guard",
+      "summary": "A request-level per-instance domain guard rejecting tokens whose brand does not match the instance.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/decisions/025-bff-domain-guard.md",
+      "order": 36
+    },
+    {
+      "section": "games",
+      "slug": "017-cross-pod-rate-limit",
+      "title": "017 \u2014 Cross-pod rate-limit storage",
+      "summary": "Where rate-limit state lives so the per-IP and per-path cap on credential-grant endpoints holds across pods.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/decisions/017-cross-pod-rate-limit.md",
+      "order": 37
+    },
+    {
+      "section": "games",
+      "slug": "026-catalog-domain-partitioning",
+      "title": "Decision 026 \u2014 Per-brand games-catalog domain partitioning",
+      "summary": "Partitioning the games catalog per brand, building on the domain guard from decision 025.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/decisions/026-games-catalog-domain-partitioning.md",
+      "order": 38
+    },
+    {
+      "section": "games",
+      "slug": "022-postgres-read-replica",
+      "title": "Decision 022 \u2014 Postgres read replica + 2-CF routing",
+      "summary": "Adding a Postgres read replica with two-connection-factory routing for the heaviest read paths.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/decisions/022-postgres-read-replica.md",
+      "order": 39
+    },
+    {
+      "section": "games",
+      "slug": "021-kafka-clickhouse-pipeline",
+      "title": "Decision 021 \u2014 Streaming audit + telemetry pipeline",
+      "summary": "Converging three follow-ups onto one Kafka-to-ClickHouse streaming audit and telemetry pipeline.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/decisions/021-kafka-clickhouse-streaming-pipeline.md",
+      "order": 40
+    },
+    {
+      "section": "games",
+      "slug": "020-object-storage-uploads",
+      "title": "Decision 020 \u2014 Object-storage-backed game uploads",
+      "summary": "Moving game-bundle uploads off the host filesystem to object storage, removing the constraint blocking horizontal BFF scaling.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/decisions/020-object-storage-uploads.md",
+      "order": 41
+    },
+    {
+      "section": "games",
+      "slug": "015-friends-blocks-and-session-visibility",
+      "title": "015 \u2014 Friends, blocks, session visibility, and per-user session log",
+      "summary": "Adding session visibility tiers, a friends and blocks graph, and a per-user session log as three coupled changes.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/decisions/015-friends-blocks-and-session-visibility.md",
+      "order": 42
+    },
+    {
+      "section": "games",
+      "slug": "per-role-schema-split",
+      "title": "020 \u2014 Per-role schema split",
+      "summary": "Splitting role-specific state out of one users-shaped public schema after player, mod and publisher tables piled up together.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/decisions/020-per-role-schema-split.md",
+      "order": 43
+    },
+    {
+      "section": "games",
+      "slug": "016-rust-extension-and-fragment-relay",
+      "title": "016 \u2014 Rust GDExtension owns the bridge",
+      "summary": "Moving the bulk of the bridge from GDScript into a Rust GDExtension with the Angular wrapper relaying SSE and HTTP.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/decisions/016-rust-extension-and-fragment-relay.md",
+      "order": 44
+    },
+    {
+      "section": "games",
+      "slug": "023-content-security-policy",
+      "title": "Decision 023",
+      "summary": "The first-cut CSP for the federated host shell as defence-in-depth, with a strict nonce or hash follow-up tracked.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/decisions/023-content-security-policy.md",
+      "order": 45
+    },
+    {
+      "section": "games",
+      "slug": "024-wcag-palette-audit",
+      "title": "024 \u2014 WCAG 2.1 AA palette audit + centralised colour tokens",
+      "summary": "Auditing the palette to WCAG 2.1 AA and centralising colour tokens after per-component hex literals spread everywhere.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/decisions/024-wcag-palette-audit.md",
+      "order": 46
+    },
+    {
+      "section": "games",
+      "slug": "027-biome-themes-and-godot-e2e",
+      "title": "027 \u2014 Biome themes, real 3D maker worlds, and per-biome Godot e2e",
+      "summary": "Replacing the RPG maker's two floating labels with real biome-themed 3D worlds plus per-biome Godot end-to-end tests.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/decisions/027-biome-themes-and-real-godot-e2e.md",
+      "order": 47
+    },
+    {
+      "section": "games",
+      "slug": "019-production-rate-limits",
+      "title": "019 \u2014 Production posture: LAN flag + edge rate limits",
+      "summary": "Supporting three deployment topologies in one repo via a LAN flag and edge rate limits sized for ~10k concurrent users.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/decisions/019-production-rate-limits.md",
+      "order": 48
+    },
+    {
+      "section": "games",
+      "slug": "018-rpg-and-vn-makers",
+      "title": "018 \u2014 Twin maker side services (RPG + VN)",
+      "summary": "Adding twin in-portal maker services for MUD-style RPGs and visual novels so publishers never touch Godot directly.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/decisions/018-rpg-and-vn-makers.md",
+      "order": 49
+    },
+    {
+      "section": "games",
+      "slug": "028-parametric-humanoid-avatars",
+      "title": "028 \u2014 Parametric humanoid avatars (N64-style low-poly, cross-service)",
+      "summary": "Extending the single-hero character maker into cross-service parametric N64-style low-poly humanoid avatars.",
+      "group": "decisions",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/decisions/028-parametric-humanoid-avatars.md",
+      "order": 50
+    },
+    {
+      "section": "games",
+      "slug": "moderator",
+      "title": "Moderator guide",
+      "summary": "What ROLE_MOD permits, where the per-game scope check lives, and the day-to-day playbook for keeping a session healthy.",
+      "group": "guides",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/guides/moderator.md",
+      "order": 51
+    },
+    {
+      "section": "games",
+      "slug": "fullstack-developer",
+      "title": "Full-stack developer guide",
+      "summary": "Database to browser in one repository across three languages and four runtimes, with the rules holding the federated stack together.",
+      "group": "guides",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/guides/fullstack-developer.md",
+      "order": 52
+    },
+    {
+      "section": "games",
+      "slug": "publisher",
+      "title": "Publisher guide",
+      "summary": "What ROLE_PUBLISHER allows for games in scope (upload, roll back, version pin, access policy) and its boundary against admin.",
+      "group": "guides",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/guides/publisher.md",
+      "order": 53
+    },
+    {
+      "section": "games",
+      "slug": "data-architect",
+      "title": "Data architect overview",
+      "summary": "Where data lives, how it flows and how it stays consistent, framed as the enterprise summary.",
+      "group": "guides",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/guides/data-architect-overview.md",
+      "order": 54
+    },
+    {
+      "section": "games",
+      "slug": "administration",
+      "title": "Administration manual",
+      "summary": "Day-2 operations for ROLE_ADMIN holders: deploy, upload, grant and revoke roles, roll back and troubleshoot.",
+      "group": "guides",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/guides/administration.md",
+      "order": 55
+    },
+    {
+      "section": "games",
+      "slug": "intro-for-coders",
+      "title": "Intro for coders",
+      "summary": "A twelve-section orientation for a developer new to the codebase, assuming no prior knowledge of it.",
+      "group": "guides",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/guides/intro-for-coders.md",
+      "order": 56
+    },
+    {
+      "section": "games",
+      "slug": "godot-developer",
+      "title": "Godot developer guide",
+      "summary": "A step-by-step Godot 4 walkthrough from creating a game directory to seeing a row on the home page.",
+      "group": "guides",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/guides/godot-developer.md",
+      "order": 57
+    },
+    {
+      "section": "games",
+      "slug": "maintainer-runbook",
+      "title": "Maintainer runbook",
+      "summary": "The detect, triage and mitigate incident-response runbook for whoever owns the live stack on call.",
+      "group": "guides",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/guides/maintainer-runbook.md",
+      "order": 58
+    },
+    {
+      "section": "games",
+      "slug": "add-a-role",
+      "title": "How to add a role and gate a game on it",
+      "summary": "Gating a game on a new role across two layers, with Casdoor owning the role catalog and the BFF owning visibility policy.",
+      "group": "howto",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/howto/add-role-and-grant.md",
+      "order": 59
+    },
+    {
+      "section": "games",
+      "slug": "add-an-admin-view",
+      "title": "How to add an admin view",
+      "summary": "Adding a screen under /admin without standing up a new federated remote, since the admin remote can expose many components.",
+      "group": "howto",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/howto/add-admin-view.md",
+      "order": 60
+    },
+    {
+      "section": "games",
+      "slug": "toggle-wasm-debug-mode",
+      "title": "How to toggle WASM-console debug mode",
+      "summary": "Flipping the default-off diagnostics pipeline capturing iframe console errors back to the BFF, then turning it off again.",
+      "group": "howto",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/howto/toggle-wasm-debug-mode.md",
+      "order": 61
+    },
+    {
+      "section": "games",
+      "slug": "add-an-sse-channel",
+      "title": "How to add a new SSE channel",
+      "summary": "Adding a typed channel to the merged game stream so subscribers can listen for a new event name.",
+      "group": "howto",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/howto/add-sse-channel.md",
+      "order": 62
+    },
+    {
+      "section": "games",
+      "slug": "add-a-database-column",
+      "title": "How to add a database column",
+      "summary": "Adding a Postgres column via the next sequential Liquibase changelog; Cassandra schemas are bootstrapped, not migrated.",
+      "group": "howto",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/howto/add-db-column.md",
+      "order": 63
+    },
+    {
+      "section": "games",
+      "slug": "create-or-join-a-session",
+      "title": "How to create or join a multiplayer session",
+      "summary": "The two paths from the home page into driving one slot of a multiplayer game with per-session SSE sinks.",
+      "group": "howto",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/howto/create-or-join-session.md",
+      "order": 64
+    },
+    {
+      "section": "games",
+      "slug": "kick-or-ban",
+      "title": "How to kick or ban a player",
+      "summary": "Three moderation actions writing to one ledger and broadcasting on the affected user's SSE channel to close their game window.",
+      "group": "howto",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/howto/kick-or-ban.md",
+      "order": 65
+    },
+    {
+      "section": "games",
+      "slug": "upload-and-roll-back",
+      "title": "How to hot-upload and roll back a game bundle",
+      "summary": "The hot-upload pipeline letting an admin ship a game or new version with no host redeploy, and one-click rollback.",
+      "group": "howto",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/howto/upload-and-rollback-game.md",
+      "order": 66
+    },
+    {
+      "section": "games",
+      "slug": "run-multi-user-e2e",
+      "title": "Run + extend multi-user e2e specs",
+      "summary": "Adding or fixing a Playwright spec driving two browser contexts through the lobby and asserting what each iframe sees over SSE.",
+      "group": "howto",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/howto/run-multi-user-e2e.md",
+      "order": 67
+    },
+    {
+      "section": "games",
+      "slug": "add-a-game",
+      "title": "How to add a new game",
+      "summary": "Two paths for adding a game depending on whether it ships in-repo or is hot-uploaded at runtime.",
+      "group": "howto",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/howto/add-game.md",
+      "order": 68
+    },
+    {
+      "section": "games",
+      "slug": "grant-mod-or-publisher",
+      "title": "How to grant the mod or publisher role for a game",
+      "summary": "Granting mod or publisher for a game, requiring both Casdoor role membership and Postgres per-game scope.",
+      "group": "howto",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/howto/grant-mod-or-publisher.md",
+      "order": 69
+    },
+    {
+      "section": "games",
+      "slug": "add-a-federated-route",
+      "title": "How to add a federated route",
+      "summary": "Adding a top-level route that loads a separately built Angular bundle from a per-route nginx container.",
+      "group": "howto",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/howto/add-federated-route.md",
+      "order": 70
+    },
+    {
+      "section": "games",
+      "slug": "export-and-reuse-a-character",
+      "title": "How to export and reuse a character",
+      "summary": "The four renditions off one CharacterSpec so a character authored in the RPG maker is not welded to that project.",
+      "group": "howto",
+      "repo": "hugmesh-games",
+      "path": "docs/wiki/howto/export-and-reuse-a-character.md",
+      "order": 71
+    },
+    {
+      "section": "devices",
+      "slug": "jetson-power",
+      "title": "specs-jetson/etc \u2014 power / fan / clocks",
+      "summary": "Why nvpmodel and jetson_clocks are L4T-only tools absent from this image, and the mainline-kernel equivalents.",
+      "repo": "hugmesh-generator",
+      "path": "specs-jetson/etc/POWER.md",
+      "order": 0
+    },
+    {
+      "section": "devices",
+      "slug": "jetson-boot",
+      "title": "specs-jetson/boot \u2014 Orin boot flow + DTB notes",
+      "summary": "Orin boot flow and DTB notes explaining the extlinux-based rootfs this builder produces for microSD or NVMe.",
+      "repo": "hugmesh-generator",
+      "path": "specs-jetson/boot/README.md",
+      "order": 1
+    },
+    {
+      "section": "devices",
+      "slug": "jetson-flashing",
+      "title": "specs-jetson/installer",
+      "summary": "Flashing an Orin, distinguishing out-of-band QSPI firmware from the rootfs image that is this repo's artifact.",
+      "repo": "hugmesh-generator",
+      "path": "specs-jetson/installer/TEGRAFLASH.md",
+      "order": 2
+    },
+    {
+      "section": "devices",
+      "slug": "jetson-kernel",
+      "title": "specs-jetson/kernel \u2014 the MAINLINE-vs-L4T kernel decision",
+      "summary": "The mainline-versus-L4T kernel decision for Orin and how --kernel-flavor selects between the two stacks.",
+      "repo": "hugmesh-generator",
+      "path": "specs-jetson/kernel/README.md",
+      "order": 3
+    },
+    {
+      "section": "devices",
+      "slug": "auditor-coupling-checklist",
+      "title": "Coupling checklist",
+      "summary": "The three identity bindings that must agree between the Auditor fork and the self-hosted AttestationServer or the system fails closed.",
+      "repo": "hugmesh-generator",
+      "path": "clients/hugmesh-auditor/COUPLING.md",
+      "order": 4
+    },
+    {
+      "section": "devices",
+      "slug": "jetson-orin",
+      "title": "specs-jetson",
+      "summary": "The NVIDIA Jetson Orin Nano aarch64/Tegra platform port, experimental and buildable but pending hardware validation.",
+      "repo": "hugmesh-generator",
+      "path": "specs-jetson/README.md",
+      "order": 5
+    },
+    {
+      "section": "devices",
+      "slug": "desktop-governance-config",
+      "title": "Desktop app governance \u2014 client-image config templates",
+      "summary": "The arch-agnostic template config files for the desktop app-governance leg of the client images.",
+      "repo": "hugmesh-generator",
+      "path": "specs/etc/hugmesh/desktop-governance/README.md",
+      "order": 6
+    },
+    {
+      "section": "devices",
+      "slug": "auditor-patches",
+      "title": "HugMesh Auditor fork \u2014 exact source patches",
+      "summary": "The exact source patches applied to upstream Auditor, derived from a static source read and not yet build-verified.",
+      "repo": "hugmesh-generator",
+      "path": "clients/hugmesh-auditor/patches.md",
+      "order": 7
+    },
+    {
+      "section": "devices",
+      "slug": "client-images",
+      "title": "Per-user client device images (FD-04 \u2026 FD-09)",
+      "summary": "The staged plan for per-user client device images (laptop, chromebook, desktop) as distinct from the Kubernetes node roles.",
+      "repo": "hugmesh-generator",
+      "path": "docs/CLIENT-IMAGES.md",
+      "order": 8
+    },
+    {
+      "section": "devices",
+      "slug": "orangepi-5",
+      "title": "specs-orangepi5",
+      "summary": "Orange Pi 5 and 5 Plus (Rockchip RK3588/RK3588S) port; experimental and pending hardware validation.",
+      "repo": "hugmesh-generator",
+      "path": "specs-orangepi5/README.md",
+      "order": 9
+    },
+    {
+      "section": "devices",
+      "slug": "mesh-firmware",
+      "title": "HugMesh Mesh firmware \u2014 a thin fork overlay on Meshtastic",
+      "summary": "The thin fork overlay on Meshtastic producing HugMesh-branded LoRa firmware, with the trademark disclaimer it must carry.",
+      "repo": "hugmesh-generator",
+      "path": "firmware/README.md",
+      "order": 10
+    },
+    {
+      "section": "devices",
+      "slug": "orangepi-4-lts",
+      "title": "specs-orangepi4-lts \u2014 Orange Pi 4 LTS (Rockchip RK3399, arm64)",
+      "summary": "Orange Pi 4 LTS (Rockchip RK3399) port; experimental, DTB, U-Boot defconfig and Kconfig choices checked but unbooted.",
+      "repo": "hugmesh-generator",
+      "path": "specs-orangepi4-lts/README.md",
+      "order": 11
+    },
+    {
+      "section": "devices",
+      "slug": "hugmesh-auditor",
+      "title": "HugMesh Auditor (fork of GrapheneOS/Auditor)",
+      "summary": "A fork of the GrapheneOS Auditor Android app for hardware attestation, explicitly NOT built or build-verified in this repo.",
+      "repo": "hugmesh-generator",
+      "path": "clients/hugmesh-auditor/README.md",
+      "order": 12
+    },
+    {
+      "section": "devices",
+      "slug": "orangepi-zero2",
+      "title": "specs-orangepi-zero2",
+      "summary": "Orange Pi Zero 2 (Allwinner H616) port; experimental, every H616 fact sourced but no physical board ever booted.",
+      "repo": "hugmesh-generator",
+      "path": "specs-orangepi-zero2/README.md",
+      "order": 13
+    },
+    {
+      "section": "devices",
+      "slug": "orangepi-zero2w",
+      "title": "specs-orangepi-zero2w",
+      "summary": "Orange Pi Zero 2W (Allwinner H618) port; experimental and pending hardware validation.",
+      "repo": "hugmesh-generator",
+      "path": "specs-orangepi-zero2w/README.md",
+      "order": 14
+    },
+    {
+      "section": "devices",
+      "slug": "orangepi-3-lts",
+      "title": "specs-orangepi3-lts \u2014 Orange Pi 3 LTS (Allwinner H6, arm64)",
+      "summary": "Orange Pi 3 LTS (Allwinner H6) port; experimental, with Ethernet and device-tree specifics still unverified.",
+      "repo": "hugmesh-generator",
+      "path": "specs-orangepi3-lts/README.md",
+      "order": 15
+    },
+    {
+      "section": "devices",
+      "slug": "orangepi-zero3",
+      "title": "specs-orangepi-zero3",
+      "summary": "Orange Pi Zero 3 (Allwinner H618) port; experimental and pending hardware validation.",
+      "repo": "hugmesh-generator",
+      "path": "specs-orangepi-zero3/README.md",
+      "order": 16
+    },
+    {
+      "section": "devices",
+      "slug": "standalone-desktop",
+      "title": "Hardened standalone NVIDIA desktop images",
+      "summary": "Hardened standalone NVIDIA desktop images that are neither mesh clients nor cluster nodes, with a normal local password login.",
+      "repo": "hugmesh-generator",
+      "path": "docs/STANDALONE-DESKTOP.md",
+      "order": 17
+    },
+    {
+      "section": "devices",
+      "slug": "mobile-device-management",
+      "title": "Mobile Device Management (MDM)",
+      "summary": "The phone onboarding form: GrapheneOS onto a USB-connected Pixel, attestation, Headwind MDM enroll, mesh enroll and device-registry ingest.",
+      "repo": "hugmesh-generator",
+      "path": "docs/MDM.md",
+      "order": 18
+    },
+    {
+      "section": "reference",
+      "slug": "keys-certs",
+      "title": "Certificates",
+      "summary": "Where to place certificates and keys referenced by provision.json so they land in the system trust store and /etc/ssl/keys.",
+      "repo": "hugmesh-generator",
+      "path": "keys-template/certs/README.md",
+      "order": 0
+    },
+    {
+      "section": "reference",
+      "slug": "vendored-mediapipe",
+      "title": "Self-hosted MediaPipe face-tracking assets",
+      "summary": "Why the MediaPipe face-tracking assets are self-hosted, so a strict-CSP deployment needs no third-party exceptions.",
+      "repo": "hugmesh-matrix-ui",
+      "path": "projects/matrix/src/assets/mediapipe/README.md",
+      "order": 1
+    },
+    {
+      "section": "reference",
+      "slug": "vendored-headwind",
+      "title": "Vendored Headwind (hmdm-docker) runtime files",
+      "summary": "Provenance note for vendored Headwind MDM runtime files pinned to a specific upstream Apache-2.0 commit.",
+      "repo": "hugmesh-generator",
+      "path": "specs/cluster/manifests/headwind/docker/README.md",
+      "order": 2
+    },
+    {
+      "section": "reference",
+      "slug": "gateway-docs-index",
+      "title": "Gateway docs index",
+      "summary": "Short index pointing into the gateway repo's docs tree, which serves as that repo's wiki.",
+      "repo": "hugmesh-gateway",
+      "path": "docs/README.md",
+      "order": 3
+    },
+    {
+      "section": "reference",
+      "slug": "biome-texture-licenses",
+      "title": "Texture Licenses",
+      "summary": "Attribution record confirming every biome texture came from ambientCG under CC0 with no attribution required.",
+      "repo": "hugmesh-games",
+      "path": "rpg-builder/src/main/resources/biome-assets/LICENSES.md",
+      "order": 4
+    },
+    {
+      "section": "reference",
+      "slug": "keys-ddns",
+      "title": "KEYS / ddns \u2014 go-live Dynamic-DNS token (OPT-IN)",
+      "summary": "The single opt-in dynamic-DNS update token the go-live wizard's DDNS driver consumes.",
+      "repo": "hugmesh-generator",
+      "path": "keys-template/ddns/README.md",
+      "order": 5
+    },
+    {
+      "section": "reference",
+      "slug": "vn-pack-provenance",
+      "title": "Vendored VN pack manifests \u2014 provenance",
+      "summary": "Provenance note recording that the vendored visual-novel pack manifests are byte-faithful copies from the character-studio repo.",
+      "repo": "hugmesh-character-forge-bff-api",
+      "path": "src/main/resources/vn/packs/PROVENANCE.md",
+      "order": 6
+    },
+    {
+      "section": "reference",
+      "slug": "keys-cloudflared",
+      "title": "KEYS / cloudflared \u2014 PROD go-live tunnel credentials (OPT-IN)",
+      "summary": "The opt-in Cloudflare Tunnel credential for a prod image's public edge; absent means the tunnel stays down harmlessly.",
+      "repo": "hugmesh-generator",
+      "path": "keys-template/cloudflared/README.md",
+      "order": 7
+    },
+    {
+      "section": "reference",
+      "slug": "keys-kubernetes-pki",
+      "title": "Kubernetes PKI",
+      "summary": "Where to drop kubeadm PKI material so every control-plane and worker node trusts the same cluster CA.",
+      "repo": "hugmesh-generator",
+      "path": "keys-template/kubernetes/pki/README.md",
+      "order": 8
+    },
+    {
+      "section": "reference",
+      "slug": "branding-palette",
+      "title": "HugMesh branding \u2014 the two-tier palette rule",
+      "summary": "The canonical source of brand identity (favicon, wordmark, tab title) and the deliberate two-tier accent palette contract.",
+      "repo": "hugmesh-host-shell",
+      "path": "docs/BRANDING.md",
+      "order": 9
+    },
+    {
+      "section": "reference",
+      "slug": "keys-tailscale",
+      "title": "Tailscale auth key",
+      "summary": "Placing a tailscale auth key so a node joins the headscale mesh automatically at first boot.",
+      "repo": "hugmesh-generator",
+      "path": "keys-template/tailscale/README.md",
+      "order": 10
+    },
+    {
+      "section": "reference",
+      "slug": "keys-gitops",
+      "title": "KEYS/gitops \u2014 ArgoCD repository credential",
+      "summary": "The ArgoCD git credential for the private GitOps repo, carried offline so bootstrap registers it before ArgoCD clones.",
+      "repo": "hugmesh-generator",
+      "path": "keys-template/gitops/README.md",
+      "order": 11
+    },
+    {
+      "section": "reference",
+      "slug": "keys-device-registry",
+      "title": "Device-license registry",
+      "summary": "Per-node Layer-B device-license identity and verifying key material for admin-owned and mesh-extension nodes.",
+      "repo": "hugmesh-generator",
+      "path": "keys-template/device-registry/README.md",
+      "order": 12
+    },
+    {
+      "section": "reference",
+      "slug": "keys-mesh-trust",
+      "title": "Foreign-mesh trust store",
+      "summary": "The out-of-band custody root holding public verifying keys of foreign meshes whose code bases may be ingested; pubkeys only.",
+      "repo": "hugmesh-generator",
+      "path": "keys-template/mesh-trust/README.md",
+      "order": 13
+    },
+    {
+      "section": "reference",
+      "slug": "keys-ssh",
+      "title": "SSH keys \u2014 operator access over Tailscale",
+      "summary": "The operator SSH-over-Tailscale keypair and why the private half stays in keys-out and off the image.",
+      "repo": "hugmesh-generator",
+      "path": "keys-template/ssh/README.md",
+      "order": 14
+    },
+    {
+      "section": "reference",
+      "slug": "third-party-assets-godot",
+      "title": "Third-party assets \u2014 godot/character-forge",
+      "summary": "Aggregated attributions for every third-party file vendored into the character-forge Godot project.",
+      "repo": "hugmesh-character-forge-bff-api",
+      "path": "godot/character-forge/THIRD_PARTY_ASSETS.md",
+      "order": 15
+    },
+    {
+      "section": "reference",
+      "slug": "keys-vpn",
+      "title": "Egress VPN",
+      "summary": "Provider-downloaded VPN configs under key-USB custody used by nodes for outgoing egress on public-facing flows.",
+      "repo": "hugmesh-generator",
+      "path": "keys-template/vpn/README.md",
+      "order": 16
+    },
+    {
+      "section": "reference",
+      "slug": "keys-desktop-governance",
+      "title": "KEYS/desktop-governance/",
+      "summary": "Optional KEYS directory enabling desktop app governance on a client image without rebuilding it.",
+      "repo": "hugmesh-generator",
+      "path": "keys-template/desktop-governance/README.md",
+      "order": 17
+    },
+    {
+      "section": "reference",
+      "slug": "dnd-srd-catalog",
+      "title": "Open-Source D&D Content Catalog",
+      "summary": "The character-creator base library catalog sourced entirely from the D&D SRD 5.1 under CC-BY-4.0.",
+      "repo": "hugmesh-character-studio-ui",
+      "path": "docs/CATALOG-DND-SRD.md",
+      "order": 18
+    },
+    {
+      "section": "reference",
+      "slug": "character-forge-godot",
+      "title": "character-forge \u2014 the 3D character maker (Godot 4)",
+      "summary": "The Godot turntable studio building a stylized 3D character from a config dictionary and handing it to the host page over a JS bridge.",
+      "repo": "hugmesh-character-forge-bff-api",
+      "path": "godot/character-forge/README.md",
+      "order": 19
+    },
+    {
+      "section": "reference",
+      "slug": "e2e-sweep-matrix",
+      "title": "Final E2E sweep \u2014 the full control \u00d7 role \u00d7 layer matrix",
+      "summary": "The authoritative control x role x layer enumeration backing the scaled-concurrent final end-to-end sweep spec.",
+      "repo": "hugmesh-generator",
+      "path": "docs/FINAL-E2E-SWEEP-MATRIX.md",
+      "order": 20
+    },
+    {
+      "section": "reference",
+      "slug": "chibi-art-style-guide",
+      "title": "Chibi Art Style Guide \u2014 character-studio packs",
+      "summary": "The house art style for real part art: super-chibi flat-vector, distilled from published drawing guides onto the repo's part canvas.",
+      "repo": "hugmesh-character-studio-ui",
+      "path": "docs/ART-STYLE-CHIBI.md",
+      "order": 21
+    },
+    {
+      "section": "reference",
+      "slug": "third-party-assets-forge",
+      "title": "Third-party assets \u2014 hugmesh-character-forge-bff-api",
+      "summary": "Generated repo-wide aggregation of every third-party asset vendored into the character-forge repo; script-regenerated, never hand-edited.",
+      "repo": "hugmesh-character-forge-bff-api",
+      "path": "THIRD_PARTY_ASSETS.md",
+      "order": 22
+    },
+    {
+      "section": "reference",
+      "slug": "keys-vault",
+      "title": "KEYS/vault \u2014 cluster application secrets",
+      "summary": "Cluster application secrets for Casdoor, ClickHouse and Uptrace carried on the KEYS stick so a device boots with no Vault reachable.",
+      "repo": "hugmesh-generator",
+      "path": "keys-template/vault/README.md",
+      "order": 23
+    },
+    {
+      "section": "reference",
+      "slug": "image-inventory",
+      "title": "Image inventory \u2014 every advertised image x every build channel",
+      "summary": "Generated cross-product of every advertised image against every build channel (125 images, 62 with a channel gap); script-regenerated and CI-gated, never hand-edited.",
+      "repo": "hugmesh-generator",
+      "path": "docs/IMAGE-INVENTORY.md",
+      "order": 24
+    },
+    {
+      "section": "reference",
+      "slug": "build-matrix",
+      "title": "The build matrix \u2014 every option, every channel, verified",
+      "summary": "The canonical platform x role x env build matrix, four build channels, the all-options-in-all-menus rule and the matrix-check harness.",
+      "repo": "hugmesh-generator",
+      "path": "docs/BUILD-MATRIX.md",
+      "order": 25
+    },
+    {
+      "section": "reference",
+      "slug": "shared-binpkg-pools",
+      "title": "Shared prebuilt binary packages (binpkg pools)",
+      "summary": "The shared per-arch binpkg pools, stage3 seed cache and fleet distfiles plus the CHOST fingerprint guard; the speedup itself is still unproven.",
+      "repo": "hugmesh-generator",
+      "path": "docs/SHARED-BINPKG.md",
+      "order": 26
+    },
+    {
+      "section": "reference",
+      "slug": "package-flag-badges",
+      "title": "Package flag badges \u2014 the semantics the Studio must render",
+      "summary": "Ground truth for the Studio per-package flag display: every USE-flag state portage can render and the badge colour mapping.",
+      "repo": "hugmesh-generator",
+      "path": "docs/PACKAGE-FLAG-BADGES.md",
+      "order": 27
+    },
+    {
+      "section": "reference",
+      "slug": "admin-bff-docs-index",
+      "title": "admin-bff-api docs index",
+      "summary": "Index of the admin-bff docs tree, which serves as that repo's wiki since the platform does not use GitHub wikis.",
+      "group": "services",
+      "repo": "hugmesh-admin-bff-api",
+      "path": "docs/README.md",
+      "order": 28
+    },
+    {
+      "section": "reference",
+      "slug": "api-docs",
+      "title": "hugmesh-api-docs",
+      "summary": "An admin-gated OpenAPI documentation browser built as a custom navigator rather than a generic Swagger UI.",
+      "group": "services",
+      "repo": "hugmesh-api-docs",
+      "path": "README.md",
+      "order": 29
+    },
+    {
+      "section": "reference",
+      "slug": "character-forge-frontend",
+      "title": "character-forge frontend",
+      "summary": "The character-forge Angular native-federation remote, structurally cloned from character-studio and mounted at /character-forge.",
+      "group": "services",
+      "repo": "hugmesh-character-forge-bff-api",
+      "path": "frontend/README.md",
+      "order": 30
+    },
+    {
+      "section": "reference",
+      "slug": "login-ui",
+      "title": "hugmesh-login-ui",
+      "summary": "The login and account-security remote owning sign-in, two-stage registration, MFA and the ban and suspension surfaces.",
+      "group": "services",
+      "repo": "hugmesh-login-ui",
+      "path": "README.md",
+      "order": 31
+    },
+    {
+      "section": "reference",
+      "slug": "admin-bff-subsystems",
+      "title": "Additional subsystems",
+      "summary": "The admin-bff subsystems beyond the core control-plane surfaces documented in its README.",
+      "group": "services",
+      "repo": "hugmesh-admin-bff-api",
+      "path": "docs/SUBSYSTEMS.md",
+      "order": 32
+    },
+    {
+      "section": "reference",
+      "slug": "mesh-bff",
+      "title": "hugmesh-mesh-bff-api",
+      "summary": "The Meshtastic node-directory and caching BFF sitting alongside the meshbridge daemon and the user-BFF device registry.",
+      "group": "services",
+      "repo": "hugmesh-mesh-bff-api",
+      "path": "README.md",
+      "order": 33
+    },
+    {
+      "section": "reference",
+      "slug": "user-mesh-ui",
+      "title": "hugmesh-user-mesh-ui",
+      "summary": "The mesh dashboard remote giving every user a view onto their Meshtastic devices.",
+      "group": "services",
+      "repo": "hugmesh-user-mesh-ui",
+      "path": "README.md",
+      "order": 34
+    },
+    {
+      "section": "reference",
+      "slug": "character-studio-ui",
+      "title": "hugmesh-character-studio-ui",
+      "summary": "The browser-based layered-2D avatar creator where users pick a species and class, recolor regions, add expressions and export an avatar.",
+      "group": "services",
+      "repo": "hugmesh-character-studio-ui",
+      "path": "README.md",
+      "order": 35
+    },
+    {
+      "section": "reference",
+      "slug": "forum-api",
+      "title": "hugmesh-forum-api",
+      "summary": "The phpBB 3.3 headless extension registering the routes the forum BFF calls, since phpBB ships no first-class REST API.",
+      "group": "services",
+      "repo": "hugmesh-forum-api",
+      "path": "README.md",
+      "order": 36
+    },
+    {
+      "section": "reference",
+      "slug": "character-forge-bff",
+      "title": "hugmesh-character-forge-bff-api",
+      "summary": "The 3D character forge letting a user map an existing SVG visual-novel character onto a parameterized 3D character.",
+      "group": "services",
+      "repo": "hugmesh-character-forge-bff-api",
+      "path": "README.md",
+      "order": 37
+    },
+    {
+      "section": "reference",
+      "slug": "tube-bff",
+      "title": "hugmesh-tube-bff-api",
+      "summary": "The access-governance and control plane for LocalTube, the optional self-hosted personal video archival service.",
+      "group": "services",
+      "repo": "hugmesh-tube-bff-api",
+      "path": "README.md",
+      "order": 38
+    },
+    {
+      "section": "reference",
+      "slug": "owncast-ui",
+      "title": "hugmesh-owncast-ui",
+      "summary": "The Owncast management console remote, role-gated in the host menu and layered over the owncast BFF.",
+      "group": "services",
+      "repo": "hugmesh-owncast-ui",
+      "path": "README.md",
+      "order": 39
+    },
+    {
+      "section": "reference",
+      "slug": "owncast-bff",
+      "title": "hugmesh-owncast-bff-api",
+      "summary": "The BFF governing who may broadcast on the self-hosted Owncast live-video server as an optional platform service.",
+      "group": "services",
+      "repo": "hugmesh-owncast-bff-api",
+      "path": "README.md",
+      "order": 40
+    },
+    {
+      "section": "reference",
+      "slug": "wiki-ui",
+      "title": "hugmesh-wiki-ui",
+      "summary": "The wiki management remote mounted at /wiki and gated to users holding the wiki role.",
+      "group": "services",
+      "repo": "hugmesh-wiki-ui",
+      "path": "README.md",
+      "order": 41
+    },
+    {
+      "section": "reference",
+      "slug": "service-catalog-ui",
+      "title": "hugmesh-superadmin-service-catalog-ui",
+      "summary": "The superadmin Service Catalog console turning the admin-BFF catalog data layer into an operable surface.",
+      "group": "services",
+      "repo": "hugmesh-superadmin-service-catalog-ui",
+      "path": "README.md",
+      "order": 42
+    },
+    {
+      "section": "reference",
+      "slug": "mod-ui",
+      "title": "hugmesh-mod-ui",
+      "summary": "The moderator console shipping the moderation queue, findings triage, ban and domain-lock controls and audit trail.",
+      "group": "services",
+      "repo": "hugmesh-mod-ui",
+      "path": "README.md",
+      "order": 43
+    },
+    {
+      "section": "reference",
+      "slug": "tube-ui",
+      "title": "hugmesh-tube-ui",
+      "summary": "The LocalTube management console remote and the human-facing surface for the optional tube service.",
+      "group": "services",
+      "repo": "hugmesh-tube-ui",
+      "path": "README.md",
+      "order": 44
+    },
+    {
+      "section": "reference",
+      "slug": "forum-ui",
+      "title": "hugmesh-forum-ui",
+      "summary": "The forum Angular micro-frontend loaded at runtime by the host shell and backed by headless phpBB.",
+      "group": "services",
+      "repo": "hugmesh-forum-ui",
+      "path": "README.md",
+      "order": 45
+    },
+    {
+      "section": "reference",
+      "slug": "wiki-bff",
+      "title": "hugmesh-wiki-bff-api",
+      "summary": "The write-path BFF for the optional Wiki feature owning the writable Postgres content store and role-gated access.",
+      "group": "services",
+      "repo": "hugmesh-wiki-bff-api",
+      "path": "README.md",
+      "order": 46
+    },
+    {
+      "section": "reference",
+      "slug": "user-ui",
+      "title": "hugmesh-user-ui",
+      "summary": "The self-service user console where a signed-in member manages their profile, avatar and sandboxed rich mini-cards.",
+      "group": "services",
+      "repo": "hugmesh-user-ui",
+      "path": "README.md",
+      "order": 47
+    },
+    {
+      "section": "reference",
+      "slug": "admin-ui",
+      "title": "hugmesh-admin-ui",
+      "summary": "The admin console as an Angular native-federation remote mounted by the host shell at runtime.",
+      "group": "services",
+      "repo": "hugmesh-admin-ui",
+      "path": "README.md",
+      "order": 48
+    },
+    {
+      "section": "reference",
+      "slug": "mastodon-ui",
+      "title": "hugmesh-mastodon-ui",
+      "summary": "The Mastodon and Akkoma fediverse micro-frontend remote for the host shell.",
+      "group": "services",
+      "repo": "hugmesh-mastodon-ui",
+      "path": "README.md",
+      "order": 49
+    },
+    {
+      "section": "reference",
+      "slug": "actions",
+      "title": "hugmesh-actions",
+      "summary": "The scheduled service running cross-stack role-reconciliation jobs and hosting the registration org-admin grant endpoint.",
+      "group": "services",
+      "repo": "hugmesh-actions",
+      "path": "README.md",
+      "order": 50
+    },
+    {
+      "section": "reference",
+      "slug": "forum-bff",
+      "title": "hugmesh-forum-bff-api",
+      "summary": "The forum BFF wrapping a headless phpBB as the only path any client has to reach it, with no direct browser or gateway route.",
+      "group": "services",
+      "repo": "hugmesh-forum-bff-api",
+      "path": "README.md",
+      "order": 51
+    },
+    {
+      "section": "reference",
+      "slug": "mod-bff",
+      "title": "hugmesh-mod-bff-api",
+      "summary": "The moderator-scoped backend-for-frontend, the role analog of the admin BFF but with a deliberately narrow surface.",
+      "group": "services",
+      "repo": "hugmesh-mod-bff-api",
+      "path": "README.md",
+      "order": 52
+    },
+    {
+      "section": "reference",
+      "slug": "matrix-ui",
+      "title": "hugmesh-matrix-ui",
+      "summary": "The Matrix chat micro-frontend, an Element-like client over the CS API, plus a small demo host for local development.",
+      "group": "services",
+      "repo": "hugmesh-matrix-ui",
+      "path": "README.md",
+      "order": 53
+    },
+    {
+      "section": "reference",
+      "slug": "user-bff",
+      "title": "hugmesh-user-bff-api",
+      "summary": "The ROLE_USER-floor backend-for-frontend paired with the user UI, scaffolded from the admin-bff template.",
+      "group": "services",
+      "repo": "hugmesh-user-bff-api",
+      "path": "README.md",
+      "order": 54
+    },
+    {
+      "section": "reference",
+      "slug": "admin-bff",
+      "title": "hugmesh-admin-bff-api",
+      "summary": "The admin backend-for-frontend behind the admin console: a reactive WebFlux Casdoor resource server owning the platform control plane.",
+      "group": "services",
+      "repo": "hugmesh-admin-bff-api",
+      "path": "README.md",
+      "order": 55
+    }
+  ]
+}
