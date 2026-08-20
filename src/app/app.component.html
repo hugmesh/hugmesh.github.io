@@ -1,0 +1,36 @@
+<a href="#maincontent" class="skip" (click)="skipToMain($event)">Skip to main content</a>
+
+<hug-background #bg />
+
+<div class="bg-toggle-control">
+  <button
+    class="bg-toggle"
+    type="button"
+    data-testid="bg-toggle"
+    (click)="bg.toggle()"
+    [attr.aria-pressed]="bg.paused()"
+    [attr.aria-label]="bg.paused() ? 'Play background animation' : 'Pause background animation'"
+    aria-describedby="bg-toggle-help"
+  >
+    @if (bg.paused()) {
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5v14l11-7z" /></svg>
+    } @else {
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+      </svg>
+    }
+  </button>
+  <!-- Visible help that is ALWAYS in the accessibility tree via aria-describedby
+       and revealed on hover/focus for sighted readers — never tooltip-only. -->
+  <span id="bg-toggle-help" class="field-help bg-toggle__help" aria-live="polite">{{
+    bg.paused()
+      ? 'Background animation is paused. Activate to play it again.'
+      : 'Pause the moving background (helps reduce motion).'
+  }}</span>
+</div>
+
+<hug-header />
+
+<router-outlet />
+
+<hug-footer />

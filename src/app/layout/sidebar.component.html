@@ -1,0 +1,25 @@
+@if (index$ | async) {
+  <nav [attr.aria-label]="(meta()?.title ?? 'Section') + ' pages'">
+    <p class="rail-title">
+      <a [routerLink]="['/', section()]">{{ meta()?.title ?? section() }}</a>
+    </p>
+
+    @if (docs().length) {
+      <ul>
+        @for (doc of docs(); track doc.route) {
+          <li>
+            <a
+              [routerLink]="doc.route"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: true }"
+              [attr.data-testid]="'rail-' + doc.slug"
+              >{{ doc.title }}</a
+            >
+          </li>
+        }
+      </ul>
+    } @else {
+      <p class="field-help">This section has no published pages yet.</p>
+    }
+  </nav>
+}

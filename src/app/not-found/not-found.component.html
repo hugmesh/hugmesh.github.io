@@ -1,0 +1,26 @@
+<main id="maincontent" class="not-found">
+  <p class="code">404</p>
+  <h1>That page is not on this site</h1>
+  <p class="lede">
+    Nothing is published at <code>{{ attempted }}</code>. Documentation pages move as
+    the platform changes — the section indexes below are the reliable way in.
+  </p>
+
+  <ul class="sections">
+    @for (section of sections; track section.id) {
+      <li>
+        <a [routerLink]="['/', section.id]">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path fill="currentColor" [attr.d]="section.icon" />
+          </svg>
+          <span>
+            <strong>{{ section.title }}</strong>
+            <em>{{ section.blurb }}</em>
+          </span>
+        </a>
+      </li>
+    }
+  </ul>
+
+  <p><a routerLink="/search">Search the documentation</a> · <a routerLink="/">Back to the home page</a></p>
+</main>

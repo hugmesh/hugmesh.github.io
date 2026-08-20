@@ -1,0 +1,192 @@
+@use 'tokens' as t;
+
+:host {
+  display: block;
+  position: relative;
+  z-index: t.$z-content;
+}
+
+.downloads {
+  max-width: 58rem;
+  margin: 0 auto;
+  padding: 2rem clamp(0.75rem, 2vw, 1.5rem);
+}
+
+.lede {
+  max-width: 62ch;
+  color: var(--hug-text-muted);
+  font-size: 1.05rem;
+}
+
+.version {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  color: var(--hug-text-muted);
+  font-size: 0.9rem;
+}
+
+.state {
+  margin-top: 2rem;
+  color: var(--hug-text-muted);
+}
+
+.notice {
+  padding: 1rem 1.25rem;
+  background: var(--hug-bg-1);
+  border: 1px solid var(--hug-border);
+  border-radius: t.$radius-card;
+
+  h2 {
+    margin-top: 0;
+    font-size: 1.1rem;
+  }
+
+  p:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.platform {
+  margin-top: 2.5rem;
+
+  ul {
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li + li {
+    margin-top: 1rem;
+  }
+
+  li {
+    padding: 1rem 1.25rem;
+    background: rgba(t.$black, 0.72);
+    border: 1px solid var(--hug-border);
+    border-radius: t.$radius-card;
+  }
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+
+  h3 {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+}
+
+.btn {
+  padding: 0.55rem 1.2rem;
+  background: var(--hug-accent);
+  border-radius: 999px;
+  color: #ffffff; // 5.1:1 on --hug-accent — AA
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.notes {
+  margin: 0.6rem 0 0.9rem;
+  color: var(--hug-text-muted);
+  font-size: 0.9rem;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.25rem 1rem;
+  margin: 0;
+  font-size: 0.85rem;
+
+  dt {
+    color: var(--hug-text-muted);
+  }
+
+  dd {
+    min-width: 0;
+    margin: 0;
+  }
+
+  code {
+    font-family: t.$font-mono;
+    // A SHA-256 is 64 characters and must be allowed to wrap rather than force
+    // the whole card into a horizontal scroll on a phone.
+    overflow-wrap: anywhere;
+  }
+}
+
+.sha {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+
+  button {
+    flex: 0 0 auto;
+    padding: 0.15rem 0.55rem;
+    background: var(--hug-bg-2);
+    border: 1px solid var(--hug-border);
+    border-radius: t.$radius-sm;
+    color: var(--hug-text);
+    font-size: 0.75rem;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+      border-color: var(--hug-accent-soft);
+    }
+  }
+}
+
+.verify,
+.from-source {
+  margin-top: 2.5rem;
+
+  p {
+    max-width: 66ch;
+    color: var(--hug-text-muted);
+  }
+
+  code {
+    font-family: t.$font-mono;
+  }
+}
+
+// The two code samples on this page are hand-written markup rather than rendered
+// markdown, so they need the .code-block treatment restated here — .prose does
+// not reach outside a rendered document.
+.code-block {
+  position: relative;
+  max-width: 100%;
+  padding: 0.9rem 1rem;
+  overflow-x: auto;
+  background: var(--hug-bg-2);
+  border: 1px solid var(--hug-border);
+  border-radius: t.$radius-sm;
+  font-size: 0.85rem;
+  line-height: 1.55;
+
+  code {
+    display: block;
+    white-space: pre;
+  }
+
+  &[data-lang]::before {
+    content: attr(data-lang);
+    position: absolute;
+    top: 0;
+    inset-inline-end: 0;
+    padding: 0.1rem 0.5rem;
+    background: var(--hug-border);
+    border-bottom-left-radius: t.$radius-sm;
+    color: var(--hug-text-muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+}

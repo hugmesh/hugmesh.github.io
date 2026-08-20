@@ -1,0 +1,51 @@
+{
+  "name": "@hugmesh/docs-site",
+  "version": "1.0.0",
+  "description": "hugmesh.net \u2014 documentation, tutorials and developer guide for the HugMesh platform",
+  "private": true,
+  "scripts": {
+    "ng": "ng",
+    "refresh:content": "node scripts/sync-content.mjs",
+    "check:content": "node scripts/sync-content.mjs --check",
+    "build:content": "node scripts/build-content.mjs",
+    "prestart": "npm run build:content",
+    "start": "ng serve",
+    "prebuild": "npm run build:content",
+    "build": "ng build --configuration production",
+    "postbuild": "node scripts/spa-fallback.mjs",
+    "watch": "ng build --watch --configuration development",
+    "pretest": "npm run build:content",
+    "test": "ng test --watch=false",
+    "coverage": "ng test --watch=false --code-coverage --browsers=ChromeHeadlessCI"
+  },
+  "dependencies": {
+    "@angular/common": "^22.1.2",
+    "@angular/compiler": "^22.1.2",
+    "@angular/core": "^22.1.2",
+    "@angular/forms": "^22.1.2",
+    "@angular/platform-browser": "^22.1.2",
+    "@angular/router": "^22.1.2",
+    "rxjs": "^7.8.2",
+    "three": "^0.185.1",
+    "vanta": "^0.5.24",
+    "mermaid": "^11.6.0"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "^22.1.4",
+    "@angular/cli": "^22.1.4",
+    "@angular/compiler-cli": "^22.1.2",
+    "@types/jasmine": "^6.0.0",
+    "github-slugger": "^2.0.0",
+    "highlight.js": "^11.11.1",
+    "jasmine-core": "^7.0.1",
+    "karma": "^6.4.4",
+    "karma-chrome-launcher": "^3.2.0",
+    "karma-coverage": "^2.2.1",
+    "karma-jasmine": "^5.1.0",
+    "karma-jasmine-html-reporter": "^2.1.0",
+    "marked": "^15.0.7",
+    "marked-gfm-heading-id": "^4.1.1",
+    "sanitize-html": "^2.14.0",
+    "typescript": "^6.0.3"
+  }
+}

@@ -1,0 +1,137 @@
+<div class="doc-layout">
+  <aside class="rail" aria-label="Section navigation">
+    <hug-sidebar [section]="section()" />
+  </aside>
+
+  <main id="maincontent" class="doc">
+    @let doc = page();
+
+    @if (doc === undefined) {
+      <!-- Skeleton, not a spinner: it holds the layout so the page does not jump
+           when the content lands, and it carries a live region so a screen reader
+           is told something is happening rather than meeting silence. -->
+      <div class="loading" role="status" aria-live="polite">
+        <span class="sr">Loading documentation page…</span>
+        <div class="skeleton skeleton--title" aria-hidden="true"></div>
+        <div class="skeleton" aria-hidden="true"></div>
+        <div class="skeleton" aria-hidden="true"></div>
+        <div class="skeleton skeleton--short" aria-hidden="true"></div>
+      </div>
+    } @else if (doc === null) {
+      <div class="missing">
+        <h1>This page is not here</h1>
+        <p>
+          There is no published document at
+          <code>/{{ section() }}/{{ params().slug }}</code>. It may have been renamed,
+          merged into another page, or it may never have been published on this site.
+        </p>
+        <p>
+          <a [routerLink]="['/', section()]">Browse {{ sectionTitle() }}</a> ·
+          <a routerLink="/search">search the documentation</a>
+        </p>
+      </div>
+    } @else {
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <ol>
+          <li><a routerLink="/">Docs</a></li>
+          <li><a [routerLink]="['/', doc.section]">{{ sectionTitle() }}</a></li>
+          <li aria-current="page">{{ doc.title }}</li>
+        </ol>
+      </nav>
+
+      <header class="doc-head">
+        <h1>{{ doc.title }}</h1>
+        <p class="meta">
+          <span>{{ doc.readingMinutes }} min read</span>
+          @if (doc.source; as src) {
+            <span aria-hidden="true">·</span>
+            <span class="provenance">
+              from
+              @if (src.url) {
+                <a [href]="src.url" target="_blank" rel="noopener noreferrer"
+                  >{{ src.repo }}/{{ src.path }}</a
+                >
+              } @else {
+                <code>{{ src.repo }}/{{ src.path }}</code>
+              }
+            </span>
+          }
+        </p>
+      </header>
+
+      @if (doc.toc.length > 2) {
+        <!-- The contents list exists twice in the DOM: inline here for narrow
+             screens, and as the right-hand rail below for wide ones. Exactly one
+             is ever `display: none`, and display:none removes an element from the
+             accessibility tree as well as the layout — so a screen reader still
+             only ever walks ONE copy of these headings, never both. -->
+        <details class="toc-inline">
+          <summary>On this page</summary>
+          <ul>
+            @for (item of doc.toc; track item.id) {
+              <li [class.sub]="item.level === 3">
+                <a [href]="'#' + item.id">{{ item.text }}</a>
+              </li>
+            }
+          </ul>
+        </details>
+      }
+
+      @if (mermaidFailed()) {
+        <p class="notice" role="status">
+          A diagram on this page could not be rendered, so its source is shown as a
+          code block below.
+        </p>
+      }
+
+      <article class="prose" [innerHTML]="body()"></article>
+
+      @let sib = siblings();
+      @if (sib.prev || sib.next) {
+        <nav class="pager" aria-label="Previous and next page">
+          @if (sib.prev; as prev) {
+            <a class="pager-link prev" [routerLink]="prev.route">
+              <span class="pager-dir">← Previous</span>
+              <span class="pager-title">{{ prev.title }}</span>
+            </a>
+          } @else {
+            <span></span>
+          }
+          @if (sib.next; as next) {
+            <a class="pager-link next" [routerLink]="next.route">
+              <span class="pager-dir">Next →</span>
+              <span class="pager-title">{{ next.title }}</span>
+            </a>
+          }
+        </nav>
+      }
+
+      @if (doc.source; as src) {
+        <p class="source-note field-help">
+          This page is generated from
+          @if (src.url) {
+            <a [href]="src.url" target="_blank" rel="noopener noreferrer"
+              >{{ src.repo }}/{{ src.path }}</a
+            >
+          } @else {
+            <code>{{ src.repo }}/{{ src.path }}</code>
+          }
+          — that file is the source of truth, and corrections belong there rather than
+          here, because this site re-renders from it.
+        </p>
+      }
+    }
+  </main>
+
+  @let loaded = page();
+  @if (loaded && loaded.toc.length > 2) {
+    <aside class="toc" aria-label="On this page">
+      <p class="toc-title">On this page</p>
+      <ul>
+        @for (item of loaded.toc; track item.id) {
+          <li [class.sub]="item.level === 3"><a [href]="'#' + item.id">{{ item.text }}</a></li>
+        }
+      </ul>
+    </aside>
+  }
+</div>

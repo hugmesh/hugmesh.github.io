@@ -1,0 +1,68 @@
+# Pre-merge gate for the documentation site: it must build, and its tests must pass.
+#
+# Separate from pages.yml on purpose. This one runs on pull requests and never
+# deploys or needs Pages permissions; pages.yml deploys and never gates. Merging them
+# would mean granting `pages: write` to a workflow that runs on untrusted pull-request
+# branches.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Render the content payload
+        # Fails loudly if docs.manifest.json lists a page whose Markdown is missing
+        # from content/, or if a section id in the manifest is not one the router
+        # knows — both of which would otherwise ship as an empty page.
+        run: npm run build:content
+
+      - name: Unit tests
+        # Chrome comes preinstalled on ubuntu-latest; ChromeHeadlessCI adds
+        # --no-sandbox, which a container runner needs.
+        run: npm test
+
+      - name: Production build
+        run: npm run build
+
+      - name: Report the payload
+        if: always()
+        run: |
+          {
+            echo '## Documentation payload'
+            echo
+            if [ -f dist/browser/assets/content/index.json ]; then
+              node -e "
+                const i = require('./dist/browser/assets/content/index.json');
+                console.log('| Section | Pages |');
+                console.log('|---|---:|');
+                for (const s of i.sections) console.log(\`| \${s.title} | \${s.docs.length} |\`);
+                console.log(\`| **Total** | **\${i.totals.pages}** |\`);
+              "
+            else
+              echo '_The build produced no content index._'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

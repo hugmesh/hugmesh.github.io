@@ -1,0 +1,69 @@
+// ── HugMesh design tokens ────────────────────────────────────────────────────
+// Same palette and scale as hugmesh-host-shell's src/styles/_tokens.scss, so the
+// documentation site and the platform shell read as one product. Values that
+// differ are marked DOCS: and exist because long-form reading has needs the
+// application chrome does not (a measure limit, a denser type scale, a code
+// surface).
+
+$black:    #0a0a0a;
+$charcoal: #111111;
+$surface:  #1c1c1c;
+$mid:      #3a3a3a;
+$muted:    #777777;
+$light:    #bbbbbb;
+$offwhite: #e8e8e8;
+
+$neon:        #ffd700;
+$neon-bright: #ffe566;
+$neon-dim:    #cc9900;
+
+$pastel-rose:     #ffc8dd;
+$pastel-lavender: #d0b4f5;
+$pastel-sky:      #bde0fe;
+$pastel-mint:     #caffbf;
+$pastel-lemon:    #fdffb6;
+$pastel-peach:    #ffd6a5;
+
+$font-sans:  Arial, Helvetica, sans-serif;
+$font-mono:  ui-monospace, 'Cascadia Mono', 'Courier New', monospace;
+$font-fancy: $font-sans;
+
+$radius-sm:   0.5rem;
+$radius-md:   0.75rem;
+$radius-lg:   1.5rem;
+$radius-card: $radius-md;
+$radius-page: $radius-lg;
+
+$opacity-ghost:  0.05;
+$opacity-border: 0.18;
+$opacity-muted:  0.35;
+
+// Stacking order. $z-background MUST stay negative: <hug-background> is
+// position:fixed with no stacking-context ancestor, so at 0 it paints in step 8
+// of CSS 2.1 Appendix E — above the in-flow content of every non-positioned
+// sibling — while still being pointer-events:none, which makes the damage
+// invisible to click tests and contrast probes alike. Only a screenshot shows it.
+// (Inherited verbatim from the host shell, where that was learned the hard way.)
+$z-background:  -1;
+$z-content:      1;
+$z-nav:          5;
+$z-overlay:    200;
+$z-top:       9999;
+
+$transition-base: 0.2s ease;
+
+$bp-sm:  576px;
+$bp-md:  768px;
+$bp-lg:  992px;
+$bp-xl:  1200px;
+$bp-xxl: 1400px;
+
+// ── DOCS: reading layout ─────────────────────────────────────────────────────
+// $measure is the prose column cap. 68ch lands around 70-80 characters at the
+// body size below, which is the range typographic research keeps converging on
+// for sustained reading; the host shell has no equivalent because it lays out
+// controls, not paragraphs.
+$measure:        68ch;
+$sidebar-width:  17rem;
+$toc-width:      15rem;
+$header-height:  3.75rem;

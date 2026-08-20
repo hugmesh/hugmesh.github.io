@@ -1,0 +1,76 @@
+@use 'tokens' as t;
+
+:host {
+  display: block;
+  position: relative;
+  z-index: t.$z-content;
+  margin-top: 3rem;
+  padding: 2rem clamp(0.75rem, 2vw, 1.5rem) 1.25rem;
+  background: rgba(t.$black, 0.82);
+  border-top: 1px solid var(--hug-border);
+}
+
+.inner {
+  display: grid;
+  grid-template-columns: minmax(14rem, 2fr) repeat(2, minmax(9rem, 1fr));
+  gap: 2rem;
+  max-width: 92rem;
+  margin: 0 auto;
+}
+
+.wordmark {
+  margin: 0 0 0.4rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.brand-col .field-help {
+  max-width: 34ch;
+}
+
+.col-title {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hug-text-muted);
+}
+
+.col ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.col li + li {
+  margin-top: 0.3rem;
+}
+
+.col a {
+  color: var(--hug-text-muted);
+  font-size: 0.9rem;
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--hug-text);
+    text-decoration: underline;
+  }
+}
+
+.legal {
+  max-width: 92rem;
+  margin: 2rem auto 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--hug-border);
+  color: var(--hug-text-muted);
+  font-size: 0.8125rem;
+}
+
+@media (max-width: t.$bp-md) {
+  .inner {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}

@@ -1,0 +1,48 @@
+<main id="maincontent" class="section-page">
+  @let meta = this.meta();
+
+  <header class="head">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a routerLink="/">Docs</a></li>
+        <li aria-current="page">{{ meta?.title ?? id() }}</li>
+      </ol>
+    </nav>
+    <h1>
+      @if (meta) {
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path fill="currentColor" [attr.d]="meta.icon" />
+        </svg>
+      }
+      {{ meta?.title ?? id() }}
+    </h1>
+    @if (meta) {
+      <p class="blurb">{{ meta.blurb }}</p>
+    }
+  </header>
+
+  @let sec = section();
+  @if (sec && sec.docs.length) {
+    <ul class="cards">
+      @for (doc of sec.docs; track doc.route) {
+        <li>
+          <a class="card" [routerLink]="doc.route" [attr.data-testid]="'card-' + doc.slug">
+            <h2>{{ doc.title }}</h2>
+            <p class="summary">{{ doc.summary }}</p>
+            <p class="card-meta">{{ doc.readingMinutes }} min read</p>
+          </a>
+        </li>
+      }
+    </ul>
+  } @else if (indexLoaded()) {
+    <p class="empty">
+      Nothing is published in this section yet. The pages that will live here are
+      still in the code repositories — see
+      <a href="https://github.com/hugmesh" target="_blank" rel="noopener noreferrer"
+        >github.com/hugmesh</a
+      >.
+    </p>
+  } @else {
+    <p class="empty" role="status" aria-live="polite">Loading…</p>
+  }
+</main>
