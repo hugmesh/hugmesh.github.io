@@ -5,7 +5,7 @@ slug: "run-a-mesh"
 summary: "The primary new-operator runbook: prerequisites, clone, configure, build, keys and KEYS USB, flash, provision, cluster bring-up."
 source_repo: "hugmesh-generator"
 source_path: "docs/RUNNING.md"
-source_ref: "30d9edfc"
+source_ref: "c22c6140"
 ---
 
 A single end-to-end runbook for a **new operator**. It walks the whole pipeline
@@ -778,8 +778,11 @@ sections.
 
 ## 11. CI (GitLab) and the org mirror
 
-CI runs on **GitLab**, not GitHub Actions (Actions is billing-blocked org-wide —
-do **not** add `.github/workflows`). `.gitlab-ci.yml` runs on a privileged x86
+The image/ISO pipeline runs on **GitLab**, not GitHub Actions — because it needs the
+privileged in-cluster runner, not because Actions is unavailable. (This document used
+to say Actions was billing-blocked org-wide and that `.github/workflows` must not be
+added; that is stale — Actions is enabled, and two narrow Studio workflows now live in
+`.github/workflows/`. See the CI note in the README.) `.gitlab-ci.yml` runs on a privileged x86
 runner: it builds the role ISOs + container images and delivers the ISOs as
 generic-package release assets for the admin UI's download links. ISOs carry **no
 keys** — KEYS material always comes from the USB at first boot.

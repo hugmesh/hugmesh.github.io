@@ -5,6 +5,48 @@
   },
   "docs": [
     {
+      "section": "operations",
+      "slug": "resource-limits",
+      "title": "Resource limits \u2014 CPU, memory and GPU",
+      "summary": "Capping what HugMesh may use while it runs in the background: the five lanes, the automatic formula, and why turning it off restores byte-identical commands.",
+      "order": -50,
+      "repo": "hugmesh-generator",
+      "path": "docs/RESOURCE-LIMITS.md"
+    },
+    {
+      "section": "studio",
+      "slug": "installers",
+      "title": "Studio installers \u2014 Windows MSI and Linux Flatpak",
+      "summary": "What the installers package, what they still need from the host, and how a release is cut.",
+      "order": -50,
+      "repo": "hugmesh-generator",
+      "path": "docs/STUDIO-INSTALLERS.md"
+    },
+    {
+      "section": "tutorials",
+      "slug": "start-here",
+      "title": "Start here \u2014 the tutorial track",
+      "summary": "An ordered path from installing the Studio to a branded, federated mesh serving its own domain. Each step ends with something that works.",
+      "authored": "site",
+      "order": -100
+    },
+    {
+      "section": "developer-guide",
+      "slug": "expanding-the-mesh",
+      "title": "Expanding the mesh with ArgoCD",
+      "summary": "How a new service reaches a running HugMesh cluster: the two GitOps lanes, the app-of-apps layout, the service-catalog ApplicationSet, and the five things that must move together.",
+      "authored": "site",
+      "order": -100
+    },
+    {
+      "section": "troubleshooting",
+      "slug": "build-failures",
+      "title": "Troubleshooting builds",
+      "summary": "A symptom-first index of real HugMesh build failures \u2014 the exact error text, what actually caused it, and the fix.",
+      "authored": "site",
+      "order": -100
+    },
+    {
       "section": "overview",
       "slug": "what-is-hugmesh",
       "title": "HugMesh",

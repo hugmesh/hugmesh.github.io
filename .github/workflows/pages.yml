@@ -48,14 +48,23 @@ jobs:
 
       - run: npm ci
 
-      - name: Check the vendored content is current
-        # ADVISORY HERE, blocking nowhere. This compares content/ against the sibling
-        # code repositories, which a Pages runner has neither checked out nor any
-        # credential for — every hugmesh-* repo is PRIVATE. With no source reachable
-        # the script reports "unreachable" and exits 0, so this step is a placeholder
-        # that becomes meaningful the day the repos are public. The REAL guard is the
-        # same command run by a maintainer before committing (npm run check:content),
-        # documented in the README.
+      - name: Verify content integrity
+        # BLOCKING, and it means something on a bare runner: it verifies every file
+        # under content/ against content/.sync.lock.json — no network, no sibling
+        # checkouts, no credential. It fails if a vendored document was hand-edited,
+        # if an unlisted file appeared under content/, if the lock is missing or
+        # covers nothing, or if a page the manifest promises is absent. Every one of
+        # those is a failure rather than a skip: a gate that can report "nothing to
+        # check" and still pass is not a gate.
+        run: npm run check:integrity
+
+      - name: Check the vendored content against upstream
+        # ADVISORY, and it can only ever be. This compares content/ against sibling
+        # code repositories that are PRIVATE and not checked out here, so it reports
+        # "unreachable" and exits 0 on this runner. It is kept because it becomes
+        # meaningful the day the repositories are public, and because the same
+        # command is the maintainer's pre-commit check. The integrity gate above is
+        # what actually protects the site.
         run: npm run check:content
         continue-on-error: true
 

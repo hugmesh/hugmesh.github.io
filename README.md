@@ -36,17 +36,42 @@ docs/DEVOPS.md          ──►   content/developer-guide/….md  ──►  /
 The site build reads **only** the committed `content/` tree, so a Pages build needs no
 access to any other repository.
 
-### Keeping content current
+### Two different checks, for two different questions
+
+|  | Question | Needs the network? | In CI |
+|---|---|---|---|
+| `npm run check:integrity` | Has a vendored document been **hand-edited**? | no | **blocking** |
+| `npm run check:content` | Has **upstream moved on** since we synced? | yes | advisory |
+
+**`check:integrity`** verifies every file under `content/` against
+`content/.sync.lock.json` — a `sha256` per document, written by a full
+`refresh:content`. It needs no checkouts and no credential, so it is a real gate on a
+bare Pages runner. It fails when a vendored document was edited here, when an unlisted
+file appears under `content/`, when the lock is missing or covers nothing, and when a
+page the manifest promises is absent. **Every one of those is a failure, not a skip** —
+a gate that can report "nothing to check" and still pass is not a gate.
+
+Editing a vendored `.md` here is the failure it exists to catch: the next
+`refresh:content` reverts your edit, or it survives and the published page no longer
+matches the code it documents. Edit the **source repository** instead.
+
+**`check:content`** compares against the sibling code repositories, so it can only run
+where those are checked out. Run it before you commit. It compares bodies, not whole
+files, so an upstream commit that did not change the prose is not reported as drift.
+In `pages.yml` it is advisory — a Pages runner has neither the checkouts nor a
+credential for the private repositories, so it reports "unreachable" and exits 0
+there, and becomes meaningful the day the repositories are public.
 
 ```bash
+npm run check:integrity   # offline; the blocking gate
 npm run check:content     # exits 1 and lists what is stale
-npm run refresh:content   # pull the current text from the code repos
+npm run refresh:content   # pull the current text, and rewrite the lock
 ```
 
-Run `check:content` before you commit. It compares bodies, not whole files, so an
-upstream commit that did not change the prose is not reported as drift. The same
-command runs in `pages.yml`, where it is advisory only — a Pages runner has no
-checkout of, and no credential for, the private repositories.
+Only a **full, fully-successful** `refresh:content` rewrites the lock. A `--only` run,
+or one where a source was unreachable, deliberately leaves it alone — otherwise a
+partial sync would narrow the lock to whatever it happened to look at, and the
+integrity check would quietly stop covering everything else.
 
 ## Local development
 

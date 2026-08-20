@@ -75,7 +75,7 @@ const HIGHLIGHT_ALIASES = new Map([
  * "## Overview" would otherwise get `overview` and `overview-1`, and the second
  * page's own anchor links would 404 against its own TOC).
  */
-function createRenderer({ routeFor, entry, warn }) {
+function createRenderer({ routeFor, isSiteRoute, entry, warn }) {
   const marked = new Marked({ gfm: true, breaks: false });
   // One slugger per PAGE, so two documents that both have an '## Overview' each
   // get `overview` — a shared counter would give the second `overview-1` and
@@ -123,7 +123,7 @@ function createRenderer({ routeFor, entry, warn }) {
 
       link({ href, title, tokens }) {
         const text = this.parser.parseInline(tokens);
-        const resolved = resolveLink(href, { routeFor, entry, warn });
+        const resolved = resolveLink(href, { routeFor, isSiteRoute, entry, warn });
 
         // No destination a visitor can actually reach: keep the words, drop the
         // link, and say why on hover. A link that 404s for everyone is worse
@@ -201,7 +201,7 @@ function escapeHtml(s) {
  *   /absolute/repo/path     -> GitHub blob URL
  *   https://…               -> untouched, flagged external
  */
-function resolveLink(href, { routeFor, entry, warn }) {
+function resolveLink(href, { routeFor, isSiteRoute, entry, warn }) {
   const raw = (href ?? '').trim();
   if (!raw) return { href: '#', external: false };
   if (raw.startsWith('#')) return { href: raw, external: false };
@@ -210,6 +210,15 @@ function resolveLink(href, { routeFor, entry, warn }) {
   }
 
   const [target, hash = ''] = raw.split('#');
+
+  // A root-relative link to a path this SITE serves is a site route, checked before
+  // anything repo-shaped. Without this, `/operations/resource-limits` in a page is
+  // read as a repo-absolute file path, found not to be a .md, and rendered as
+  // de-linked text — which is how every cross-reference in a site-authored page
+  // silently stopped being a link.
+  if (target.startsWith('/') && isSiteRoute(target)) {
+    return { href: raw, external: false };
+  }
   const suffix = hash ? `#${hash}` : '';
 
   // Resolve relative to the SOURCE file's directory inside its own repo, which
@@ -224,8 +233,14 @@ function resolveLink(href, { routeFor, entry, warn }) {
     if (route) return { href: `${route}${suffix}`, external: false };
   }
 
-  if (!entry.repo || !sourcesArePublic) {
-    warn(`unpublished target -> ${entry.repo ?? '?'}/${repoPath} (rendered as plain text)`);
+  if (!entry.repo) {
+    // A site-authored page has no upstream repo to fall back to, so a link that did
+    // not resolve above is simply broken. Loud, because nothing else will catch it.
+    warn(`BROKEN LINK -> ${raw} (site-authored page; not a route this site serves)`);
+    return { href: null, external: false, unpublished: raw };
+  }
+  if (!sourcesArePublic) {
+    warn(`unpublished target -> ${entry.repo}/${repoPath} (rendered as plain text)`);
     return { href: null, external: false, unpublished: `${entry.repo}/${repoPath}` };
   }
   return {
@@ -293,10 +308,21 @@ async function main() {
   );
   const routeFor = (repo, p) => routeIndex.get(`${repo}:${p}`) ?? null;
 
+  // Everything this site actually serves: every published document, every section
+  // index, and the handful of standalone pages the router declares itself.
+  const STANDALONE_ROUTES = ['/', '/search', '/downloads'];
+  const siteRoutes = new Set([
+    ...STANDALONE_ROUTES,
+    ...SECTIONS.map((s) => `/${s.id}`),
+    ...docs.map((d) => d.route),
+  ]);
+  const isSiteRoute = (p) => siteRoutes.has(p.replace(/\/$/, '') || '/');
+
   await rm(OUT, { recursive: true, force: true });
   await mkdir(OUT, { recursive: true });
 
   const warnings = [];
+  const broken = [];
   const pages = [];
   const searchIndex = [];
 
@@ -315,9 +341,12 @@ async function main() {
     }
 
     const { data, body } = parseFrontMatter(raw);
-    const warn = (msg) => warnings.push(`${entry.section}/${entry.slug}: ${msg}`);
+    const warn = (msg) => {
+      const line = `${entry.section}/${entry.slug}: ${msg}`;
+      (msg.startsWith('BROKEN LINK') ? broken : warnings).push(line);
+    };
 
-    const { marked, headings } = createRenderer({ routeFor, entry, warn });
+    const { marked, headings } = createRenderer({ routeFor, isSiteRoute, entry, warn });
     const rendered = marked.parse(body);
     const html = sanitizeHtml(rendered, SANITIZE);
 
@@ -415,6 +444,15 @@ async function main() {
   console.log(
     `\nrendered ${pages.length} pages across ${sections.length} sections -> ${path.relative(ROOT, OUT)} (${bytes} files)`,
   );
+
+  // FAIL, not warn. A site-authored page is written here, so a link that points at
+  // nothing this site serves is a mistake this repository can and should fix now —
+  // unlike a cross-reference into a private repo, which is a fact about the world.
+  if (broken.length) {
+    console.error(`\n${broken.length} broken link(s) in site-authored pages:`);
+    for (const b of broken) console.error(`  ${b}`);
+    throw new Error('site-authored pages must not link to routes that do not exist');
+  }
 }
 
 main().catch((err) => {

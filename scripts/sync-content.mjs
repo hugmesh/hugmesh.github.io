@@ -18,6 +18,7 @@
  *   node scripts/sync-content.mjs --only developer-guide/argocd-gitops
  */
 import { readFile, writeFile, mkdir, access } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import path from 'node:path';
@@ -28,6 +29,12 @@ import { parseFrontMatter, formatFrontMatter } from './lib/frontmatter.mjs';
 const run = promisify(execFile);
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ORG = 'hugmesh';
+
+/** The integrity record, written beside the content it describes. See
+ *  scripts/check-content-integrity.mjs for what reads it and why. */
+export const LOCK_PATH = path.join('content', '.sync.lock.json');
+
+const sha256 = (text) => createHash('sha256').update(text, 'utf8').digest('hex');
 
 const argv = process.argv.slice(2);
 const flag = (name) => argv.includes(`--${name}`);
@@ -91,6 +98,22 @@ function normaliseBody(text) {
   return `${body.trimEnd()}\n`;
 }
 
+/** Merge new records into the lock, preserving order and stamping the sync time. */
+async function writeLock(entries) {
+  const dest = path.join(ROOT, LOCK_PATH);
+  const body = {
+    // A human reading a diff of this file needs to know what it is for.
+    _comment:
+      'Integrity record for the vendored content/ tree, written by scripts/sync-content.mjs. ' +
+      'scripts/check-content-integrity.mjs verifies every file against it WITHOUT network ' +
+      'access, which is what makes hand-editing a vendored document a build failure rather ' +
+      'than silent drift. Do not edit by hand.',
+    syncedAt: new Date().toISOString(),
+    docs: entries.sort((a, b) => a.path.localeCompare(b.path)),
+  };
+  await writeFile(dest, `${JSON.stringify(body, null, 2)}\n`, 'utf8');
+}
+
 async function main() {
   const { docs } = await loadManifest(ROOT);
   const targets = docs.filter(
@@ -104,6 +127,7 @@ async function main() {
 
   const changed = [];
   const failed = [];
+  const lockEntries = [];
   let unchanged = 0;
 
   for (const entry of targets) {
@@ -133,6 +157,18 @@ async function main() {
     const sameBody =
       previous !== null && parseFrontMatter(previous).body === parseFrontMatter(next).body;
 
+    // The lock records what the file SHOULD hash to. Recorded for unchanged files
+    // too, or a partial sync would silently drop their entries and the integrity
+    // check would then have nothing to check them against.
+    const finalText = sameBody ? previous : next;
+    lockEntries.push({
+      path: entry.contentPath,
+      sourceRepo: entry.repo,
+      sourcePath: entry.path,
+      sourceRef: source.ref,
+      sha256: sha256(finalText),
+    });
+
     if (sameBody) {
       unchanged += 1;
       continue;
@@ -143,6 +179,20 @@ async function main() {
       await mkdir(path.dirname(dest), { recursive: true });
       await writeFile(dest, next, 'utf8');
     }
+  }
+
+  // Only a FULL, fully-successful sync may rewrite the lock. A --only run or a run
+  // with unreachable sources knows about a subset, and letting it write would delete
+  // the records for everything it did not look at — turning the integrity check into
+  // a check of whatever was synced last.
+  if (!CHECK && !ONLY && failed.length === 0 && lockEntries.length === targets.length) {
+    await writeLock(lockEntries);
+    console.log(`  lock   ${LOCK_PATH}  (${lockEntries.length} entries)`);
+  } else if (!CHECK) {
+    console.log(
+      `\n  lock   NOT rewritten — a partial or incomplete sync must not narrow it.` +
+        `\n         Run a full \`npm run refresh:content\` with every source reachable.`,
+    );
   }
 
   for (const { entry, reason } of failed) {
