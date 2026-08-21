@@ -43,6 +43,12 @@ const ORG_URL = 'https://github.com/hugmesh';
  * Rewriting somebody's deliberate link is a different thing from declining to
  * invent one, and those URLs come good the day a repo is made public.
  *
+ * ONE exception, in resolveLink: the `hugmesh-net` org slug. That promise --
+ * "it comes good when the repo opens" -- is what earns author links their
+ * pass-through, and `hugmesh-net` cannot keep it, because it is not a private
+ * account but no account at all. Those are rewritten to `hugmesh` and WARNED
+ * about, so the upstream typo stays visible instead of being laundered away.
+ *
  * Flip this to `true` (or set `meta.sourcesArePublic` in docs.manifest.json) once
  * the repos are public, and both behaviours become links again with no other
  * change.
@@ -206,6 +212,25 @@ function resolveLink(href, { routeFor, isSiteRoute, entry, warn }) {
   if (!raw) return { href: '#', external: false };
   if (raw.startsWith('#')) return { href: raw, external: false };
   if (/^[a-z][a-z0-9+.-]*:/i.test(raw)) {
+    // The one absolute-URL rewrite this build performs, and the reason it does not
+    // contradict "author links are left exactly as written" above.
+    //
+    // That rule rests on a promise: a github.com/hugmesh/<repo> link is a 404 only
+    // because the repo is private, and it COMES GOOD the day it is opened. The
+    // `hugmesh-net` org makes no such promise -- it is not a private account, it is
+    // not an account at all (github.com/hugmesh-net => 404, github.com/hugmesh => 200),
+    // so those links can never come good and there is no author intent to preserve
+    // beyond "the HugMesh org". This site's own landing page was corrected for exactly
+    // this bug; the vendored copies still carry it.
+    //
+    // Rewritten HERE rather than in sync-content, so `content/` stays a faithful
+    // projection of the source and the defect keeps showing up in the warning below
+    // instead of being silently laundered out of existence upstream.
+    const fixed = raw.replace(/(https?:\/\/(?:www\.)?github\.com)\/hugmesh-net(?=$|[/#?])/gi, '$1/hugmesh');
+    if (fixed !== raw) {
+      warn(`dead org slug -> ${raw} (rewritten to ${fixed}; fix it upstream)`);
+      return { href: fixed, external: true };
+    }
     return { href: raw, external: !raw.startsWith('/') };
   }
 
@@ -323,6 +348,10 @@ async function main() {
 
   const warnings = [];
   const broken = [];
+  // Kept apart from `warnings`: these links were REWRITTEN to a working URL, not
+  // dropped to plain text. Counting them in the same bucket would both inflate the
+  // unpublished figure and describe the opposite of what happened to them.
+  const rewrites = [];
   const pages = [];
   const searchIndex = [];
 
@@ -343,7 +372,12 @@ async function main() {
     const { data, body } = parseFrontMatter(raw);
     const warn = (msg) => {
       const line = `${entry.section}/${entry.slug}: ${msg}`;
-      (msg.startsWith('BROKEN LINK') ? broken : warnings).push(line);
+      const bucket = msg.startsWith('BROKEN LINK')
+        ? broken
+        : msg.startsWith('dead org slug')
+          ? rewrites
+          : warnings;
+      bucket.push(line);
     };
 
     const { marked, headings } = createRenderer({ routeFor, isSiteRoute, entry, warn });
@@ -431,6 +465,17 @@ async function main() {
   const bytes = (await readdir(OUT, { recursive: true, withFileTypes: true })).filter((d) =>
     d.isFile(),
   ).length;
+
+  if (rewrites.length) {
+    const urls = new Set(rewrites.map((w) => w.split(' -> ')[1].split(' ')[0]));
+    console.warn(
+      `\n${rewrites.length} link(s) across ${urls.size} distinct URL(s) pointed at the ` +
+        'github.com/hugmesh-net org, which does not exist. Rewritten to github.com/hugmesh ' +
+        'for this build -- the typo is still upstream and should be fixed there.',
+    );
+    for (const u of [...urls].slice(0, 10)) console.warn(`  ${u}`);
+    if (urls.size > 10) console.warn(`  … and ${urls.size - 10} more`);
+  }
 
   if (warnings.length) {
     const unique = new Set(warnings.map((w) => w.split(' -> ')[1]));
