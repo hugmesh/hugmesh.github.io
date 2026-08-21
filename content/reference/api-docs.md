@@ -1,11 +1,11 @@
 ---
-title: "Api docs"
+title: "hugmesh-api-docs"
 section: "reference"
 slug: "api-docs"
 summary: "An admin-gated OpenAPI documentation browser built as a custom navigator rather than a generic Swagger UI."
 source_repo: "hugmesh-api-docs"
 source_path: "README.md"
-source_ref: "424af21"
+source_ref: "hugmesh/hugmesh-api-docs@HEAD"
 ---
 
 An admin-gated API documentation browser for [HugMesh](https://github.com/hugmesh-net) — an
@@ -23,6 +23,9 @@ Angular native-federation remote built on a custom OpenAPI navigator (not a gene
 - **Spec extensions.** Services can annotate their OpenAPI documents with a small set of
   `x-hugmesh` extension keys (sample requests/responses, streaming hints, upload field names) to
   improve how the navigator renders them.
+- **Session-based auth.** Live requests ride the platform's httpOnly `bff_` session cookie — the
+  gateway exchanges it for the upstream bearer server-side, so the browser never holds a token. A
+  manual bearer override is available for probing another environment.
 - **No backend of its own.** Pure frontend viewer — no database, no identity-provider client, no
   tenant logic. Authorization for the live calls it makes is enforced entirely by the services it
   browses.
@@ -51,8 +54,6 @@ and a `/healthz` endpoint for readiness probes.
 
 ## Roadmap
 
-- Wire the live "Try it out" bearer override to ride on the same cookie-based session the rest of
-  the platform uses, rather than relying on a manually pasted token.
 - Bring this remote's build pipeline in line with the platform's standard security-scanning stages
   (currently build-only).
 - Grow the set of committed example specs as backend services publish real OpenAPI captures.

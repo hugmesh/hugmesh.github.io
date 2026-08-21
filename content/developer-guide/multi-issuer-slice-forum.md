@@ -5,12 +5,12 @@ slug: "multi-issuer-slice-forum"
 summary: "The forum-BFF replica of the multi-issuer security-slice pattern."
 source_repo: "hugmesh-forum-bff-api"
 source_path: "docs/testing/MULTI-ISSUER-SLICE.md"
-source_ref: "d99eafc"
+source_ref: "hugmesh/hugmesh-forum-bff-api@HEAD"
 ---
 
 This repo follows the same **multi-issuer security-slice pattern** used across the
 HugMesh BFF family (originally established in
-[`hugmesh-gateway`](https://github.com/hugmesh-net/hugmesh-gateway)'s own
+[`hugmesh-gateway`](https://github.com/hugmesh/hugmesh-gateway)'s own
 `docs/testing/MULTI-ISSUER-SLICE.md`). The slice proves this WebFlux OAuth2 resource
 server correctly handles **per-brand (multi-issuer) Casdoor tokens**, with the
 security property that matters most: an **unknown issuer fails closed (401)**, and a

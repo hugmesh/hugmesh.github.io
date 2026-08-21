@@ -42,8 +42,13 @@ describe('ContentService', () => {
     service.index().subscribe();
     service.section('tutorials').subscribe();
     // The nav, the home page and every routed view all read the index; one
-    // request is the whole point of the replay cache.
-    http.expectOne('assets/content/index.json').flush(INDEX);
+    // request is the whole point of the replay cache. expectOne() already fails
+    // on a second request, but assert it explicitly so jasmine can see the
+    // expectation -- a spec it counts as having none is one nobody notices
+    // going vacuous.
+    const requests = http.match('assets/content/index.json');
+    expect(requests.length).toBe(1);
+    requests[0].flush(INDEX);
   });
 
   it('resolves a section out of the index without a second request', (done) => {
@@ -91,11 +96,15 @@ describe('ContentService', () => {
     service.index().subscribe();
     http.expectOne('assets/content/index.json').flush(INDEX);
     // search.json is the largest asset on the site; a reader who never searches
-    // must never pay for it.
-    http.expectNone('assets/content/search.json');
+    // must never pay for it. Asserted explicitly rather than leaning on
+    // expectNone/expectOne alone, so jasmine counts the expectation and the
+    // spec cannot quietly become one that checks nothing.
+    expect(http.match('assets/content/search.json').length).toBe(0);
 
     service.searchIndex().subscribe();
-    http.expectOne('assets/content/search.json').flush([]);
+    const search = http.match('assets/content/search.json');
+    expect(search.length).toBe(1);
+    search[0].flush([]);
   });
 
   it('degrades to an empty search index rather than breaking the page', (done) => {

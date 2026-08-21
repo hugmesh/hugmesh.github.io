@@ -5,7 +5,7 @@ slug: "archetype-angular-mfe"
 summary: "The archetype rendering any Angular native-federation micro-frontend from one recipe parameterized by a per-repo identity row."
 source_repo: "hugmesh-generator"
 source_path: "templates/archetypes/angular-mfe/README.md"
-source_ref: "4e77ec20"
+source_ref: "hugmesh/hugmesh-generator@HEAD"
 ---
 
 Renders any HugMesh **Angular native-federation micro-frontend** from ONE
@@ -25,14 +25,14 @@ wiki / forum-ui + api-docs + character-studio-ui + superadmin-service-catalog-ui
   - `package.json`: npm scope only (`@hugmesh/<slug>` -> `@<NPM_SCOPE>/<slug>`);
     the `<slug>` == `ng build <slug>` target is preserved.
   - `src/index.html`: tab title leading brand word (`BRAND_TITLE`) + per-UI
-    `TITLE_WORD`; the `<snap-<slug>-root>` bootstrap selector is left literal.
+    `TITLE_WORD`; the `<hug-<slug>-root>` bootstrap selector is left literal.
   - `.gitlab-ci.yml`: only the `include: project:` org/group.
 - **Left literal (repo identity):** the `<slug>` npm segment / ng project name /
   root selector, `package.json` description.
 
 ## Per-repo identity (repos[].identity)
 
-- `app_slug` — npm segment / ng target / `<snap-<slug>-root>` selector word.
+- `app_slug` — npm segment / ng target / `<hug-<slug>-root>` selector word.
 - `title_word` — per-UI tab-title role differentiator.
 
 ## Files
@@ -42,7 +42,7 @@ wiki / forum-ui + api-docs + character-studio-ui + superadmin-service-catalog-ui
   native-federation remote in the house shape (user-ui-pinned dep majors,
   `hugmeshRemote` federation config exposing `./routes`, standalone+signals
   component with `[textContent]` bindings — Angular's double-curly interpolation
-  would trip the renderer's fail-closed brand-token scan — `--sd-*` palette
+  would trip the renderer's fail-closed brand-token scan — `--hug-*` palette
   floor, CORS nginx.conf on 8080, nginx-unprivileged Dockerfile, fleet CI,
   karma/jasmine spec). `npm ci && npm run build` in a rendered tree is a real
   `@angular-architects/native-federation:build` (registry access required — the

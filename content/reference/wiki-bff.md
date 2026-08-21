@@ -1,15 +1,15 @@
 ---
-title: "Wiki bff"
+title: "hugmesh-wiki-bff-api"
 section: "reference"
 slug: "wiki-bff"
 summary: "The write-path BFF for the optional Wiki feature owning the writable Postgres content store and role-gated access."
 source_repo: "hugmesh-wiki-bff-api"
 source_path: "README.md"
-source_ref: "094d72a"
+source_ref: "hugmesh/hugmesh-wiki-bff-api@HEAD"
 ---
 
 `hugmesh-wiki-bff-api` is the **write-path backend-for-frontend (BFF)** for the optional
-Wiki feature of the [HugMesh](https://github.com/hugmesh-net) platform. It owns the
+Wiki feature of the [HugMesh](https://github.com/hugmesh) platform. It owns the
 **writable Postgres content store** that wiki authors write to, enforces role-gated read
 and edit access, and renders Markdown to HTML at save time. That rendered HTML is the
 **source of truth** that a (planned) Tier 2 ZIM rebuild job packages for `kiwix-serve` to
@@ -17,11 +17,11 @@ serve to readers — see [Three-tier architecture](#three-tier-architecture-writ
 below.
 
 It follows the same conventions as the platform's other backend-for-frontend services —
-scaffolded from [`hugmesh-forum-bff-api`](https://github.com/hugmesh-net/hugmesh-forum-bff-api)
+scaffolded from [`hugmesh-forum-bff-api`](https://github.com/hugmesh/hugmesh-forum-bff-api)
 (Java 25 / Spring WebFlux / R2DBC Postgres / Liquibase / Casdoor JWT resource server / the
 canonical `CasdoorAuthorities` converter + `DomainRegistry`/`DomainScope`/`Roles`
 multi-brand spine), and built GraalVM-native capable. The security/tenancy spine is now
-sourced from the shared [`hugmesh-commons`](https://github.com/hugmesh-net/hugmesh-commons)
+sourced from the shared [`hugmesh-commons`](https://github.com/hugmesh/hugmesh-commons)
 library — see [Shared commons library](#shared-commons-library-hugmesh-parent--hugmesh-commons)
 — while the per-repo `PrincipalDomain` scope resolver stays local to this service.
 
@@ -34,7 +34,7 @@ library — see [Shared commons library](#shared-commons-library-hugmesh-parent-
 
 - **Dependency baseline:** Spring Boot **4.0.7** / Spring Cloud **2025.1.2**, **Java 25
   LTS** (`eclipse-temurin:25`), on the shared Maven artifacts
-  `net.hugmesh:hugmesh-parent:2.8.0` ([parent POM](https://github.com/hugmesh-net/hugmesh-parent))
+  `net.hugmesh:hugmesh-parent:2.8.0` ([parent POM](https://github.com/hugmesh/hugmesh-parent))
   and `net.hugmesh:hugmesh-commons:2.1.0` (shared security/tenancy,
   `net.hugmesh.commons.*`), with Testcontainers **2.0.5** in the test path. The full
   suite is green: **239/239 tests**, run against a real Postgres via Testcontainers rather
@@ -45,7 +45,7 @@ library — see [Shared commons library](#shared-commons-library-hugmesh-parent-
   never sees a JWT. The **fe-gateway** runs a pre-security exchange filter that swaps the
   `bff_` session for the internal custody JWT **before** this service sees the request, so
   this resource server's JWT validation and role gate run exactly as documented below. The
-  shared [`hugmesh-auth-core`](https://github.com/hugmesh-net/hugmesh-auth-core) library
+  shared [`hugmesh-auth-core`](https://github.com/hugmesh/hugmesh-auth-core) library
   (account/session/MFA/Casdoor-admin) is consumed only by `user-bff` and `admin-bff` — it
   does not touch this repo, and login/account/session logic never lives here.
 - **Authorization is gateway-fronted + locally re-checked.** The gateway enforces the
@@ -144,7 +144,7 @@ audit trail are all on `main`.
 - **`WikiAccessController` + `WikiAccessGuard`** — the grant/timeout/ban overlay, enforced
   at request time on every read.
 - **OpenAPI / springdoc** at `/v3/api-docs` — the source for the paired
-  [`hugmesh-wiki-ui`](https://github.com/hugmesh-net/hugmesh-wiki-ui) (✅ shipped:
+  [`hugmesh-wiki-ui`](https://github.com/hugmesh/hugmesh-wiki-ui) (✅ shipped:
   ng-openapi-gen typed client, Playwright/BDD e2e harness, Dockerfile+nginx, CI pipeline;
   its federation contract is wired to this BFF's `/v3/api-docs`).
 
@@ -342,7 +342,7 @@ flowchart LR
   boot from external storage.
 - **pentest:sca / pentest:dast** — each `needs: [test]` and run in parallel (not
   sequentially), via `extends:` from the centralized stage template in
-  [`hugmesh-generator`](https://github.com/hugmesh-net/hugmesh-generator)
+  [`hugmesh-generator`](https://github.com/hugmesh/hugmesh-generator)
   (`/tests/pentest/ci/pentest-stage.gitlab-ci.yml`). `.pentest-sca` runs OWASP
   Dependency-Check SCA, and `.pentest-dast-baseline` runs the shared `run-pentest.sh`
   harness (environment stand-up, persona-seeded authenticated ZAP baseline, custom
@@ -370,7 +370,7 @@ instance — with the real Liquibase changelog applied, so the schema seen by te
 production. A local Docker daemon (or a `TESTCONTAINERS_HOST_OVERRIDE`-reachable one) is
 required for the complete suite. On newer JDKs, build hosts need the surefire
 `-Dnet.bytebuddy.experimental=true` flag, which is already configured in
-[`hugmesh-parent`](https://github.com/hugmesh-net/hugmesh-parent)'s plugin management
+[`hugmesh-parent`](https://github.com/hugmesh/hugmesh-parent)'s plugin management
 (target is JDK 25).
 
 Tests follow the platform's standard categories:
@@ -418,7 +418,7 @@ tenancy code. There are two de-duplication moves:
    header policy) and `config.SecuritySliceSupport` for tests are also local.
 
    > Scope note: `hugmesh-commons` 2.1.0 carries shared **security/tenancy/web** only. The
-   > newer [`hugmesh-auth-core`](https://github.com/hugmesh-net/hugmesh-auth-core) library
+   > newer [`hugmesh-auth-core`](https://github.com/hugmesh/hugmesh-auth-core) library
    > (shared account/session/MFA/Casdoor-admin infra) is consumed only by `user-bff` and
    > `admin-bff` — this resource server does **not** depend on it and has no
    > account/session/login surface.
@@ -478,7 +478,7 @@ The items below are clearly marked future work. **None of this is shipped in thi
 - 🔭 **TIER 3 — `kiwix-serve` read path** (out of repo): mounts the PVC read-only and
   serves it (never the write path). Kiwix has no native auth, so the gateway is its
   authorization.
-- ✅ **[`hugmesh-wiki-ui`](https://github.com/hugmesh-net/hugmesh-wiki-ui)** (out of repo,
+- ✅ **[`hugmesh-wiki-ui`](https://github.com/hugmesh/hugmesh-wiki-ui)** (out of repo,
   shipped on main): the paired Angular client — ng-openapi-gen typed client generated from
   this BFF's `/v3/api-docs`, federation contract wired, Playwright/BDD e2e harness,
   Dockerfile+nginx, CI pipeline.

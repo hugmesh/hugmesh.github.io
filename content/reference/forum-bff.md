@@ -1,18 +1,18 @@
 ---
-title: "Forum bff"
+title: "hugmesh-forum-bff-api"
 section: "reference"
 slug: "forum-bff"
 summary: "The forum BFF wrapping a headless phpBB as the only path any client has to reach it, with no direct browser or gateway route."
 source_repo: "hugmesh-forum-bff-api"
 source_path: "README.md"
-source_ref: "d99eafc"
+source_ref: "hugmesh/hugmesh-forum-bff-api@HEAD"
 ---
 
-The Forum Backend-for-Frontend (BFF) for the [HugMesh](https://github.com/hugmesh-net)
+The Forum Backend-for-Frontend (BFF) for the [HugMesh](https://github.com/hugmesh)
 platform. It wraps a **headless phpBB** install and is the **only** path by which any
 client reaches phpBB — there is no direct browser route, no gateway route into phpBB,
 and no other service that calls it. It is paired 1:1 with
-[`hugmesh-forum-ui`](https://github.com/hugmesh-net/hugmesh-forum-ui), the Angular
+[`hugmesh-forum-ui`](https://github.com/hugmesh/hugmesh-forum-ui), the Angular
 native-federation remote served at the apex path `/social/forum`.
 
 **Stack:** Spring WebFlux + reactive `WebClient` (Mono/Flux; no blocking calls on the
@@ -55,7 +55,7 @@ chain, where each BFF owns exactly one product surface. This repo is the BFF for
 **forums**:
 
 - **Tier:** a per-surface BFF sitting behind
-  [`hugmesh-gateway`](https://github.com/hugmesh-net/hugmesh-gateway). It is the
+  [`hugmesh-gateway`](https://github.com/hugmesh/hugmesh-gateway). It is the
   **only** caller of the headless phpBB extension; no other service and no browser
   talks to phpBB directly.
 - **Runtime datastore:** a small Postgres database (three tables — a forum/role
@@ -63,26 +63,26 @@ chain, where each BFF owns exactly one product surface. This repo is the BFF for
   [Database schema](#database-schema)). All runtime access goes through R2DBC;
   Liquibase (over a JDBC datasource) owns the schema.
 - **Upstream:** the phpBB install and the
-  [`hugmesh-forum-api`](https://github.com/hugmesh-net/hugmesh-forum-api) extension
+  [`hugmesh-forum-api`](https://github.com/hugmesh/hugmesh-forum-api) extension
   run in their own dedicated, default-deny Kubernetes namespace, isolated from this
   BFF's own database namespace. phpBB has no gateway route of its own; this BFF is
   its sole upstream caller.
 - **Identity:** a Casdoor JWT OAuth2 resource server. `issuer-uri` defaults to
   `https://id.hugmesh.net` (overridable via `CASDOOR_ISSUER_URI`).
 - **Sibling repos:** paired UI in
-  [`hugmesh-forum-ui`](https://github.com/hugmesh-net/hugmesh-forum-ui); administered
-  through [`hugmesh-admin-bff-api`](https://github.com/hugmesh-net/hugmesh-admin-bff-api);
+  [`hugmesh-forum-ui`](https://github.com/hugmesh/hugmesh-forum-ui); administered
+  through [`hugmesh-admin-bff-api`](https://github.com/hugmesh/hugmesh-admin-bff-api);
   shares its moderation-seam shape with
-  [`hugmesh-mod-bff-api`](https://github.com/hugmesh-net/hugmesh-mod-bff-api); forked
-  originally from [`hugmesh-user-bff-api`](https://github.com/hugmesh-net/hugmesh-user-bff-api)
+  [`hugmesh-mod-bff-api`](https://github.com/hugmesh/hugmesh-mod-bff-api); forked
+  originally from [`hugmesh-user-bff-api`](https://github.com/hugmesh/hugmesh-user-bff-api)
   (the `casdoorAuthoritiesConverter` pattern and the mTLS keystore setup are shared
   across the BFF family); cluster wiring lives in
-  [`hugmesh-generator`](https://github.com/hugmesh-net/hugmesh-generator).
+  [`hugmesh-generator`](https://github.com/hugmesh/hugmesh-generator).
 
 **Platform authentication, in brief.** Casdoor is the platform's SSO identity
-provider. [`hugmesh-login-ui`](https://github.com/hugmesh-net/hugmesh-login-ui) runs
+provider. [`hugmesh-login-ui`](https://github.com/hugmesh/hugmesh-login-ui) runs
 the Casdoor OIDC (PKCE) redirect, and
-[`hugmesh-user-bff-api`](https://github.com/hugmesh-net/hugmesh-user-bff-api) performs
+[`hugmesh-user-bff-api`](https://github.com/hugmesh/hugmesh-user-bff-api) performs
 the server-side code→token exchange and holds per-session JWT custody — the browser
 only ever sees an opaque, `bff_`-prefixed session cookie and never the Casdoor JWT
 itself. At the edge, the gateway is a pure Casdoor-JWT OAuth2 resource server: a
@@ -155,8 +155,8 @@ access decision is made at the method level via `@PreAuthorize`:
 | Path prefix | Filter-chain gate | Method gate (`@PreAuthorize`) | Controller |
 |---|---|---|---|
 | `/bff/forum/**` | `.authenticated()` | `hasRole('FORUM') or hasRole('ADMIN')` | `ForumController` |
-| `/bff/forum/moderation/**` | `.authenticated()` (inherits the floor) | `hasRole('ADMIN') or (hasRole('MOD') and hasRole('FORUM'))` | `ModerationController` |
-| `/bff/forum/admin/**` | `hasAnyRole('ADMIN','SUPERADMIN')` | `hasRole('ADMIN')` per method | `ForumAdminController` |
+| `/bff/forum/moderation/**` | `.authenticated()` **+ MFA step-up** | `hasRole('ADMIN') or (hasRole('MOD') and hasRole('FORUM'))` | `ModerationController` |
+| `/bff/forum/admin/**` | `hasAnyRole('ADMIN','SUPERADMIN')` **+ MFA step-up** | `hasRole('ADMIN')` per method | `ForumAdminController` |
 
 - **ROLE_FORUM** — read everything, create topics/replies, and edit/delete your
   **own** posts. Ownership is enforced by `ForumService.isOwnerOrAdmin`:
@@ -182,7 +182,9 @@ Decision tree for `/bff/forum/moderation/**`:
 flowchart TB
     A[Incoming request] --> B{Authenticated?}
     B -- No --> R1[401]
-    B -- Yes --> C{ROLE_ADMIN or ROLE_SUPERADMIN?}
+    B -- Yes --> M{app.mfa.enabled and no fresh MFA_SATISFIED?}
+    M -- Yes --> R0[403 — step-up required]
+    M -- No --> C{ROLE_ADMIN or ROLE_SUPERADMIN?}
     C -- Yes --> ALLOW[Allow — full moderation access]
     C -- No --> D{Has ROLE_MOD?}
     D -- No --> R2[403]
@@ -194,6 +196,23 @@ flowchart TB
 Domain scoping (see [Multi-tenancy](#multi-tenancy-and-domain-scoping)) applies only
 to the `forum_user_role` cache and the `forum_action` audit trail — it is not part of
 this authorization decision, so no domain check gates moderation access.
+
+### MFA step-up on the privileged paths
+
+The two privileged path groups — `/bff/forum/admin/**` and
+`/bff/forum/moderation/**` — additionally require a **fresh second factor** whenever
+the platform-wide `app.mfa.enabled` flag is on. `SecurityConfig.stepUp` wraps those
+two filter-chain rules so they also demand the non-role `MFA_SATISFIED` authority,
+which `CasdoorAuthorities` derives **only** from the BFF-written, freshness-validated
+`mfa_satisfied_at` JWT claim (`MFA_SATISFIED` is a reserved converter prefix, so a
+crafted `permissions: ["MFA_SATISFIED"]` cannot forge it).
+
+`app.mfa.enabled` defaults to `false` org-wide, and while it is off the wrapper is a
+**no-op**: the marker is never derived, so an unconditional check would lock out every
+admin today. The one flag both derives the marker and enforces it, so step-up starts
+working the moment the platform flips it — no follow-up change is needed here. The
+ordinary `/bff/forum/**` floor is deliberately *not* step-up gated: reading and posting
+in the forum is not a privileged action.
 
 ### Casdoor → Spring authorities
 
@@ -207,8 +226,10 @@ BFF, and the gateway):
 - Each entry in the `permissions` claim becomes a verbatim authority.
 - `isAdmin == true` adds `ROLE_ADMIN`.
 
-Reserved-prefix claims (`ROLE_*`, `DOMAIN_*`) inside the `permissions` array are
-stripped, so a crafted `permissions: ["ROLE_SUPERADMIN"]` cannot forge a super-role.
+Reserved-prefix claims (`ROLE_*`, `DOMAIN_*`, `MFA_SATISFIED`) inside the
+`permissions` array are stripped, so a crafted `permissions: ["ROLE_SUPERADMIN"]`
+cannot forge a super-role and a crafted `permissions: ["MFA_SATISFIED"]` cannot forge
+a second factor.
 The converter also derives exactly one `DOMAIN_<x>` authority from the validated
 issuer URI (see [Multi-tenancy](#multi-tenancy-and-domain-scoping)).
 
@@ -292,7 +313,7 @@ and writes go through phpBB's native consistency and permission logic, with no
 raw-database coupling.
 
 The extension lives in its own repo,
-[`hugmesh-forum-api`](https://github.com/hugmesh-net/hugmesh-forum-api), targeting
+[`hugmesh-forum-api`](https://github.com/hugmesh/hugmesh-forum-api), targeting
 phpBB 3.3.
 
 > **Naming note.** The extension's git repo is `hugmesh-forum-api`, but the
@@ -341,7 +362,7 @@ traffic cleanly whether or not phpBB is reachable:
   for the cluster CA) serves both legs. TLS 1.3 is the floor.
 - **`PhpbbAdminClient`** (the ban-congruence seam, gated by
   `external.forum.enabled`, default `false`): mirrors the moderation seam shape used
-  in [`hugmesh-mod-bff-api`](https://github.com/hugmesh-net/hugmesh-mod-bff-api).
+  in [`hugmesh-mod-bff-api`](https://github.com/hugmesh/hugmesh-mod-bff-api).
   `doSuspend()` makes the real `POST`/`DELETE`
   `/api/v1/hugmesh/admin/users/{sub}/ban` call when the flag is on; otherwise it
   returns a stubbed, non-applied result. Every call is breaker-guarded
@@ -350,7 +371,7 @@ traffic cleanly whether or not phpBB is reachable:
 Turning on either flag is a config-only change — no code change is required in this
 BFF. What remains before flipping them in a real deployment is cluster-side: build
 and roll out an official phpBB image with the extension installed (owned by
-[`hugmesh-generator`](https://github.com/hugmesh-net/hugmesh-generator)), bootstrap
+[`hugmesh-generator`](https://github.com/hugmesh/hugmesh-generator)), bootstrap
 it in its namespace, then set `PHPBB_ENABLED=true` here and
 `external.forum.enabled=true` in the admin BFF pointing at the in-cluster phpBB
 service.
@@ -496,7 +517,7 @@ security/tenancy code that used to exist separately across each BFF:
    `net.hugmesh.commons.*`.
 
 3. **This BFF does not consume `hugmesh-auth-core`.**
-   [`hugmesh-auth-core`](https://github.com/hugmesh-net/hugmesh-auth-core) (shared
+   [`hugmesh-auth-core`](https://github.com/hugmesh/hugmesh-auth-core) (shared
    account/session/MFA/Casdoor-admin infrastructure) is consumed only by
    `hugmesh-user-bff-api` and `hugmesh-admin-bff-api` — the SSO/login/session tier.
    This forum BFF is a pure Casdoor-JWT resource server with no login,
@@ -568,7 +589,8 @@ see [`application.yml`](src/main/resources/application.yml) for the full set.
 | `HUGMESH_MTLS_CLIENT_ENABLED` | `false` | client-side mTLS presentation to phpBB (outbound) |
 | `SSL_KEY_STORE` / `SSL_TRUST_STORE` (+ `_TYPE`/`_PASSWORD`) | `/stores/keystore.p12` / `/stores/truststore.p12` | shared PKCS12 stores for both mTLS directions |
 | `APP_TENANCY_ISSUERS` | empty (single-issuer) | comma-separated `issuerUri=domainName` pairs enabling multi-issuer mode |
-| `app.mfa.enabled` / `app.mfa.freshness-window` | `false` / `600000` | MFA-marker derivation config (see [Roadmap](#roadmap)) |
+| `APP_MFA_ENABLED` | `false` | derives the `MFA_SATISFIED` marker **and** enforces step-up on `/bff/forum/admin/**` + `/bff/forum/moderation/**` (see [MFA step-up](#mfa-step-up-on-the-privileged-paths)) |
+| `APP_MFA_FRESHNESS_WINDOW` | `600000` (10m) | how long an `mfa_satisfied_at` stamp keeps satisfying step-up, in millis |
 
 Notes on a few of these:
 
@@ -599,7 +621,7 @@ CI runs on a mirrored copy after the merge.
 | `pentest:dast` | authenticated OWASP ZAP baseline DAST plus custom probes, via a shared job template from `hugmesh-generator` | advisory (`allow_failure`) |
 
 The pen-test jobs extend a centralized template included from
-[`hugmesh-generator`](https://github.com/hugmesh-net/hugmesh-generator)
+[`hugmesh-generator`](https://github.com/hugmesh/hugmesh-generator)
 (`tests/pentest/ci/pentest-stage.gitlab-ci.yml`), so SCA/DAST configuration has one
 source of truth across the platform's repos. `make pentest` (`pentest-sca` /
 `pentest-dast`) mirrors these jobs locally as a dev-only convenience — CI remains
@@ -624,7 +646,7 @@ unless explicitly marked ✅.
 - 🔭 **phpBB seam enable.** The phpBB read/write seam (`PhpbbApiClient`,
   `phpbb.enabled`) and the ban-congruence seam (`PhpbbAdminClient`,
   `external.forum.enabled`) are both feature-complete and gated purely by
-  configuration. The [`hugmesh-forum-api`](https://github.com/hugmesh-net/hugmesh-forum-api)
+  configuration. The [`hugmesh-forum-api`](https://github.com/hugmesh/hugmesh-forum-api)
   extension itself is built and proven to install/enable/migrate/route on phpBB
   3.3. What remains is cluster-side: building the phpBB image with the extension
   baked in, namespace bootstrap, and on-cluster validation (owned by
@@ -632,7 +654,7 @@ unless explicitly marked ✅.
 
 **Owned by other repos in the platform:**
 
-- ⛓ **Cluster wiring** ([`hugmesh-generator`](https://github.com/hugmesh-net/hugmesh-generator)).
+- ⛓ **Cluster wiring** ([`hugmesh-generator`](https://github.com/hugmesh/hugmesh-generator)).
   The dedicated phpBB namespace, its default-deny network policy, the phpBB image
   (official phpBB 3.3 + the `hugmesh-forum-api` extension, enabled on first boot),
   its database, and a reconciliation job all live in the generator, not here.
@@ -653,16 +675,18 @@ unless explicitly marked ✅.
   invisible to the forum BFF — its contract ("validate the inbound Casdoor Bearer
   JWT") is unchanged, and no code change is expected here beyond participating in
   the shared security test suite.
-- 🔭 **Casdoor MFA / step-up auth.** Platform-wide WebAuthn/TOTP with fail-closed
-  step-up gating is designed but not yet wired end-to-end. This repo already
-  carries the marker-derivation plumbing (`security.Roles.MFA_SATISFIED`, and
-  `SecurityConfig`'s `app.mfa.enabled`/`app.mfa.freshness-window` config threaded
-  into the shared `CasdoorAuthorities.MfaConfig`), so the authority converter is
-  ready to emit an `MFA_SATISFIED` marker the moment the platform turns it on — but
-  `app.mfa.enabled` defaults to `false` (identical legacy behaviour when off), and
-  no `@PreAuthorize`/path gate in this repo checks it yet. `/bff/forum/admin/**` and
-  `/bff/forum/moderation/**` are the expected step-up candidates once the platform
-  enables it.
+- ✅⛓ **Casdoor MFA / step-up auth.** Platform-wide WebAuthn/TOTP is designed but not
+  yet wired end-to-end, and `app.mfa.enabled` still defaults to `false` org-wide.
+  **This BFF's side is done**: the marker-derivation plumbing
+  (`security.Roles.MFA_SATISFIED`, and `SecurityConfig`'s
+  `app.mfa.enabled`/`app.mfa.freshness-window` config threaded into the shared
+  `CasdoorAuthorities.MfaConfig`) is joined by the enforcement half —
+  `SecurityConfig.stepUp` gates `/bff/forum/admin/**` and
+  `/bff/forum/moderation/**` on the `MFA_SATISFIED` marker, as a no-op while the flag
+  is off and fail-closed the moment it flips (see
+  [MFA step-up](#mfa-step-up-on-the-privileged-paths)). What is still owned elsewhere
+  is the *issuance* leg: something has to stamp `mfa_satisfied_at` on the token after
+  a real WebAuthn/TOTP ceremony before the flag can be turned on.
 - 🚧 **External notification channels.** A phpBB forum adapter is one of the
   planned external delivery channels (alongside chat DM/feed channels and email)
   for an in-app notifications feature. Because this BFF is the sole caller of

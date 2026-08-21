@@ -5,7 +5,7 @@ slug: "archetype-angular-host"
 summary: "The archetype rendering the native-federation host shell class, exemplified by the site shell that mounts every remote."
 source_repo: "hugmesh-generator"
 source_path: "templates/archetypes/angular-host/README.md"
-source_ref: "4e77ec20"
+source_ref: "hugmesh/hugmesh-generator@HEAD"
 ---
 
 Renders the HugMesh **native-federation HOST shell** class. Exemplar member =
@@ -64,7 +64,7 @@ host-shell` / the tenant-set driver).
   `src/assets/federation.manifest.json` floor pointing at the example remote,
   the exemplar's dynamic-union federation-bootstrap + `main.ts`, a
   `REMOTE_ROUTES` spec table, a menu keyed off a capabilities stub, BOTH
-  palette tiers (SCSS tokens + `--sd-*` runtime contract), nonce-CSP
+  palette tiers (SCSS tokens + `--hug-*` runtime contract), nonce-CSP
   `nginx.conf`, nginx-unprivileged Dockerfile, fleet CI.
   `npm ci && npm run build` in a rendered tree is a real
   `@angular-architects/native-federation:build`.

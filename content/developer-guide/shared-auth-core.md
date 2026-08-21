@@ -5,7 +5,7 @@ slug: "shared-auth-core"
 summary: "The shared stateful auth core providing account, session, MFA and Casdoor-admin infrastructure to both the user and admin BFFs."
 source_repo: "hugmesh-auth-core"
 source_path: "README.md"
-source_ref: "401ca9e"
+source_ref: "hugmesh/hugmesh-auth-core@HEAD"
 ---
 
 Shared **stateful** HugMesh auth core — the account/session/MFA/Casdoor-admin
@@ -191,18 +191,18 @@ Checkstyle + SpotBugs (see Current State / Known Gaps for their actual current e
 status). Re-verified 2026-07-30: `clean test` with Docker available — the **whole** suite green
 (`Failures: 0, Errors: 0, Skipped: 0`; without Docker the Postgres slices are the only thing that
 drops out), 0 Checkstyle/PMD violations, BUILD
-SUCCESS — but `clean verify` is currently **BUILD FAILURE**: the `hugmesh-parent` 2.8.0 bump
-fixed SpotBugs's fail switch (`failOnError`, not the no-op `failOnViolation` the historical
-2.7.0 config used — see Known Gaps), so `verify` now genuinely fails on 8 real
-`EI_EXPOSE_REP2` findings.
+SUCCESS. Re-verified 2026-08-20: `clean verify` (which the `hugmesh-parent` 2.8.0 bump put in
+genuine fail mode via `failOnError`, not the no-op `failOnViolation` the historical 2.7.0 config
+used) is **BUILD SUCCESS** too — 450 tests green, `BugInstance size is 0` — since the repo-local
+`spotbugs/exclude-filter.xml` triaged the 8 `EI_EXPOSE_REP2` findings (see Known Gaps).
 
 ## Current State
-- **Version 2.4.2** on the unified HugMesh ecosystem baseline: **Spring Boot 4.0.7 /
+- **Version 2.5.0** on the unified HugMesh ecosystem baseline: **Spring Boot 4.0.7 /
   Spring Cloud 2025.1.2 / Java 25 LTS** (eclipse-temurin:25), inherited via
   `hugmesh-parent` (metapom) **2.8.0** (which runs **PMD + Checkstyle + SpotBugs** during
   `verify` and pins **testcontainers 2.0.5**; PMD and Checkstyle fail on violation, and — as
   of the 2.8.0 bump — SpotBugs is genuinely in fail mode too (via `failOnError`); see Known
-  Gaps for the 8 real findings that currently fail `verify`).
+  Gaps for how this module's 8 findings were triaged).
 - Depends on `hugmesh-commons` **2.1.0** (stateless security/tenancy; #23 pinned the
   real coordinate — a `2.7.0` commons was never published). **No cycle** —
   commons does not depend on this core.
@@ -235,7 +235,10 @@ fixed SpotBugs's fail switch (`failOnError`, not the no-op `failOnViolation` the
   could read/write/delete brand-Y's invite or namespace-grant rows. `AllowlistRepository` /
   `NamespaceGrantRepository` expose domain-scoped finders, deletes, and a 3-arg
   `insertIfAbsent(..., domain)`; existing rows back-fill to `"default"`. The registration-gate
-  read `existsByProviderAndHandle` is intentionally left **unscoped** (see Known Gaps below).
+  read is domain-scoped too (`existsByProviderAndHandleAndDomain`, surfaced as
+  `AccountStore.isEmailInvited(email, domain)` / `isDiscordInvited(handle, domain)`); the
+  unscoped `existsByProviderAndHandle` overloads are **deprecated** and kept only for callers
+  not yet threaded with a requesting domain (see Known Gaps below).
 - **Subject-level revocation (`GatewayRevocationClient.revokeSubject`)**: writes a
   `subject:<casdoorSub>` key so the gateway's `RevocationGatewayFilter` denies a user's
   live custody JWT immediately on role-revoke, instead of waiting out its natural TTL
@@ -291,8 +294,8 @@ fixed SpotBugs's fail switch (`failOnError`, not the no-op `failOnViolation` the
   whatever version the pom holds on every `main` merge, so the moment #39/#40/#41 merged, 2.4.1
   stopped being a trustworthy immutable coordinate — 2.4.2 restores a meaningful pin. (Whether
   each post-2.4.1 merge's re-publish actually *landed* depends on the deploy job's `verify` leg,
-  which fails locally on the 8 SpotBugs findings below; the coordinate is compromised either
-  way.)
+  which failed on the 8 SpotBugs findings below until they were triaged; the coordinate is
+  compromised either way for merges made while it was red.)
 - **Identity-fold correctness fixes (2.3.4)**: `CasdoorAdminClient#usernameOf` now strips a
   trailing `@...` suffix for EVERY provider (previously only `google`), closing a bug where a
   native `casdoor:` account whose handle is email-shaped (`casdoor:alice@gmail.com`) minted an
@@ -312,13 +315,16 @@ fixed SpotBugs's fail switch (`failOnError`, not the no-op `failOnViolation` the
 
 ## Known Gaps / TODO
 Verified against the current code (no invented gaps):
-- **Registration-gate allowlist check is cross-brand permissive** — `AllowlistRepository
-  .existsByProviderAndHandle` (used by `AccountStore` for the Google/Discord invite check)
-  is intentionally left **unscoped** by domain, so a handle invited to brand X's allowlist
-  also passes the registration gate for brand Y. Fixing this needs OAuth-flow domain
-  context that isn't available at that call site yet — noted as a follow-up in the
-  domain-scoping change itself (`AllowlistRepository.java:17-18`,
-  `AccountStore.java:129,134`).
+- **Registration gate: the scoped check exists, the BFF call sites are not migrated yet** —
+  this jar now offers the domain-scoped gate (`AllowlistRepository
+  .existsByProviderAndHandleAndDomain`, `AccountStore.isEmailInvited(email, domain)` /
+  `isDiscordInvited(handle, domain)`) and **deprecates** the unscoped overloads. Until the
+  consumers migrate, the cross-brand hole stays open at THEIR call sites: admin-bff's
+  `AuthController.registerGoogle` / `registerDiscord` and
+  `InternalAccountController#ensureAccount` still call the deprecated unscoped overloads,
+  because a *pre-authentication* registration request has no validated JWT and therefore no
+  `PrincipalDomain` — deciding where that domain comes from (request host, an explicit body
+  field, or a per-deployment property) is a BFF-side decision, not a library one.
 - **Gateway revocation writes are a no-op unless explicitly enabled** —
   `GatewayRevocationClient.revokeCoarse` / `revokeSubject` / `clearCoarse` all short-circuit
   to a logged STUB (`Mono.empty()`) when `broker.gateway-revocation.enabled` is `false`
@@ -348,27 +354,33 @@ Verified against the current code (no invented gaps):
   today (only the folded provider:handle id). Surfacing the UUID sub (e.g. for a gateway
   introspect response) would need a new nullable schema column + `AccountStore` plumbing +
   a version bump here, coordinated with whichever consumer needs it.
-- **SpotBugs is now genuinely fail-mode and `./mvnw -o clean verify` currently FAILS on real
-  findings — re-verified by running the real build** (`./mvnw -o clean verify`, 2026-07-22,
-  against the `hugmesh-parent` 2.8.0 / `hugmesh-build-config` 0.5.0 this module now resolves
-  post-rebrand). This module's historical "SpotBugs fail mode is a no-op" framing is now
-  **stale**: `hugmesh-parent` 2.8.0 switched the plugin config from the silently-ignored
-  `failOnViolation` parameter to the real one, `failOnError=true`, so `spotbugs:check` now
-  actually fails the build — `verify` ends `BUILD FAILURE` with **8 Medium `EI_EXPOSE_REP2`**
-  findings (`AccountStore` ×3, `BffStoredMfaFactorVerifier` ×4, `WebAuthnChallengeStore` ×1),
-  even though `clean test`/`clean package` still succeed (PMD and Checkstyle both still run
-  clean, 0 violations). `hugmesh-build-config` 0.4.0/0.5.0 already fixed most of this class of
-  false positive — Spring constructor-injection findings are now suppressed by CLASS-NAME
+- **SpotBugs is genuinely fail-mode, and `./mvnw -o clean verify` is now GREEN — re-verified
+  by running the real build** (`./mvnw -o clean verify`, 2026-08-20, against the
+  `hugmesh-parent` 2.8.0 / `hugmesh-build-config` 0.5.0 this module resolves): 450 tests,
+  `Failures: 0, Errors: 0`, `BugInstance size is 0`, BUILD SUCCESS. This module's historical
+  "SpotBugs fail mode is a no-op" framing is **stale**: `hugmesh-parent` 2.8.0 switched the
+  plugin config from the silently-ignored `failOnViolation` parameter to the real one,
+  `failOnError=true`, so `spotbugs:check` really does fail the build — which is what surfaced
+  **8 Medium `EI_EXPOSE_REP2`** findings here (`AccountStore` ×3,
+  `BffStoredMfaFactorVerifier` ×4, `WebAuthnChallengeStore` ×1) while `clean test`/`clean
+  package` kept succeeding. `hugmesh-build-config` 0.4.0/0.5.0 had already fixed most of this
+  class of false positive — Spring constructor-injection findings are suppressed by CLASS-NAME
   suffix (`*Service`/`*Controller`/`*Repository`/`*Client`/`*Config`/`*Handler`/`*Filter`/
   `*Resolver`), not just layer-package name — which is why the pre-#35 count of 20 findings
-  (`account/`, `casdoor/`, `mfa/`, `username/`) is already down to 8: PR #35 fixed the two
-  genuine `Account.roles` findings, and the exclude filter's suffix list now quietly covers
-  everything else in `casdoor/`/`username/`/most of `mfa/`. The 8 that remain are the same
-  kind of Spring-injection false positive, just on classes named `*Store`/`*Verifier` — a
-  suffix the exclude filter doesn't cover. Fixing this needs either a `hugmesh-build-config`
-  filter change (out of scope here) or a rename/refactor of `AccountStore` /
-  `BffStoredMfaFactorVerifier` / `WebAuthnChallengeStore` to a covered suffix — not done in
-  this docs pass.
+  (`account/`, `casdoor/`, `mfa/`, `username/`) was already down to 8: PR #35 fixed the two
+  genuine `Account.roles` findings, and the exclude filter's suffix list quietly covers
+  everything else in `casdoor/`/`username/`/most of `mfa/`. The last 8 were the same kind of
+  Spring-injection false positive, just on classes named `*Store`/`*Verifier` — a suffix the
+  shared filter deliberately does **not** cover (its maintainer note is explicit that
+  app-specific bean suffixes "stay reported and get triaged on their merits rather than
+  silently muted"). That triage now lives in **`spotbugs/exclude-filter.xml`**: the three
+  classes by name, `EI_EXPOSE_REP2` only, carrying build-config's own guard so a genuinely
+  mutable field (`byte[]`/`char[]` key material, `List`/`Map`/`Set`/`Collection`/`Date`) is
+  still REPORTED inside them. It is wired through the plugin's `<excludeFilterFiles>` list,
+  **not** `<excludeFilterFile>` — the latter is what the parent points at the shared baseline,
+  so redeclaring it would have replaced that baseline instead of layering on it. Renaming
+  `AccountStore` / `WebAuthnChallengeStore` was rejected: both are public API consumed by
+  user-bff and admin-bff.
 
 ## Roadmap
 This jar advances in lockstep with the platform auth roadmap; the next increments are:
