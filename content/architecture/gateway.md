@@ -5,7 +5,7 @@ slug: "gateway"
 summary: "The Spring Cloud Gateway that is the platform's public front door, where one image runs as the PKI, backend or frontend gateway depending on role."
 source_repo: "hugmesh-gateway"
 source_path: "README.md"
-source_ref: "46af5b3"
+source_ref: "hugmesh/hugmesh-gateway@HEAD"
 ---
 
 Spring Cloud Gateway (WebFlux) for [HugMesh](https://github.com/hugmesh-net) — the
@@ -103,7 +103,7 @@ a public/homeserver path), and these ordered `WebFilter`s run:
 
 | Order | Filter | Purpose |
 |------:|--------|---------|
-| HIGHEST+4 | `BffCookieToBearerWebFilter` *(dark)* | pre-security cookie-mode bridge: synthesises `Authorization: Bearer bff_…` from the `bff_session` cookie (and strips that cookie) so a cookie-only browser request reaches the exchange filter below; **absent** unless `hugmesh.gateway.bff-exchange.enabled` (same flag as the exchange filter) |
+| HIGHEST+4 | `BffCookieToBearerWebFilter` *(dark)* | pre-security cookie-mode bridge: synthesises `Authorization: Bearer bff_…` from the `bff_session` cookie (which is **retained** on the forwarded request) so a cookie-only browser request reaches the exchange filter below; **absent** unless `hugmesh.gateway.bff-exchange.enabled` (same flag as the exchange filter) |
 | HIGHEST+5 | `BffJwtExchangeWebFilter` *(dark)* | pre-security `bff_`→custody-JWT swap; **absent** unless `hugmesh.gateway.bff-exchange.enabled` |
 | HIGHEST+50 | `BffSessionAuthFilter` *(live by default)* | pre-security `bff_`/cookie introspection → SecurityContext; present unless `app.bff-session.enabled=false` |
 | 10 | `RevocationGatewayFilter` | reject revoked **Casdoor JWTs** (Cassandra-cached revocation list) |
@@ -222,11 +222,12 @@ described above.
 
 A third filter, `BffCookieToBearerWebFilter` (#66, same flag as the exchange path,
 order `HIGHEST_PRECEDENCE + 4`), sits one slot ahead of `BffJwtExchangeWebFilter` and
-synthesises `Authorization: Bearer bff_…` from the `bff_session` cookie (stripping
-the cookie from the forwarded request) when no `Authorization` header is already
-present — so the exchange path's effective "Token source" below is really *header
-**or** cookie*, mirroring `BffSessionAuthFilter`'s dual token source. See *Request
-pipeline* above.
+synthesises `Authorization: Bearer bff_…` from the `bff_session` cookie (which is
+**retained** on the forwarded request — consuming it starved the cookie-terminated
+BFF surfaces, notably user-bff's permitAll `GET /bff/session`) when no
+`Authorization` header is already present — so the exchange path's effective "Token
+source" below is really *header **or** cookie*, mirroring `BffSessionAuthFilter`'s
+dual token source. See *Request pipeline* above.
 
 | | `BffJwtExchangeWebFilter` (#48) | `BffSessionAuthFilter` (#51) |
 |---|---|---|
@@ -427,10 +428,10 @@ see *CI / security* below for why GitHub Actions alone won't catch regressions y
 The project's primary CI runs on an in-cluster **GitLab** instance that mirrors this
 GitHub repository (`.gitlab-ci.yml`); GitHub Actions currently only hosts a manual,
 `workflow_dispatch`-only [release workflow](.github/workflows/release.yml) that
-builds and publishes the container image to GHCR. Stages: `test → security → build
-→ pentest` (the `security` stage is currently a no-op — its only job, inline
-`dependency-check`, was migrated onto the centralized `pentest:sca` job below when
-the `pentest` stage was added; see the TODO in `.gitlab-ci.yml`). `test` runs
+builds and publishes the container image to GHCR. Stages: `test → build →
+pentest` (a former `security` stage was dropped once verified dead — its only
+job, inline `dependency-check`, had been migrated onto the centralized
+`pentest:sca` job below when the `pentest` stage was added). `test` runs
 `./mvnw verify` (with JUnit reports) and `build:image` builds + pushes the
 container image. The pentest leg is the per-repo arm of the platform's OWASP
 pen-test standard: it `include:`s the centralized hidden jobs from
@@ -454,24 +455,6 @@ forward-looking, not-yet-started work in *Roadmap* below):
   cache for a zero-window posture). PR #68 bounded what was previously an
   unclamped (effectively 60s-default) window. Documented in
   `src/main/java/net/hugmesh/gateway/filter/BffJwtExchangeWebFilter.java`.
-- **`BffCookieToBearerWebFilter` has no dedicated unit test** — shipped on `main`
-  (PR #66) and covered indirectly by whatever exercises the exchange path end to end,
-  but there is no `BffCookieToBearerWebFilterTest` (contrast with
-  `BffJwtExchangeWebFilterTest` / `BffSessionAuthFilterTest`, which each have one)
-  (`src/main/java/net/hugmesh/gateway/filter/BffCookieToBearerWebFilter.java`).
-- **`compose.yaml` still names its dev instance after the pre-unification scheme,
-  not the current `hugmesh-{pki,be,fe}-gateway` / `${BRAND}-{pki,be,fe}-gateway`
-  convention** described above and in `ROADMAP.md`. It wires a service named
-  `hugmesh-games-gateway` with `SPRING_APPLICATION_NAME: hugmesh-games-gateway`,
-  and `compose/route-access-seed.sql` carries a matching demo row block under that
-  same name, separate from the canonical pki/be/fe rows the rest of the seed file
-  covers. That name doesn't match `application.yml`'s own default
-  (`SPRING_APPLICATION_NAME=hugmesh-be-gateway`) or any of the three shipped tiers.
-  The `Dockerfile`'s own comment about this has since been corrected; the
-  `compose.yaml` service itself is still on the to-do list since fixing it is a
-  functional dev-tooling change, not a docs fix. This tracks with `ROADMAP.md`'s
-  item 1 ("Per-instance deployment config") still being 🔭 planned — the dev-loop
-  tooling hasn't been updated to the shipped pki/be/fe naming yet.
 - **Downstream mTLS's store passwords (`hugmesh.tls.*`) may never actually bind
   in-cluster — unverified against the chart.** `application-tls.properties` (the
   file the chart's `build-keystore` initContainer writes the real generated PKCS12

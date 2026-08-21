@@ -1,14 +1,14 @@
 ---
-title: "Login ui"
+title: "hugmesh-login-ui"
 section: "reference"
 slug: "login-ui"
 summary: "The login and account-security remote owning sign-in, two-stage registration, MFA and the ban and suspension surfaces."
 source_repo: "hugmesh-login-ui"
 source_path: "README.md"
-source_ref: "fe859a2"
+source_ref: "hugmesh/hugmesh-login-ui@HEAD"
 ---
 
-The login and account-security surface for [HugMesh](https://github.com/hugmesh-net) — an Angular
+The login and account-security surface for [HugMesh](https://github.com/hugmesh) — an Angular
 22 [native-federation](https://www.npmjs.com/package/@angular-architects/native-federation) remote
 that owns sign-in, two-stage registration, MFA, and the ban/suspension appeal flow.
 

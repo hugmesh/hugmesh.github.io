@@ -5,7 +5,7 @@ slug: "vn-pack-provenance"
 summary: "Provenance note recording that the vendored visual-novel pack manifests are byte-faithful copies from the character-studio repo."
 source_repo: "hugmesh-character-forge-bff-api"
 source_path: "src/main/resources/vn/packs/PROVENANCE.md"
-source_ref: "b1a2754"
+source_ref: "hugmesh/hugmesh-character-forge-bff-api@HEAD"
 ---
 
 The four `<packId>/pack.json` files in this directory are BYTE-FAITHFUL vendored
@@ -35,4 +35,11 @@ stale copy degrades gracefully rather than failing).
 
 License note: srd-taxonomy-v1 carries SRD 5.1 CC-BY-4.0 attribution inside its
 manifest (`licenseSpdx`/`attribution` fields) — preserved verbatim by the
-byte-faithful copy.
+byte-faithful copy. CC-BY discharges on what the END USER sees, so that string is
+also rendered in-app by the forge's credits view
+(`frontend/src/app/character-forge/panels/credits.component.html`, from the
+vendored `models/vn-pack-credits.ts`). `VnPackManifests.credits()` parses the
+same block here, and the shared contract fixture
+(`frontend/.../contract/server-contract.fixtures.json` -> `vnPackCredits`) pins
+the two copies equal — so a re-copy that changes a notice must update the
+vendored client copy too, or `ClientContractFixturesTest` fails.

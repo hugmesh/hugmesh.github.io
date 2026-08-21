@@ -5,7 +5,7 @@ slug: "mesh-repo-templating"
 summary: "The Handlebars render engine and guardrails for multi-tenant mesh repo-templating through Phase 7 including cross-mesh decentralization."
 source_repo: "hugmesh-generator"
 source_path: "docs/MESH-TEMPLATING.md"
-source_ref: "4e77ec20"
+source_ref: "hugmesh/hugmesh-generator@HEAD"
 ---
 
 This documents the additive Handlebars render engine + guardrails landed for the
@@ -193,7 +193,7 @@ proves the **overlay-primary, skeleton-fallback** model on a real app repo:
 
   Deliberately **left untemplated** (grounding): `nginx.conf` (brand-neutral),
   `docker-entrypoint.d/*` (runtime env-injected), the `X-HugMesh-Local` wire
-  header (frozen protocol constant), the `snap-login-root` element, and every
+  header (frozen protocol constant), the `hug-login-root` element, and every
   `hugmesh` in `src/**` / comments / groupId — that is **upstream code
   identity**, not tenant brand. Tier-1 is deliberately narrow.
 
@@ -238,7 +238,9 @@ Sibling to `validate-reserved-prefixes.sh`. Re-applies the overlay against a
 (`templates/repos/login-ui/_identity.env` — the base's OWN original literals) and
 asserts byte-equality. Any divergence fails loudly with a **patch-reject** (unified
 diff) **and** an **overlayed-region checksum** mismatch. GREEN on an in-sync base,
-RED on any injected drift. Wire it into CI beside the reserved-prefix guard.
+RED on any injected drift. It grades **one** archetype per invocation — the whole
+set is swept by `scripts/validate-repo-templates-all.sh` (below), which is what CI
+actually runs.
 
 ## ⚠️ Node-not-root still applies (harder for Phase 2)
 
@@ -300,6 +302,20 @@ it refuses.
 compare (recipe find@upstream still present + replace@upstream==find round-trip;
 class-A whole-file byte-identical), because a 2nd class member legitimately differs
 from the exemplar outside the anchored regions. GREEN on a fresh base, RED on drift.
+
+### Drift validator — the whole set (`validate-repo-templates-all.sh`)
+`--archetype <name>` covers ONE archetype, and for a long time exactly one caller
+existed (case B8 of `test-templating-rename-pr.sh`, `--archetype generator`) while
+the gate was in no pipeline at all. Three of the six overlays rotted behind that.
+`scripts/validate-repo-templates-all.sh` (`make template-drift-check`) sweeps every
+directory under `templates/archetypes/` — enumerated, not listed, so a new archetype
+is gated the day it lands — runs them all rather than stopping at the first failure,
+and exits non-zero if ANY archetype drifted **or could not be checked**. CI runs it
+as `template-drift-verify` on merge requests and on the default branch; the default
+branch matters because most drift arrives from the OTHER side, when a sibling repo
+edits an anchored region. Bases resolve per archetype through `pull-repo-base.sh`
+(`<NAME>_BASE_DIR` for an offline local clone); the `generator` archetype defaults to
+THIS checkout, so the gate grades the change under review.
 
 ### Node-not-root
 Unchanged, now applied per-repo across the full set: `render-recipe.js`,
@@ -681,3 +697,9 @@ rename land AND `Makefile`/`tests/stack/compose.local.yaml` stay byte-identical;
 written, fail-closed on a bogus ref); provenance `base.ref` stamping; `--pr`
 endpoint/branch/no-PAT-on-argv proofs incl. the 409→PATCH update leg; and the
 residual-`{{TOKEN}}` sweep staying green through `render-tenant-set.js`.
+
+A missing tool is **INCOMPLETE (exit 3)**, not a green skip: handlebars is installed
+by nothing in a fresh checkout, so the old one-line `SKIP:` + `exit 0` let a whole
+unchecked run read as a pass. `ALLOW_SKIP=1` is the explicit opt-out for a host that
+knowingly lacks the toolchain — never in CI, where `templating-rename-verify`
+installs handlebars precisely so the suite runs.

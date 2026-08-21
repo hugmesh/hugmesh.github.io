@@ -5,7 +5,7 @@ slug: "scaffold-angular-host"
 summary: "A runnable minimal Angular native-federation host skeleton rendered when the upstream host-shell base is not pullable."
 source_repo: "hugmesh-admin-bff-api"
 source_path: "src/main/resources/scaffold/angular-host/README.md"
-source_ref: "de0c704"
+source_ref: "hugmesh/hugmesh-admin-bff-api@HEAD"
 ---
 
 A minimal but **REAL** Angular 22 native-federation **HOST** in the platform
@@ -30,7 +30,7 @@ tree, port 4201 — where the static floor points) and the menu entry mounts it.
 | Bootstrap | `src/main.ts` + `src/app/federation/federation-bootstrap.ts` | DYNAMIC `/api/federation/manifest` UNION over the static floor; static-URL fallback so the shell always boots (exemplar pattern, carried whole) |
 | Routes | `src/app/app.routes.ts` | the `REMOTE_ROUTES` spec table -> `loadRemoteModule` lazy loaders; one row wired to the example remote (`./routes` -> `ROUTES`) |
 | Menu | `src/app/menu.component.ts` | keyed off `CapabilitiesStub.installed(slug)` — greyed-not-hidden for absent services |
-| Styles | `src/styles.scss` + `src/styles/_tokens.scss` | BOTH palette tiers: host-local SCSS tokens + the cross-repo `--sd-*` runtime contract |
+| Styles | `src/styles.scss` + `src/styles/_tokens.scss` | BOTH palette tiers: host-local SCSS tokens + the cross-repo `--hug-*` runtime contract |
 | Serving | `nginx.conf` + `Dockerfile` | strict nonce-CSP host serving (exemplar shape) on nginx-unprivileged:8080 |
 | CI | `.gitlab-ci.yml` | fleet include (centralized pentest stage) + build-smoke + image build |
 

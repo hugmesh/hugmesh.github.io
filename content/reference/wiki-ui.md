@@ -1,18 +1,18 @@
 ---
-title: "Wiki ui"
+title: "hugmesh-wiki-ui"
 section: "reference"
 slug: "wiki-ui"
 summary: "The wiki management remote mounted at /wiki and gated to users holding the wiki role."
 source_repo: "hugmesh-wiki-ui"
 source_path: "README.md"
-source_ref: "6e391d3"
+source_ref: "hugmesh/hugmesh-wiki-ui@HEAD"
 ---
 
-The **wiki management UI** for the [HugMesh](https://github.com/hugmesh-net)
+The **wiki management UI** for the [HugMesh](https://github.com/hugmesh)
 platform — an Angular **native-federation remote** that the `hugmesh.net`
 host shell mounts at **`/wiki`** and exposes via its navigation menu, gated to
 users who hold the `wiki` role. It is the front-end console for
-[`hugmesh-wiki-bff-api`](https://github.com/hugmesh-net/hugmesh-wiki-bff-api),
+[`hugmesh-wiki-bff-api`](https://github.com/hugmesh/hugmesh-wiki-bff-api),
 covering content authoring and the grant/timeout/ban access-override layer
 that keeps wiki content scoped per brand/domain.
 
@@ -155,6 +155,8 @@ ng-openapi-gen clients (see **Typed API client** below). Auth rides the
 - `PUT  /bff/wiki/admin/pages/{slug}` → update page (`WikiDto.UpdatePage` with
   `expectedVersion` for optimistic-lock; 409 on stale edit)
 - `POST /bff/wiki/admin/pages/{slug}/publish` → publish
+- `DELETE /bff/wiki/admin/pages/{slug}` → delete page (204; cascades to the
+  page's attachments and is audited server-side; WIKI_WRITE)
 - `GET  /bff/wiki/pages/{slug}/attachments` → `AttachmentList` (list, read tier)
 - `GET  /bff/wiki/pages/{slug}/attachments/{filename}` → download the raw bytes (read tier)
 - `POST /bff/wiki/admin/pages/{slug}/attachments` → upload (multipart `file` part; WIKI_WRITE)
@@ -163,7 +165,8 @@ ng-openapi-gen clients (see **Typed API client** below). Auth rides the
 - `DELETE /bff/wiki/admin/access/{read|banned}/{userSubject}` → revoke/restore
 - `GET  /bff/wiki/superadmin/access` → all active overrides
 - `GET  /bff/wiki/superadmin/access/{userSubject}/history` → full history
-- `GET  /bff/wiki/superadmin/audit` → content audit trail
+- `GET  /bff/wiki/superadmin/audit[?limit=N]` → content audit trail (newest
+  first; `limit` bounded to `[1, 1000]`, default 200)
 
 Every `/bff/*` call is sent with credentials (`withCredentials: true`, set by
 `auth.interceptor.ts`) and the gateway's `BffCookieToBearerWebFilter` mints the
@@ -227,6 +230,105 @@ deferred for now — they need per-UI tuning (federation remotes, BFF
 `connect-src`) plus validation against a real deployment before they can be
 turned on safely.
 
+## Runtime configuration
+
+Every knob below is **optional**, and every default is exactly what a plain
+`docker run` of this image already gets — there is no required configuration
+and no startup validation to fail. [`.env.example`](.env.example) carries the
+same list in copy-paste form.
+
+### Browser globals (host-injected)
+
+The SPA is a static build served by nginx, so it has **no process environment**
+of its own: a browser-side knob can only arrive as a global set on
+`globalThis` *before* the federation bootstrap reads it.
+
+| global | type | default | meaning |
+| --- | --- | --- | --- |
+| `__HUG_WIKI_URL__` | `string` | `''` (same origin) | Base URL of the wiki BFF, behind the `WIKI_BASE_URL` injection token |
+
+That is the complete list — **one** global. `src/` declares no other
+`__HUG_*__`/`__SNAP_*__` and reads no `process.env`/`import.meta.env`.
+
+`WIKI_BASE_URL` (`src/app/wiki.service.ts`) defaults to the empty string
+because the fe-gateway proxies same-origin `/bff/wiki/**` to
+`hugmesh-wiki-bff-api`; the service constructor pushes the resolved value into
+all three generated clients' `rootUrl`, so an override applies uniformly to
+content, access and attachments. Set it only to point this remote at a BFF on
+another origin — which the CSP already allows for (`connect-src 'self' blob:
+https:`, see **Serving & security headers**). The name mirrors the other
+remotes' globals (`__HUG_BFF_URL__`, `__HUG_FORUM_URL__`, `__HUG_TUBE_URL__`,
+`__HUG_OWNCAST_URL__`, …).
+
+**Nothing injects it today.** `hugmesh-host-shell` assigns no `__HUG_*__`
+global anywhere under its `src/`, and this image ships no config-injection
+entrypoint hook — login-ui's `docker-entrypoint.d/40-snap-config.sh` writes a
+`snap-config.js` that its `index.html` loads before bootstrap, and wiki-ui has
+no equivalent (see **Known gaps / TODO**). The override is therefore
+*available and unset*: every current deployment takes the same-origin default.
+To use it, the host page must set it before this remote is loaded:
+
+```html
+<script>globalThis.__HUG_WIKI_URL__ = 'https://wiki-bff.example.test';</script>
+```
+
+### Container environment
+
+Read once at container start by `docker-entrypoint.d/`, before nginx forks, so
+a change is an env edit plus a restart — never an image rebuild.
+
+| variable | default | meaning |
+| --- | --- | --- |
+| `HUG_THEME_CSS` | unset | Theme token text, written verbatim to the served stylesheet |
+| `HUG_THEME_OUT` | `/tmp/hug-theme.css` (set in the `Dockerfile`) | Where the hook writes it |
+| `SNAP_THEME_CSS` | unset | Legacy spelling of `HUG_THEME_CSS`, read only when that is unset |
+| `SNAP_THEME_OUT` | unset | Legacy spelling of `HUG_THEME_OUT`, same precedence |
+
+`docker-entrypoint.d/50-hug-theme.sh` writes `$HUG_THEME_CSS` **verbatim** —
+zero colour maths happens in shell, deliberately: the token text is already
+derived by the single implementation in `hugmesh-generator`
+(`studio/hugmesh_studio/core/theme.py`), and a second implementation would
+drift. Unset ⇒ an empty stylesheet: the `<link>` in `src/index.html` resolves
+as a zero-byte 200 and the compiled `:root` literals render the shipped brand
+byte-identically. The hook writes the same bytes under both `hug-theme.css`
+and the legacy `snap-theme.css`, and `nginx.conf` serves both from `/tmp` via
+exact-match aliases, so the SPA catch-all can never shadow them.
+
+The `SNAP_*` spellings are accepted only until the fleet-wide `SNAP_* → HUG_*`
+rename finishes: that contract crosses a process boundary — something outside
+the image sets the env, this container reads it — so the two halves cannot
+flip in one commit. Prefer the `HUG_` names; the new name wins when both are
+set.
+
+`HUG_THEME_OUT` is set in the `Dockerfile` and is not really an operator knob:
+`nginx.conf` aliases `/hug-theme.css` and `/snap-theme.css` to those literal
+`/tmp/…` paths, so repointing the hook leaves nginx serving nothing from the
+old location — a silently unthemed page. It exists because `/tmp`, not the
+docroot, is the one writable path for uid 101 on the unprivileged nginx image.
+
+### Build, test and tooling
+
+Developer/CI only — none of these reach a deployed container.
+
+| variable | default | meaning |
+| --- | --- | --- |
+| `WIKI_BFF_SPEC` | `../hugmesh-wiki-bff-api/src/main/resources/openapi/openapi.json` | Spec `npm run gen:spec` copies to `openapi.json` before regenerating `src/app/api/` |
+| `CHROME_BIN` | resolved by `karma-chrome-launcher` | Headless browser for `npm test` |
+| `DAST_TARGET_URL` | unset | `make pentest` DAST baseline target; unset skips DAST cleanly |
+| `GENERATOR_DIR` | `../hugmesh-generator` | Where `make pentest` looks for the shared DAST harness |
+| `E2E_BASE_URL` | `https://host.docker.internal:8443` | Origin the Playwright/BDD harness drives |
+| `E2E_PASSWORD` | `e2e-pass` | Fallback seed-user password |
+| `E2E_*_PASSWORD` | — | Per-role seed-user overrides |
+
+The per-role e2e overrides are `E2E_SUPERADMIN_PASSWORD`,
+`E2E_ADMIN_A_PASSWORD`, `E2E_ADMIN_B_PASSWORD`, `E2E_MOD_WIKI_PASSWORD`,
+`E2E_MOD_PASSWORD`, `E2E_USER_PASSWORD` and `E2E_READER_B_PASSWORD` (see
+`e2e/tests/helpers/roles.ts` and [`e2e/README.md`](e2e/README.md)). They are
+credentials: export them in the shell or the CI secret store, never in a
+committed file. GitLab's own `CI_*` variables, and the `HOST_UID`/`HOST_GID`
+the `test` job computes from `id -u`/`id -g`, are set by the pipeline itself
+and are not knobs.
+
 ## Typed API client (ng-openapi-gen)
 
 `ng-openapi-gen.json` and the generated client under **`src/app/api/`** are
@@ -242,7 +344,7 @@ npm run gen:spec   # cp ${WIKI_BFF_SPEC:-../hugmesh-wiki-bff-api/.../openapi.jso
 ```
 
 `wiki.service.ts` **fully delegates to the generated clients** — the content
-feature (`listPages`/`getPage`/`createPage`/`updatePage`/`publishPage`/`auditTrail`),
+feature (`listPages`/`getPage`/`createPage`/`updatePage`/`publishPage`/`deletePage`/`auditTrail`),
 the access overlay (`grant`/`timeout`/`ban`/`revoke`/`listActiveAccess`/`accessHistory`)
 and the per-page attachments panel (`listAttachments`/`uploadAttachment`/
 `deleteAttachment`/`downloadAttachment`) all ride the generated, typed clients
@@ -255,7 +357,9 @@ Two fields worth knowing about on the wiki-bff spec:
 
 - an optional `limit` query param on `GET .../superadmin/audit` (bounded to
   `[1, 1000]`, defaults to 200, so the audit read is never an unbounded table
-  scan) — not yet surfaced in the UI, see **Known Gaps / TODO**;
+  scan) — surfaced in the manage view as the audit trail's "Rows to load"
+  picker (`auditTrail(limit?)`; an omitted limit sends no query param and so
+  takes the bff's own default);
 - an optional `targetDomain` field on the `grant`/`ban`/`timeout` request
   bodies, letting a SUPERADMIN name the victim's brand on a cross-brand write
   — wired through to the access console (see **Access console: the
@@ -312,7 +416,7 @@ The pipeline has four stages (`stages: [test, e2e, build, pentest]`):
 3. **`build`** — `build:image` builds and pushes the container image, tagged
    with the release tag / git SHA plus a moving branch tag.
 4. **`pentest`** — a centralized OWASP pen-test stage, included from
-   [`hugmesh-generator`](https://github.com/hugmesh-net/hugmesh-generator)'s
+   [`hugmesh-generator`](https://github.com/hugmesh/hugmesh-generator)'s
    shared `pentest-stage.gitlab-ci.yml`. This repo runs `pentest:sca`
    (Dependency-Check SCA) and `pentest:dast` (authenticated ZAP DAST
    baseline); both are `allow_failure: true` so a finding surfaces in the
@@ -321,7 +425,7 @@ The pipeline has four stages (`stages: [test, e2e, build, pentest]`):
 
 A separate, manually-triggered [`.github/workflows/release.yml`](.github/workflows/release.yml)
 (`workflow_dispatch` only) builds this same Dockerfile and publishes it to
-`ghcr.io/hugmesh-net/hugmesh-wiki-ui` for consumers who pull the public image
+`ghcr.io/hugmesh/hugmesh-wiki-ui` for consumers who pull the public image
 rather than build from the GitLab pipeline's internal registry.
 
 ## Platform context
@@ -338,7 +442,7 @@ and role gating run unchanged. Authorization is data-driven by a
 domain, SUPERADMIN cross-domain); the `/wiki = ROLE_WIKI` gate this remote
 sits behind is one such route. Shared account/session/MFA/Casdoor-admin
 infrastructure lives in
-[`hugmesh-auth-core`](https://github.com/hugmesh-net/hugmesh-auth-core),
+[`hugmesh-auth-core`](https://github.com/hugmesh/hugmesh-auth-core),
 consumed by `user-bff` and `admin-bff`.
 
 **What that means for this repo:** the BFF/gateway auth model above is
@@ -373,6 +477,12 @@ State key: shipped (on `main`) · in-flight (open branch/PR) · planned
   read tier, upload/delete at `WIKI_WRITE`, with the platform's
   disabled+helptext convention for non-writers. (See **BFF endpoints
   consumed** above.)
+- **Shipped — Page delete (`DELETE /bff/wiki/admin/pages/{slug}`):**
+  `wiki.service.ts#deletePage` plus a `WIKI_WRITE`-gated Delete control on the
+  page view. Destructive and cascading (the bff removes the page's attachments
+  too), so the control is two-step: it arms an inline confirmation panel that
+  names the cascade, and only that panel's confirm button calls the bff. There
+  is no browser modal. (See **BFF endpoints consumed** above.)
 - **Shipped — Opaque `bff_` session (no bearer in `localStorage`):**
   `bffToken` and the per-service access tokens are not part of `SnapSession`;
   `/bff/*` calls ride the HttpOnly `bff_` cookie and the gateway exchanges it
@@ -389,9 +499,14 @@ State key: shipped (on `main`) · in-flight (open branch/PR) · planned
 
 ## Known gaps / TODO
 
-- No `.env.example` or documented list of runtime globals beyond
-  `__HUG_WIKI_URL__` (`src/app/wiki.service.ts:11`) — the host-injection
-  contract for that override is described only in code comments, not here.
+- **No config-injection entrypoint hook**: `__HUG_WIKI_URL__` (see **Runtime
+  configuration**) can only be set by the host page, because this image ships
+  no `docker-entrypoint.d/40-snap-config.sh` equivalent to turn an env var into
+  a pre-bootstrap global the way login-ui does — and `hugmesh-host-shell` sets
+  no `__HUG_*__` global either. The override is therefore documented,
+  available and unset everywhere; the same-origin default is what actually
+  runs. Wiring the hook (or a host-side assignment) is the follow-up if a
+  deployment ever needs the wiki BFF on another origin.
 - `src/app/wiki.service.ts` (`auditTrail`) returns an untyped
   `{ actions: Array<Record<string, unknown>> }`: `GET /bff/wiki/superadmin/audit`
   **is** in the committed `openapi.json` and already delegates to the
@@ -399,13 +514,6 @@ State key: shipped (on `main`) · in-flight (open branch/PR) · planned
   (`{[key: string]: {}}` in the generated types) rather than a real
   `AuditDto` — a proper schema needs to land on `hugmesh-wiki-bff-api` first,
   then a regen here picks up the type.
-- **No page-delete UI or client wrapper**: `hugmesh-wiki-bff-api` exposes
-  `DELETE /bff/wiki/admin/pages/{slug}` (ADMIN/SUPERADMIN, cascades to
-  attachments, audited — see `openapi.json`) and the generated
-  `WikiService.wikiDeletePage()` client method exists, but `wiki.service.ts`
-  never wraps it and no component (e.g. the Content list / page view) exposes
-  a delete action. Either wire it up or record the product decision that
-  pages are intentionally undeletable from this console.
 - **No brand picker for the SUPERADMIN cross-brand target**: the target
   brand is a free-text field (see **Access console: the cross-brand
   target**). The wiki-bff exposes no "known brands" endpoint, and the brand
@@ -413,17 +521,20 @@ State key: shipped (on `main`) · in-flight (open branch/PR) · planned
   against the bff's trusted `DomainRegistry` and an unknown brand comes back
   as a 400 (surfaced verbatim). A typo is therefore caught, but only after a
   round-trip. Wiring a brand-list endpoint would let the console offer a
-  select instead.
-- **No UI for the audit trail's `limit` query param**: `auditTrail()` always
-  calls the bff with no `limit`, so it gets the server default (200, newest
-  first) — fine for now, but there is no way to page further back from this
-  console if the SUPERADMIN audit view ever needs more than 200 rows.
+  select instead — that endpoint has to land on `hugmesh-wiki-bff-api` first
+  (the brand set is the bff's server-side `DomainRegistry`), so it cannot be
+  closed from this repo.
+- **No cursor paging on the audit trail**: the manage view's "Rows to load"
+  picker covers the bff's whole `[1, 1000]` `?limit` range, but the endpoint
+  offers no cursor/offset, so 1000 newest-first rows is the deepest this
+  console can reach. Paging further back needs a cursor parameter on
+  `hugmesh-wiki-bff-api` first.
 
 ## Related HugMesh repositories
 
-- [`hugmesh-wiki-bff-api`](https://github.com/hugmesh-net/hugmesh-wiki-bff-api) — the backend-for-frontend this UI talks to over `/bff/wiki/**`.
-- [`hugmesh-auth-core`](https://github.com/hugmesh-net/hugmesh-auth-core) — shared account/session/MFA/Casdoor-admin infrastructure used by the platform's BFFs.
-- [`hugmesh-generator`](https://github.com/hugmesh-net/hugmesh-generator) — templates and shared CI includes (e.g. the pentest stage this repo's pipeline pulls in).
+- [`hugmesh-wiki-bff-api`](https://github.com/hugmesh/hugmesh-wiki-bff-api) — the backend-for-frontend this UI talks to over `/bff/wiki/**`.
+- [`hugmesh-auth-core`](https://github.com/hugmesh/hugmesh-auth-core) — shared account/session/MFA/Casdoor-admin infrastructure used by the platform's BFFs.
+- [`hugmesh-generator`](https://github.com/hugmesh/hugmesh-generator) — templates and shared CI includes (e.g. the pentest stage this repo's pipeline pulls in).
 
 ## Contributing
 
