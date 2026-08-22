@@ -5,12 +5,12 @@ slug: "multi-issuer-slice-owncast"
 summary: "The owncast-BFF copy of the multi-issuer security-slice pattern."
 source_repo: "hugmesh-owncast-bff-api"
 source_path: "docs/testing/MULTI-ISSUER-SLICE.md"
-source_ref: "0852d7d"
+source_ref: "hugmesh/hugmesh-owncast-bff-api@HEAD"
 ---
 
 This is the owncast-BFF's copy of a reference pattern also used across the other
 HugMesh BFFs (originally built in
-[`hugmesh-gateway`](https://github.com/hugmesh-net/hugmesh-gateway)) for proving
+[`hugmesh-gateway`](https://github.com/hugmesh/hugmesh-gateway)) for proving
 a Spring WebFlux OAuth2 resource server correctly handles per-brand (multi-issuer)
 Casdoor tokens, with the security property that matters most: an unknown issuer
 fails **closed** (401), and a token from one brand can never authenticate as

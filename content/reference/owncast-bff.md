@@ -1,29 +1,29 @@
 ---
-title: "Owncast bff"
+title: "hugmesh-owncast-bff-api"
 section: "reference"
 slug: "owncast-bff"
 summary: "The BFF governing who may broadcast on the self-hosted Owncast live-video server as an optional platform service."
 source_repo: "hugmesh-owncast-bff-api"
 source_path: "README.md"
-source_ref: "0852d7d"
+source_ref: "hugmesh/hugmesh-owncast-bff-api@HEAD"
 ---
 
 Backend-for-frontend that governs **who is allowed to broadcast** on
 [Owncast](https://owncast.online) — the open-source, self-hosted live video
-streaming server — as an optional service inside the [HugMesh](https://github.com/hugmesh-net)
+streaming server — as an optional service inside the [HugMesh](https://github.com/hugmesh)
 platform.
 
 This service is the **may-broadcast governance plane**, not the media plane.
 It owns grant/timeout/ban decisions, per-streamer visibility, and moderation —
 all the "should this request be allowed" logic that sits in front of a fleet
 of per-streamer Owncast media instances. It is a sibling of
-[`hugmesh-wiki-bff-api`](https://github.com/hugmesh-net/hugmesh-wiki-bff-api) and
-[`hugmesh-forum-bff-api`](https://github.com/hugmesh-net/hugmesh-forum-bff-api),
+[`hugmesh-wiki-bff-api`](https://github.com/hugmesh/hugmesh-wiki-bff-api) and
+[`hugmesh-forum-bff-api`](https://github.com/hugmesh/hugmesh-forum-bff-api),
 built on the same stack: Spring Boot 4.0 on Java 25, WebFlux, R2DBC Postgres,
 Liquibase, and a Casdoor JWT resource server, under the package
 `net.hugmesh.owncastbff`.
 
-Its companion frontend is [`hugmesh-owncast-ui`](https://github.com/hugmesh-net/hugmesh-owncast-ui).
+Its companion frontend is [`hugmesh-owncast-ui`](https://github.com/hugmesh/hugmesh-owncast-ui).
 
 > **Status legend:** ✅ shipped (merged to `main`) · 🚧 in progress (open branch/PR,
 > not yet merged) · 🔭 planned (designed, not yet built). See the

@@ -5,11 +5,11 @@ slug: "multi-issuer-slice-mod"
 summary: "The moderator-BFF replica of the multi-issuer security-slice pattern."
 source_repo: "hugmesh-mod-bff-api"
 source_path: "docs/testing/MULTI-ISSUER-SLICE.md"
-source_ref: "615e6a1"
+source_ref: "hugmesh/hugmesh-mod-bff-api@HEAD"
 ---
 
 This repo replicates the **reference multi-issuer security-slice pattern** first built
-in [`hugmesh-gateway`](https://github.com/hugmesh-net/hugmesh-gateway). It proves this
+in [`hugmesh-gateway`](https://github.com/hugmesh/hugmesh-gateway). It proves this
 Spring WebFlux OAuth2 resource server correctly handles **per-brand (multi-issuer)
 Casdoor tokens**, with the security property that matters most: an **unknown issuer
 fails CLOSED (401)** and a token from one brand can **never authenticate as another**.

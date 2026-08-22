@@ -5,7 +5,7 @@ slug: "what-is-hugmesh"
 summary: "The public org profile and best elevator pitch: a self-hosted multi-tenant community platform on hardened Gentoo and Kubernetes run from a USB key and a few Pi 5 nodes."
 source_repo: ".github"
 source_path: "profile/README.md"
-source_ref: "9b00d35"
+source_ref: "hugmesh/.github@HEAD"
 ---
 
 ## HugMesh
@@ -19,7 +19,7 @@ under their own domain, with their own role hierarchy, behind their own identity
 
 ## What it is
 
-HugMesh is a **generator-first, production-grade platform**: the [`hugmesh-generator`](https://github.com/hugmesh-net/hugmesh-generator)
+HugMesh is a **generator-first, production-grade platform**: the [`hugmesh-generator`](https://github.com/hugmesh/hugmesh-generator)
 repo builds hardened OS images for each cluster role, drops GitOps manifests into ArgoCD, and
 provisions everything from a single FAT32 `KEYS` USB partition at first boot. Once the cluster is up,
 operators manage it entirely through role-gated UIs and BFF APIs — no direct cluster access is needed
@@ -81,7 +81,7 @@ flowchart TB
     BackendPi -. "games + argocd workloads" .-> X86Host
 ```
 
-Every external request enters through a [Spring Cloud Gateway](https://github.com/hugmesh-net/hugmesh-gateway)
+Every external request enters through a [Spring Cloud Gateway](https://github.com/hugmesh/hugmesh-gateway)
 instance. The gateway validates Casdoor JWTs, enforces the per-brand `gateway_route_access` table
 (Postgres, mirrored to Cassandra), and injects domain-scoping headers before forwarding to a BFF or
 homeserver. The gateways are the only services the public Internet reaches.
@@ -94,22 +94,22 @@ homeserver. The gateways are the only services the public Internet reaches.
 
 | Repo | Role |
 |---|---|
-| [`hugmesh-generator`](https://github.com/hugmesh-net/hugmesh-generator) | Crossdev build scripts → hardened Gentoo images + GitOps manifests. Start here if you're operating the cluster. |
-| [`hugmesh-gateway`](https://github.com/hugmesh-net/hugmesh-gateway) | Spring Cloud Gateway (WebFlux). One image, three roles: PKI, BE, FE. JWT resource server + data-driven route-access enforcement. |
-| [`hugmesh-commons`](https://github.com/hugmesh-net/hugmesh-commons) | Shared Maven artifact. JWT authority extraction, `DomainRegistry`, `PrincipalDomain`, and the RESERVED_PREFIX injection guard consumed by every BFF and the gateway. |
+| [`hugmesh-generator`](https://github.com/hugmesh/hugmesh-generator) | Crossdev build scripts → hardened Gentoo images + GitOps manifests. Start here if you're operating the cluster. |
+| [`hugmesh-gateway`](https://github.com/hugmesh/hugmesh-gateway) | Spring Cloud Gateway (WebFlux). One image, three roles: PKI, BE, FE. JWT resource server + data-driven route-access enforcement. |
+| [`hugmesh-commons`](https://github.com/hugmesh/hugmesh-commons) | Shared Maven artifact. JWT authority extraction, `DomainRegistry`, `PrincipalDomain`, and the RESERVED_PREFIX injection guard consumed by every BFF and the gateway. |
 
 ### Backend services (BFF APIs)
 
 | Repo | Role |
 |---|---|
-| [`hugmesh-admin-bff-api`](https://github.com/hugmesh-net/hugmesh-admin-bff-api) | Admin control plane: registration allowlist, session store, homeserver token brokering, gateway route-access rules, ban/suspend/domain-lock, ClickHouse analytics, cloud backups, device licensing, superadmin service catalog, notifications outbox. |
-| [`hugmesh-user-bff-api`](https://github.com/hugmesh-net/hugmesh-user-bff-api) | User BFF: profile, preferences, federation cards, connected-client management. Owner-enforced — every endpoint operates only on the caller's own data. |
-| [`hugmesh-mod-bff-api`](https://github.com/hugmesh-net/hugmesh-mod-bff-api) | Moderator BFF: moderation queue, federation-block recommendations, server-wide blocks, domain-lock desired-state. Narrow surface by design — no infrastructure access. |
-| [`hugmesh-federation-api`](https://github.com/hugmesh-net/hugmesh-federation-api) | Dynamic federation registry: runtime Angular remote manifest, public capabilities projection, vanity subdomain resolution, per-user content bundles, platform-wide kill-switch. |
-| [`hugmesh-forum-bff-api`](https://github.com/hugmesh-net/hugmesh-forum-bff-api) | phpBB forum BFF. |
-| [`hugmesh-wiki-bff-api`](https://github.com/hugmesh-net/hugmesh-wiki-bff-api) | Wiki BFF. |
-| [`hugmesh-owncast-bff-api`](https://github.com/hugmesh-net/hugmesh-owncast-bff-api) | Owncast live-streaming BFF (GPU-dependent optional service). |
-| [`hugmesh-tube-bff-api`](https://github.com/hugmesh-net/hugmesh-tube-bff-api) | LocalTube BFF — yt-dlp-backed in-platform video (GPU-dependent optional service). |
+| [`hugmesh-admin-bff-api`](https://github.com/hugmesh/hugmesh-admin-bff-api) | Admin control plane: registration allowlist, session store, homeserver token brokering, gateway route-access rules, ban/suspend/domain-lock, ClickHouse analytics, cloud backups, device licensing, superadmin service catalog, notifications outbox. |
+| [`hugmesh-user-bff-api`](https://github.com/hugmesh/hugmesh-user-bff-api) | User BFF: profile, preferences, federation cards, connected-client management. Owner-enforced — every endpoint operates only on the caller's own data. |
+| [`hugmesh-mod-bff-api`](https://github.com/hugmesh/hugmesh-mod-bff-api) | Moderator BFF: moderation queue, federation-block recommendations, server-wide blocks, domain-lock desired-state. Narrow surface by design — no infrastructure access. |
+| [`hugmesh-federation-api`](https://github.com/hugmesh/hugmesh-federation-api) | Dynamic federation registry: runtime Angular remote manifest, public capabilities projection, vanity subdomain resolution, per-user content bundles, platform-wide kill-switch. |
+| [`hugmesh-forum-bff-api`](https://github.com/hugmesh/hugmesh-forum-bff-api) | phpBB forum BFF. |
+| [`hugmesh-wiki-bff-api`](https://github.com/hugmesh/hugmesh-wiki-bff-api) | Wiki BFF. |
+| [`hugmesh-owncast-bff-api`](https://github.com/hugmesh/hugmesh-owncast-bff-api) | Owncast live-streaming BFF (GPU-dependent optional service). |
+| [`hugmesh-tube-bff-api`](https://github.com/hugmesh/hugmesh-tube-bff-api) | LocalTube BFF — yt-dlp-backed in-platform video (GPU-dependent optional service). |
 
 ### Frontend (Angular micro-frontends)
 
@@ -119,21 +119,21 @@ deployed as a standalone app — each is a separate nginx pod that exposes a `re
 
 | Repo | Mounted at | Gate |
 |---|---|---|
-| [`hugmesh-host-shell`](https://github.com/hugmesh-net/hugmesh-host-shell) | `/` | Host shell — owns chrome, authgate, role-home routing. Loads all remotes. |
-| [`hugmesh-login-ui`](https://github.com/hugmesh-net/hugmesh-login-ui) | `/login` | Public — Casdoor OIDC flow + two-stage registration. |
-| [`hugmesh-user-ui`](https://github.com/hugmesh-net/hugmesh-user-ui) | `/user` | Any authenticated user. |
-| [`hugmesh-mod-ui`](https://github.com/hugmesh-net/hugmesh-mod-ui) | `/mod` | `ROLE_MOD` or `ROLE_ADMIN`. |
-| [`hugmesh-admin-ui`](https://github.com/hugmesh-net/hugmesh-admin-ui) | `/admin` | `ROLE_ADMIN`. |
-| [`hugmesh-matrix-ui`](https://github.com/hugmesh-net/hugmesh-matrix-ui) | `/social/matrix` | Registered users. |
-| [`hugmesh-mastodon-ui`](https://github.com/hugmesh-net/hugmesh-mastodon-ui) | `/social/mastodon` | Registered users. |
-| [`hugmesh-forum-ui`](https://github.com/hugmesh-net/hugmesh-forum-ui) | `/forum` | Registered users. |
-| [`hugmesh-wiki-ui`](https://github.com/hugmesh-net/hugmesh-wiki-ui) | `/wiki` | Registered users. |
-| [`hugmesh-owncast-ui`](https://github.com/hugmesh-net/hugmesh-owncast-ui) | `/stream` | Optional service — greys out when absent. |
-| [`hugmesh-tube-ui`](https://github.com/hugmesh-net/hugmesh-tube-ui) | `/tube` | Optional service — greys out when absent. |
-| [`hugmesh-api-docs`](https://github.com/hugmesh-net/hugmesh-api-docs) | `/admin/docs` | Admin-only OpenAPI console. |
-| [`hugmesh-remote-fragment`](https://github.com/hugmesh-net/hugmesh-remote-fragment) | Per-user vanity subdomain | Serves user content-bundle fragments synced from the federation API. |
-| [`hugmesh-superadmin-service-catalog-ui`](https://github.com/hugmesh-net/hugmesh-superadmin-service-catalog-ui) | Tailnet only | Superadmin Service Catalog — reachable only over a private mesh network, never on a public gateway. |
-| [`hugmesh-games`](https://github.com/hugmesh-net/hugmesh-games) | `games.<domain>` | Godot 4 WASM game studio: self-hosted, SSE multiplayer sessions, built-in RPG and visual-novel authoring. |
+| [`hugmesh-host-shell`](https://github.com/hugmesh/hugmesh-host-shell) | `/` | Host shell — owns chrome, authgate, role-home routing. Loads all remotes. |
+| [`hugmesh-login-ui`](https://github.com/hugmesh/hugmesh-login-ui) | `/login` | Public — Casdoor OIDC flow + two-stage registration. |
+| [`hugmesh-user-ui`](https://github.com/hugmesh/hugmesh-user-ui) | `/user` | Any authenticated user. |
+| [`hugmesh-mod-ui`](https://github.com/hugmesh/hugmesh-mod-ui) | `/mod` | `ROLE_MOD` or `ROLE_ADMIN`. |
+| [`hugmesh-admin-ui`](https://github.com/hugmesh/hugmesh-admin-ui) | `/admin` | `ROLE_ADMIN`. |
+| [`hugmesh-matrix-ui`](https://github.com/hugmesh/hugmesh-matrix-ui) | `/social/matrix` | Registered users. |
+| [`hugmesh-mastodon-ui`](https://github.com/hugmesh/hugmesh-mastodon-ui) | `/social/mastodon` | Registered users. |
+| [`hugmesh-forum-ui`](https://github.com/hugmesh/hugmesh-forum-ui) | `/forum` | Registered users. |
+| [`hugmesh-wiki-ui`](https://github.com/hugmesh/hugmesh-wiki-ui) | `/wiki` | Registered users. |
+| [`hugmesh-owncast-ui`](https://github.com/hugmesh/hugmesh-owncast-ui) | `/stream` | Optional service — greys out when absent. |
+| [`hugmesh-tube-ui`](https://github.com/hugmesh/hugmesh-tube-ui) | `/tube` | Optional service — greys out when absent. |
+| [`hugmesh-api-docs`](https://github.com/hugmesh/hugmesh-api-docs) | `/admin/docs` | Admin-only OpenAPI console. |
+| [`hugmesh-remote-fragment`](https://github.com/hugmesh/hugmesh-remote-fragment) | Per-user vanity subdomain | Serves user content-bundle fragments synced from the federation API. |
+| [`hugmesh-superadmin-service-catalog-ui`](https://github.com/hugmesh/hugmesh-superadmin-service-catalog-ui) | Tailnet only | Superadmin Service Catalog — reachable only over a private mesh network, never on a public gateway. |
+| [`hugmesh-games`](https://github.com/hugmesh/hugmesh-games) | `games.<domain>` | Godot 4 WASM game studio: self-hosted, SSE multiplayer sessions, built-in RPG and visual-novel authoring. |
 
 ---
 
@@ -184,15 +184,15 @@ own domain except SUPERADMIN.
 
 ## Getting started
 
-If you are **operating a cluster**: start with [`hugmesh-generator/docs/RUNNING.md`](https://github.com/hugmesh-net/hugmesh-generator/blob/main/docs/RUNNING.md)
+If you are **operating a cluster**: start with [`hugmesh-generator/docs/RUNNING.md`](https://github.com/hugmesh/hugmesh-generator/blob/main/docs/RUNNING.md)
 — the end-to-end runbook from prerequisites through first-boot provisioning. Then read
-[`docs/ARCHITECTURE.md`](https://github.com/hugmesh-net/hugmesh-generator/blob/main/docs/ARCHITECTURE.md)
+[`docs/ARCHITECTURE.md`](https://github.com/hugmesh/hugmesh-generator/blob/main/docs/ARCHITECTURE.md)
 for the full topology.
 
 If you are **contributing to a service**: each repo has its own README describing where it sits, its
 API surface, test conventions, and current state. The platform-wide conventions (security hardening,
 reactive code style, data-access standard, test standard) are documented in
-[`hugmesh-generator/docs/SECURITY.md`](https://github.com/hugmesh-net/hugmesh-generator/blob/main/docs/SECURITY.md).
+[`hugmesh-generator/docs/SECURITY.md`](https://github.com/hugmesh/hugmesh-generator/blob/main/docs/SECURITY.md).
 
 Releases (container images, OS image artifacts) are published via GitHub Releases once a repo's
 release workflow is enabled.
