@@ -1,20 +1,20 @@
 ---
-title: "Owncast ui"
+title: "hugmesh-owncast-ui"
 section: "reference"
 slug: "owncast-ui"
 summary: "The Owncast management console remote, role-gated in the host menu and layered over the owncast BFF."
 source_repo: "hugmesh-owncast-ui"
 source_path: "README.md"
-source_ref: "c894ae0"
+source_ref: "hugmesh/hugmesh-owncast-ui@HEAD"
 ---
 
 The **Owncast management UI** — an Angular **native-federation remote** that the
 `hugmesh.net` host mounts at the apex path **`/owncast`**, role-gated in
 the host menu. It is the management console over the
-[`hugmesh-owncast-bff-api`](https://github.com/hugmesh-net/hugmesh-owncast-bff-api)
+[`hugmesh-owncast-bff-api`](https://github.com/hugmesh/hugmesh-owncast-bff-api)
 streamer self-service surface and the broadcast grant/timeout/ban governance
 overlay for the [Owncast](https://owncast.online/) live-streaming optional
-service on the [HugMesh](https://github.com/hugmesh-net) platform. It provides
+service on the [HugMesh](https://github.com/hugmesh) platform. It provides
 two things:
 
 1. A **streamer self-service console**, letting users manage their stream title, description, and public visibility.
@@ -190,7 +190,7 @@ Role visibility is additive: a plain **STREAMER** sees only My Stream; a **MOD**
 ### Forbidden redirect (critical)
 
 A denied child guard routes to **`router.parseUrl('/owncast/forbidden')`** — the in-remote forbidden screen mounted under this remote's own path prefix. It must **not** route to `'/forbidden'` or `'/login'`. The reason: by the time a child guard runs, the host has already admitted the user through the `/owncast=ROLE_OWNCAST` route-access gate. A denial at this point is a within-service privilege boundary (e.g. a streamer attempting the admin console), not an authentication failure. Routing to the bare `/forbidden` is a mistake another HugMesh remote
-([`hugmesh-wiki-ui`](https://github.com/hugmesh-net/hugmesh-wiki-ui)) made; this remote ships the correctly prefixed path.
+([`hugmesh-wiki-ui`](https://github.com/hugmesh/hugmesh-wiki-ui)) made; this remote ships the correctly prefixed path.
 
 ### The public-visibility gate (canonical disabled+helptext)
 
@@ -293,7 +293,7 @@ npm run gen:spec   # copies ../hugmesh-owncast-bff-api/src/main/resources/openap
 
 (The legacy `gen:fetch` — curl `localhost:8080/v3/api-docs` — is replaced by
 `gen:spec`, mirroring the same approach adopted in
-[`hugmesh-user-ui`](https://github.com/hugmesh-net/hugmesh-user-ui).)
+[`hugmesh-user-ui`](https://github.com/hugmesh/hugmesh-user-ui).)
 
 `owncast.service.ts` is the thin wrapper over the generated, typed client: every
 method **delegates** to the generated `OwncastStreamSelfService` /
@@ -332,7 +332,7 @@ registry push), and **`pentest`** (jobs defined, first executed run pending).
 > **🚧 Continuous-OWASP pen-test stage — jobs defined, first run pending.**
 > `.gitlab-ci.yml` `include:`s the centralized
 > `hugmesh-generator:/tests/pentest/ci/pentest-stage.gitlab-ci.yml` (from
-> [`hugmesh-generator`](https://github.com/hugmesh-net/hugmesh-generator),
+> [`hugmesh-generator`](https://github.com/hugmesh/hugmesh-generator),
 > the single source of truth for the pen-test harness) and defines thin
 > `pentest:sca` (OWASP Dependency-Check) + `pentest:dast` (authenticated ZAP
 > DAST baseline + nuclei boundary templates) jobs. Both are
@@ -380,12 +380,12 @@ management/console surface, not the per-user player remote.
 This remote is one federated piece of the wider HugMesh platform. Repositories
 referenced above:
 
-- [`hugmesh-owncast-bff-api`](https://github.com/hugmesh-net/hugmesh-owncast-bff-api) — the backend-for-frontend this UI talks to; owns the role model, the broadcast-grant guard, and the OpenAPI spec this repo's typed client is generated from.
-- [`hugmesh-generator`](https://github.com/hugmesh-net/hugmesh-generator) — source of the shared CI/pen-test tooling this repo's pipeline includes.
-- [`hugmesh-user-ui`](https://github.com/hugmesh-net/hugmesh-user-ui) — another native-federation remote following the same typed-client generation approach.
-- [`hugmesh-wiki-ui`](https://github.com/hugmesh-net/hugmesh-wiki-ui) — another native-federation remote mounted by the same host shell.
+- [`hugmesh-owncast-bff-api`](https://github.com/hugmesh/hugmesh-owncast-bff-api) — the backend-for-frontend this UI talks to; owns the role model, the broadcast-grant guard, and the OpenAPI spec this repo's typed client is generated from.
+- [`hugmesh-generator`](https://github.com/hugmesh/hugmesh-generator) — source of the shared CI/pen-test tooling this repo's pipeline includes.
+- [`hugmesh-user-ui`](https://github.com/hugmesh/hugmesh-user-ui) — another native-federation remote following the same typed-client generation approach.
+- [`hugmesh-wiki-ui`](https://github.com/hugmesh/hugmesh-wiki-ui) — another native-federation remote mounted by the same host shell.
 
-See the [HugMesh organization](https://github.com/hugmesh-net) for the rest of
+See the [HugMesh organization](https://github.com/hugmesh) for the rest of
 the platform, including the host shell that mounts this remote and the
 `fe-gateway` that authenticates and routes to it.
 

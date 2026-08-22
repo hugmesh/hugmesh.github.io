@@ -1,11 +1,11 @@
 ---
-title: "Character studio ui"
+title: "hugmesh-character-studio-ui"
 section: "reference"
 slug: "character-studio-ui"
 summary: "The browser-based layered-2D avatar creator where users pick a species and class, recolor regions, add expressions and export an avatar."
 source_repo: "hugmesh-character-studio-ui"
 source_path: "README.md"
-source_ref: "6d4791d"
+source_ref: "hugmesh/hugmesh-character-studio-ui@HEAD"
 ---
 
 A browser-based, layered-2D avatar creator for the HugMesh platform — pick a
@@ -15,11 +15,11 @@ dress-up doll, but self-hosted and running the composition entirely
 client-side (SVG-DOM, no server round-trip needed just to preview a look).
 
 It's delivered as a native-federation **remote** (`character-studio`) that the
-[`hugmesh-host-shell`](https://github.com/hugmesh-net/hugmesh-host-shell)
+[`hugmesh-host-shell`](https://github.com/hugmesh/hugmesh-host-shell)
 mounts at `/character-studio`. This is the platform's avatar-authoring
 surface: the Matrix/Akkoma chat clients and the forum both consume the
 characters it produces, via the
-[`hugmesh-user-bff-api`](https://github.com/hugmesh-net/hugmesh-user-bff-api)
+[`hugmesh-user-bff-api`](https://github.com/hugmesh/hugmesh-user-bff-api)
 `/bff/user/**` character/avatar routes, keyed to the signed-in user's Casdoor
 subject.
 
@@ -37,17 +37,17 @@ This repo is a native-federation **remote only** — it has no host shell and no
 dedicated backend of its own (only `hugmeshRemote(...)` is used; there's no
 `hugmeshHost(...)` call anywhere in this repo — see `federation.config.js`).
 
-- [`hugmesh-host-shell`](https://github.com/hugmesh-net/hugmesh-host-shell)
+- [`hugmesh-host-shell`](https://github.com/hugmesh/hugmesh-host-shell)
   loads this remote's exposed `./routes` module and mounts it at
   `/character-studio` (federation surface: `./routes` →
   `CHARACTER_STUDIO_ROUTES`, declared in `federation.config.js`).
 - Reads/writes that need a backend go through the existing
-  [`hugmesh-user-bff-api`](https://github.com/hugmesh-net/hugmesh-user-bff-api)
+  [`hugmesh-user-bff-api`](https://github.com/hugmesh/hugmesh-user-bff-api)
   `/bff/user/**` surface (`CharacterBffService`, `CharacterAiService`),
   authenticated via the shared HttpOnly `bff_` session cookie — there is no
   browser-held bearer token.
 - `federation-base.js` is kept byte-for-byte identical to the copy in
-  [`hugmesh-games`](https://github.com/hugmesh-net/hugmesh-games)
+  [`hugmesh-games`](https://github.com/hugmesh/hugmesh-games)
   (`frontend/federation-base.js`) and every other HugMesh native-federation
   remote, so the shared-dependency/skip-list contract can't drift between the
   host shell and any remote.
@@ -286,7 +286,7 @@ Issues and pull requests are welcome. A few pointers specific to this repo:
   should pass before submitting.
 
 See the other repositories under the
-[hugmesh-net](https://github.com/hugmesh-net) GitHub organization for the
+[hugmesh](https://github.com/hugmesh) GitHub organization for the
 rest of the platform, including the host shell and the backend-for-frontend
 services this remote talks to.
 
