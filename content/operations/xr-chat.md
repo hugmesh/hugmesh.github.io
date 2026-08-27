@@ -5,7 +5,7 @@ slug: "xr-chat"
 summary: "The default-off XR chat room and Character Forge 3D slug covering WebXR/Quest and desktop face-tracking architecture and the coturn dependency."
 source_repo: "hugmesh-generator"
 source_path: "docs/XR-CHAT.md"
-source_ref: "4e77ec20"
+source_ref: "hugmesh/hugmesh-generator@HEAD"
 ---
 
 > **Status: the `character-forge` OPTIONAL service (DEFAULT-OFF, admin gate) is
@@ -86,9 +86,10 @@ A MULTI-APP slug shaped like phpbb (BFF db + BFF api + UI remote), registered in
   `scripts/clone-all-repos.sh`.
 
 **Federation registration** (`federation_modules`, kind `remote-shell`, mounted
-at `/character-forge`, ROLE_USER) lives in the separate `hugmesh-federation-api`
-repo — changeset 037; see
-`specs/cluster/manifests/character-forge/FEDERATION-REGISTRATION-TODO.md`.
+at `/character-forge`, ROLE_USER) is registered in the separate
+`hugmesh-federation-api` repo as changeset
+`038-register-character-forge-module.xml` (plus a follow-up
+`039-rebrand-character-forge-remote-entry.xml` repointing `remote_entry_url`).
 
 ## 3. coturn dependency note (A/V)
 

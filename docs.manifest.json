@@ -1025,6 +1025,15 @@
       "summary": "The Studio image-build wizard's four-choice to seven-step flow, per-path page map, and the parity TODO for ncurses, CLI and web channels.",
       "repo": "hugmesh-generator",
       "path": "docs/STUDIO-WIZARD-FLOW.md",
+      "order": 2
+    },
+    {
+      "section": "studio",
+      "slug": "walkthrough",
+      "title": "Studio \u2014 the operator's walkthrough",
+      "summary": "Every page of the image-build wizard in the order you meet them, which of the ten build-menu cards routes where, and why only three of them are image modes.",
+      "repo": "hugmesh-generator",
+      "path": "docs/STUDIO-WALKTHROUGH.md",
       "order": 1
     },
     {

@@ -1,6 +1,6 @@
 {
   "_comment": "Integrity record for the vendored content/ tree, written by scripts/sync-content.mjs. scripts/check-content-integrity.mjs verifies every file against it WITHOUT network access, which is what makes hand-editing a vendored document a build failure rather than silent drift. Do not edit by hand.",
-  "syncedAt": "2026-08-22T03:19:21.776Z",
+  "syncedAt": "2026-08-27T07:42:58.346Z",
   "docs": [
     {
       "path": "content/architecture/backend-gateway.md",
@@ -112,7 +112,7 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "docs/ROUTE-ACCESS.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "3b02930aea54e3bddd0fd4a266f4981e8b54493541c0916e8f503794d2a44f30"
+      "sha256": "6da43d2f451b74686deec599a1f21d4d70b368646797180723ce8736fce941e8"
     },
     {
       "path": "content/architecture/tenant-branding.md",
@@ -140,7 +140,7 @@
       "sourceRepo": "hugmesh-actions",
       "sourcePath": "e2e/README.md",
       "sourceRef": "hugmesh/hugmesh-actions@HEAD",
-      "sha256": "9a597e2bb603955f8df4ca2aa502998d238e13c78508d14ccda6932e25797cfd"
+      "sha256": "18657f0a33318ff473892ea832f861e575875ad946da2afa964adce02cf945ce"
     },
     {
       "path": "content/developer-guide/admin-ui-e2e.md",
@@ -224,7 +224,7 @@
       "sourceRepo": "hugmesh-forum-ui",
       "sourcePath": "e2e/README.md",
       "sourceRef": "hugmesh/hugmesh-forum-ui@HEAD",
-      "sha256": "ef37d8f4dad6363c4a44473d65496678dabe805302e0ab4f84cf00f972ee0328"
+      "sha256": "9932d4dc15edd9d043c803f90ef4ef7c079b946e5ccbd2770e5334f595ecd8d4"
     },
     {
       "path": "content/developer-guide/host-shell-e2e.md",
@@ -259,7 +259,7 @@
       "sourceRepo": "hugmesh-mastodon-ui",
       "sourcePath": "e2e/README.md",
       "sourceRef": "hugmesh/hugmesh-mastodon-ui@HEAD",
-      "sha256": "0c1084c335e08ca553cadeff1a6a32644285acc1349b83e86ce29e8792cb7909"
+      "sha256": "5d49001ad4b4cddc33bf8d2aa404ff5c82d7e4c2054daf67e77d2a8fabd5f278"
     },
     {
       "path": "content/developer-guide/matrix-ui-e2e.md",
@@ -350,7 +350,7 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "tests/qemu/README.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "c551e2daf968e74c6f0e6117d502733c71f639f18066fc70215545afaa19b28d"
+      "sha256": "e3093bde16ae3858c839d815b76c0d4d600da203b80b04a1637cd83df8c00f0a"
     },
     {
       "path": "content/developer-guide/scaffold-angular-host.md",
@@ -840,7 +840,7 @@
       "sourceRepo": "hugmesh-games",
       "sourcePath": "docs/wiki/architecture/05-api-reference.md",
       "sourceRef": "hugmesh/hugmesh-games@HEAD",
-      "sha256": "ae4edb4a1477c95d46e58bc6668a3335cc0f5530e4ceda6ce6b230c08b5c9540"
+      "sha256": "2b9822d8f76e799c82bbde1ecc869ac9a0cf5b25ce1bc756da2bf851569f354e"
     },
     {
       "path": "content/games/build-and-deploy.md",
@@ -1183,7 +1183,7 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "specs/cluster/README.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "b243363ec11759a696f5e61df623198c2487a2660c944b326b856782294c2e9f"
+      "sha256": "c66eb52c1270a78393f6b6a64c9ed6796ff8f9412b4cb97c6b69aee1ddaa9f20"
     },
     {
       "path": "content/operations/go-live-wizard.md",
@@ -1225,7 +1225,7 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "specs/cluster/bootstrap/kind-local/README.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "c51c435c91a4acedbaa990032ab15d7d7fa6267e0cc3c1ce92ea223039b32a22"
+      "sha256": "4897c7e57cb73dc02bddb2791f122b1a1ef1c4e7529f6409995a8dd26ebf81b9"
     },
     {
       "path": "content/operations/lorawan-mesh-sync.md",
@@ -1267,7 +1267,7 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "docs/OPTIONAL-SERVICES.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "3417e6a1417509a0535d4411883e053500cbdce17a4c30231732c3d0d278fbae"
+      "sha256": "f0978b93c2f51050a3b26161f233057e2a3d0cc896716097433ed6248fbf0c19"
     },
     {
       "path": "content/operations/per-domain-idp.md",
@@ -1302,7 +1302,7 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "docs/XR-CHAT.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "1faf7f16c67ca46c4cc010b7989c83196862fe5cfda53e29b129a65003482cde"
+      "sha256": "4959f275c5bb2aca5219b694edb24eb5138d33df7b1b2858dc92394bbdd7bb71"
     },
     {
       "path": "content/overview/what-is-hugmesh.md",
@@ -1330,14 +1330,14 @@
       "sourceRepo": "hugmesh-admin-bff-api",
       "sourcePath": "docs/SUBSYSTEMS.md",
       "sourceRef": "hugmesh/hugmesh-admin-bff-api@HEAD",
-      "sha256": "199dfd1f0265a8468d84caeb60436c6dd61f8f750558e36db155bc44d80dfbea"
+      "sha256": "0f085aa0088bd8da5d6bc1b526628774eede7876037e9b35f842b31de6fac1b4"
     },
     {
       "path": "content/reference/admin-bff.md",
       "sourceRepo": "hugmesh-admin-bff-api",
       "sourcePath": "README.md",
       "sourceRef": "hugmesh/hugmesh-admin-bff-api@HEAD",
-      "sha256": "d386dcd6b46c0de7c2094178de2d63bb1b27fab38c2a7cc79d29f9f0d2915fd0"
+      "sha256": "23e9d8ef668b394af7989cdfef68c43c32ba93bfc85de91d870909ef8dfc8fc1"
     },
     {
       "path": "content/reference/admin-ui.md",
@@ -1442,7 +1442,7 @@
       "sourceRepo": "hugmesh-forum-ui",
       "sourcePath": "README.md",
       "sourceRef": "hugmesh/hugmesh-forum-ui@HEAD",
-      "sha256": "783d8b55b4b9fae6c79bb4022fb20da43cf60b0d777d8ebb860e38a91b7b2b9f"
+      "sha256": "f6d94135af99fc6cae5441b69e131fc557ac0b0caad10797e6629efdc51b054d"
     },
     {
       "path": "content/reference/gateway-docs-index.md",
@@ -1554,7 +1554,7 @@
       "sourceRepo": "hugmesh-mastodon-ui",
       "sourcePath": "README.md",
       "sourceRef": "hugmesh/hugmesh-mastodon-ui@HEAD",
-      "sha256": "1ff4d9db937ebfa65c179cf09c8d504ff26ce7216c9afb4d311d6960ca5e7e59"
+      "sha256": "106bdbad590eb8d442522c4805dbbf7ee4c3f400b5d4545c8729eb3a5baba869"
     },
     {
       "path": "content/reference/matrix-ui.md",
@@ -1610,7 +1610,7 @@
       "sourceRepo": "hugmesh-superadmin-service-catalog-ui",
       "sourcePath": "README.md",
       "sourceRef": "hugmesh/hugmesh-superadmin-service-catalog-ui@HEAD",
-      "sha256": "171c4e77533d3132cd5a8517a338b6bf655d7fe8f237b35ba56dc0026ce2c955"
+      "sha256": "b2988b03159e51c7b190c48ae867eeeffb3e39f4f71d3d59044a06082680634b"
     },
     {
       "path": "content/reference/shared-binpkg-pools.md",
@@ -1813,7 +1813,7 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "docs/selinux-module-loading.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "fce5758af277bcaf8dc9823289274d42f3a73495c5c8b8d497e6c6f90b256544"
+      "sha256": "cfe6861676c6dca89323d105da46aefd38efb1ec771a2feadbf23cf6d8417120"
     },
     {
       "path": "content/security/user-bff-security.md",
@@ -1842,6 +1842,13 @@
       "sourcePath": "studio/README.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
       "sha256": "bf8651cd5fc3e5f5f028482572485be61edc08645ce94ef641c3098c55c713d8"
+    },
+    {
+      "path": "content/studio/walkthrough.md",
+      "sourceRepo": "hugmesh-generator",
+      "sourcePath": "docs/STUDIO-WALKTHROUGH.md",
+      "sourceRef": "hugmesh/hugmesh-generator@HEAD",
+      "sha256": "86a8caa8b01b3368131bc4ade30c612a69be94771f3ce9a6503ffe6ceadc7e51"
     },
     {
       "path": "content/studio/wizard-flow.md",
@@ -1897,14 +1904,14 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "README.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "93a97f195e616cd8a91fe7cf4ffa1f2195a931356a9531270d3e87b37710c8b6"
+      "sha256": "de54445c6983b24a68339cc768756c3367693751fc94219c8e834b150a7bd7f1"
     },
     {
       "path": "content/tutorials/local-docker-stack.md",
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "docs/LOCAL-STACK.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "2f3af1f388266945dcf4aee8df3a89f0ac8e71811ed183c1f14c8409c95aca38"
+      "sha256": "f82ea823cca56a61df4520478f6feb08c2ab714346a7e5bb7f3a5ce84f56892f"
     },
     {
       "path": "content/tutorials/local-lan-testing.md",
