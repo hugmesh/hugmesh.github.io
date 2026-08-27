@@ -18,8 +18,8 @@ interface MeshService {
   readonly icon: string;
   /** Where the docs explain it. */
   readonly route: string;
-  /** A real capture of the service running — the e2e suite's or a live one.
-   *  Absent means no capture exists yet; the card says nothing false instead. */
+  /** A real capture of the service running: the e2e suite's, a live one, or
+   *  the real UI staged locally on fixture data. Never a mockup. */
   readonly shot?: string;
   readonly shotAlt?: string;
 }
@@ -77,6 +77,8 @@ export class HomeComponent {
       blurb: 'A shared wiki, versioned, behind the same single sign-on as everything else.',
       accent: '#caffbf',
       route: '/architecture',
+      shot: 'assets/img/captures/card-wiki.jpg',
+      shotAlt: 'A wiki page — First boot: what the KEYS stick does — open in the wiki, with Edit and Publish',
     },
     {
       name: 'Forum',
@@ -84,6 +86,8 @@ export class HomeComponent {
       blurb: 'Threaded discussion for the conversations chat is the wrong shape for.',
       accent: '#d0b4f5',
       route: '/architecture',
+      shot: 'assets/img/captures/card-forum.jpg',
+      shotAlt: 'A forum thread — First boot on a Pi 5 — with three replies and the reply box',
     },
     {
       name: 'Video',
@@ -92,7 +96,7 @@ export class HomeComponent {
       accent: '#ffd6a5',
       route: '/architecture',
       shot: 'assets/img/captures/card-video.jpg',
-      shotAlt: 'A connected Matrix video call with two live feeds',
+      shotAlt: 'A live Owncast stream — carol, live from the mesh — with chat, and the streamer\'s console inset showing ONLINE and one viewer',
     },
     {
       name: 'Games',

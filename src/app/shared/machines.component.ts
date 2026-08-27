@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/c
 
 /** One slide: either an inline diagram (drawn in the template) or a capture. */
 export interface MachineSlide {
-  readonly id: 'topology' | 'provisioning' | 'login' | 'chat' | 'fediverse';
+  readonly id: 'topology' | 'provisioning' | 'login' | 'chat' | 'fediverse' | 'console';
   /** Read under the controls; also the accessible name of the slide's dot. */
   readonly caption: string;
   /** Set only on capture slides; diagram slides render inline SVG instead. */
@@ -13,7 +13,7 @@ export interface MachineSlide {
 /**
  * "Five machines. One world." — the hardware story, as a slideshow.
  *
- * Two diagrams and three captures. The diagrams are drawn here rather than
+ * Two diagrams and four captures. The diagrams are drawn here rather than
  * shipped as images so they stay text: greppable, themeable, and honest about
  * being diagrams. The captures are the opposite — real screenshots of the real
  * software (the login page live from a running mesh, and the Matrix and Akkoma
@@ -56,6 +56,12 @@ export class MachinesComponent {
       caption: 'The fediverse under your domain. An e2e-suite capture.',
       src: 'assets/img/captures/shot-mastodon.jpg',
       alt: 'The Akkoma home timeline with a compose box and a published post',
+    },
+    {
+      id: 'console',
+      caption: "Going live: the streamer's console with the stream online and a viewer watching.",
+      src: 'assets/img/captures/shot-owncast-console.jpg',
+      alt: 'The Owncast admin console with the stream ONLINE, one viewer, and the inbound 1280 by 720 stream details',
     },
   ];
 
