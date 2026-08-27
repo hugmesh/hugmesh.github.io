@@ -70,5 +70,5 @@ const EMPTY_INDEX: ContentIndex = {
   generatedFrom: '',
   sectionOrder: [],
   sections: [],
-  totals: { sections: 0, pages: 0 },
+  totals: { sections: 0, pages: 0, diagrams: 0 },
 };

@@ -34,7 +34,6 @@ section {
 .hero {
   margin: 0;
   padding: clamp(2.5rem, 7vw, 5rem) 0 clamp(2rem, 5vw, 3.5rem);
-  text-align: center;
 }
 
 .eyebrow {
@@ -52,8 +51,8 @@ section {
 }
 
 .lede {
-  max-width: 60ch;
-  margin: 0 auto 1.75rem;
+  max-width: 58ch;
+  margin: 0 0 1.75rem;
   color: var(--hug-text-muted);
   font-size: clamp(1rem, 0.5vw + 0.9rem, 1.15rem);
 }
@@ -61,12 +60,13 @@ section {
 .cta-row {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
   gap: 0.75rem;
 }
 
 .btn {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   padding: 0.7rem 1.4rem;
   border-radius: 999px;
   font-weight: 700;
@@ -356,4 +356,175 @@ section {
   margin: 0 0 0.9rem;
   color: var(--hug-accent-soft);
   font-weight: 700;
+}
+
+// ── Hero eyebrow ─────────────────────────────────────────────────────────────
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.3rem 0.85rem;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 999px;
+  background: rgba(255, 215, 0, 0.06);
+  // t.$neon-bright is 15.7:1 on --hug-bg-0 — AAA even at this size.
+  color: t.$neon-bright;
+
+  .dot {
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: t.$neon;
+  }
+}
+
+.hero h1 {
+  max-width: 15ch;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+  text-wrap: pretty;
+}
+
+.btn svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+// ── Worlds ───────────────────────────────────────────────────────────────────
+.worlds-head {
+  display: flex;
+  align-items: baseline;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+
+  h2 {
+    margin: 0;
+  }
+
+  .section-lede {
+    margin: 0;
+    max-width: 46ch;
+  }
+}
+
+.world-grid {
+  display: grid;
+  // Three across, then two rows — six cards. `auto-fit` fitted FOUR at 1440px
+  // and left a two-card orphan row with a hole beside it, which reads as a
+  // rendering fault rather than a layout.
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+
+  @media (max-width: 60rem) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @media (max-width: 34rem) { grid-template-columns: 1fr; }
+
+  margin: 1.75rem 0 0;
+  padding: 0;
+  list-style: none;
+
+  a {
+    display: block;
+    height: 100%;
+    padding: 1.25rem;
+    border: 1px solid color-mix(in srgb, var(--world-accent) 30%, transparent);
+    border-radius: t.$radius-lg;
+    background: var(--hug-bg-1);
+    text-decoration: none;
+
+    &:hover,
+    &:focus-visible {
+      border-color: var(--world-accent);
+    }
+  }
+
+  // 16% tint with nothing inside it painted as plain grey — measured, not
+  // guessed. The glyph is what makes the accent legible at this size.
+  .world-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin-bottom: 0.9rem;
+    border-radius: 0.8rem;
+    background: color-mix(in srgb, var(--world-accent) 14%, transparent);
+
+    svg { width: 1.4rem; height: 1.4rem; }
+  }
+
+  strong {
+    display: block;
+    margin-bottom: 0.35rem;
+    color: var(--hug-text);
+    font-size: 1.05rem;
+  }
+
+  em {
+    color: var(--hug-text-muted);
+    font-size: 0.9rem;
+    font-style: normal;
+    line-height: 1.55;
+  }
+}
+
+// ── It is yours ──────────────────────────────────────────────────────────────
+.yours-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1.75rem;
+  padding: 1.75rem 0;
+  border-top: 1px solid var(--hug-border);
+  border-bottom: 1px solid var(--hug-border);
+
+  p {
+    margin: 0.5rem 0 0;
+    color: var(--hug-text-muted);
+    line-height: 1.6;
+  }
+}
+
+.kicker {
+  color: t.$neon;
+  font-family: t.$font-mono;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+// ── Docs strip ───────────────────────────────────────────────────────────────
+.strip {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  padding: 1.75rem;
+  border: 1px solid var(--hug-border);
+  border-radius: t.$radius-lg;
+  background: var(--hug-bg-1);
+}
+
+.stat {
+  margin: 0;
+
+  .stat-n {
+    display: block;
+    color: var(--hug-text);
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .stat-l {
+    color: var(--hug-text-muted);
+    font-size: 0.875rem;
+  }
+}
+
+.strip-note {
+  flex: 1 1 20rem;
+  margin: 0;
+  color: var(--hug-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
 }

@@ -179,3 +179,21 @@ img {
     scroll-behavior: auto !important;
   }
 }
+
+// ── Accessibility utility ────────────────────────────────────────────────────
+// A heading that exists for screen readers and the document outline but would be
+// noise on screen. Clipped rather than display:none — the latter removes it from
+// the accessibility tree entirely, which defeats the point of having it.
+// Global because more than one component needs it and a per-component copy is
+// how a utility drifts.
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

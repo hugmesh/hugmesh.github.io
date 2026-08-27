@@ -1,21 +1,27 @@
 <main id="maincontent">
+  <!-- ── hero ──────────────────────────────────────────────────────────────
+       The first screen answers three questions in order: what is this, does it
+       run on my machine, how do I get it. -->
   <section class="hero">
-    <p class="eyebrow">Open source · Self-hosted · MIT licensed</p>
-    <h1>Run your own community platform.<br />Not someone else's.</h1>
+    <p class="eyebrow"><span class="dot" aria-hidden="true"></span>Open source · Self-hosted · MIT licensed</p>
+    <h1>Your own corner of the internet.</h1>
     <p class="lede">
-      HugMesh is a generator-first platform for standing up a full social stack — chat,
-      fediverse, wiki, forum, video, and a game studio — on hardware you own, under a
-      domain you control, behind an identity provider you run. One USB key and a small
-      cluster is all it takes.
+      HugMesh builds you a private world — chat, fediverse, wiki, forum, video and
+      games — on hardware you own, under a domain you control, behind an identity
+      provider you run. Bring six friends. Or six hundred.
     </p>
     <div class="cta-row">
-      <a class="btn btn-primary" routerLink="/tutorials">Start the tutorials</a>
-      <a class="btn btn-ghost" routerLink="/architecture">How it works</a>
-      <a class="btn btn-ghost" routerLink="/downloads">Get the Studio</a>
+      <a class="btn btn-primary" routerLink="/tutorials">
+        Create a world
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M5 12h13M12 5.5 18.5 12 12 18.5" fill="none" stroke="currentColor"
+                stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </a>
+      <a class="btn btn-ghost" routerLink="/architecture">See how it works</a>
     </div>
-    <p class="hero-note">
-      Multi-tenant. Federation-first. Security load-bearing, not bolted on.
-    </p>
+
+    <hug-platform-rail />
   </section>
 
   @if (indexFailed()) {
@@ -27,6 +33,61 @@
       >.
     </p>
   }
+
+  <!-- ── the worlds ─────────────────────────────────────────────────────── -->
+  <section class="worlds" aria-labelledby="worlds-title">
+    <div class="worlds-head">
+      <h2 id="worlds-title">Six worlds, one mesh.</h2>
+      <p class="section-lede">
+        Every service federates and shares one identity. Switch off the ones your
+        people do not want.
+      </p>
+    </div>
+    <ul class="world-grid">
+      @for (w of worlds; track w.name) {
+        <li [style.--world-accent]="w.accent">
+          <a [routerLink]="w.route">
+            <span class="world-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" [attr.stroke]="w.accent"
+                   stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path [attr.d]="w.icon" />
+              </svg>
+            </span>
+            <strong>{{ w.name }}</strong>
+            <em>{{ w.blurb }}</em>
+          </a>
+        </li>
+      }
+    </ul>
+  </section>
+
+  <!-- ── it is yours ────────────────────────────────────────────────────── -->
+  <section class="yours" aria-labelledby="yours-title">
+    <h2 id="yours-title" class="visually-hidden">What you keep</h2>
+    <div class="yours-grid">
+      <article>
+        <span class="kicker">Your metal</span>
+        <p>
+          Four Raspberry Pis and an x86 host. Or one box under a desk. The Studio
+          writes the images and the keys; the cluster brings itself up.
+        </p>
+      </article>
+      <article>
+        <span class="kicker">Your identity</span>
+        <p>
+          One identity provider you run. One session across every world. No third
+          party learns who your people are.
+        </p>
+      </article>
+      <article>
+        <span class="kicker">Your exit</span>
+        <p>
+          MIT licensed, built from source you can read. Nothing here is an account
+          someone can lock you out of.
+        </p>
+      </article>
+    </div>
+  </section>
 
   @if (firstSteps().length) {
     <section class="start" aria-labelledby="start-here">
@@ -48,6 +109,24 @@
           </li>
         }
       </ol>
+    </section>
+  }
+
+  <!-- ── docs strip ─────────────────────────────────────────────────────
+       Both numbers come from the built index, so neither can drift from what
+       the site actually serves. -->
+  @if (totalPages()) {
+    <section class="strip" aria-labelledby="strip-title">
+      <h2 id="strip-title" class="visually-hidden">Documentation</h2>
+      <p class="stat"><span class="stat-n">{{ totalPages() }}</span><span class="stat-l">documentation pages</span></p>
+      @if (totalDiagrams()) {
+        <p class="stat"><span class="stat-n">{{ totalDiagrams() }}</span><span class="stat-l">architecture diagrams</span></p>
+      }
+      <p class="strip-note">
+        Written beside the code and published from it. The page you read is the code
+        that shipped.
+      </p>
+      <a class="btn btn-ghost" routerLink="/overview">Read the docs</a>
     </section>
   }
 

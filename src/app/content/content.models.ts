@@ -59,7 +59,14 @@ export interface ContentIndex {
   readonly generatedFrom: string;
   readonly sectionOrder: readonly string[];
   readonly sections: readonly SectionIndex[];
-  readonly totals: { readonly sections: number; readonly pages: number };
+  readonly totals: {
+    readonly sections: number;
+    readonly pages: number;
+    /** Mermaid diagrams across every page. Optional because a stale
+     *  index.json predates the field — the front door renders nothing
+     *  rather than a zero when it is missing. */
+    readonly diagrams?: number;
+  };
 }
 
 /** One entry of assets/content/search.json */
