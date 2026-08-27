@@ -1,11 +1,11 @@
 ---
-title: "hugmesh-forum-ui — e2e (Playwright + playwright-bdd"
+title: "hugmesh-forum-ui — e2e (Playwright + playwright-bdd)"
 section: "developer-guide"
 slug: "forum-ui-e2e"
 summary: "The Gherkin BDD harness for the forum-ui remote, containing pure test code only."
 source_repo: "hugmesh-forum-ui"
 source_path: "e2e/README.md"
-source_ref: "5d2295e"
+source_ref: "hugmesh/hugmesh-forum-ui@HEAD"
 ---
 
 Gherkin/BDD end-to-end harness for the **forum-ui native-federation remote**
@@ -77,6 +77,14 @@ E2E_BASE_URL=https://your-host:8443 \
 E2E_FORUM_USER_PASSWORD=… E2E_ADMIN_PASSWORD=… \
 npm run bdd                # bddgen && playwright test
 ```
+
+Per-user `E2E_<ROLE>_PASSWORD` / shared `E2E_PASSWORD` env vars above are
+optional overrides, not requirements: `tests/helpers/roles.ts` (`passwordFor()`)
+falls back to the run-state `.e2e-credentials` file written by
+hugmesh-generator's `make stack-seed` (`$E2E_CREDENTIALS_FILE`, or a
+`.e2e-credentials` found by walking up from cwd). There is no built-in literal
+password — if nothing resolves, the suite throws naming `make stack-seed`
+rather than silently authenticating with a guessable default.
 
 Per-step PNGs are attached to the HTML report (`results/html`) via the
 `AfterStep` hook in `features/support/fixtures.ts`; trace/video retain on failure.

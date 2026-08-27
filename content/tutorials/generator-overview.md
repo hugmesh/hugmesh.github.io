@@ -5,7 +5,7 @@ slug: "generator-overview"
 summary: "Master README for the image/infra layer: crossdev builds of hardened Gentoo images for Pi 5 and x86 GPU hosts plus the GitOps payload."
 source_repo: "hugmesh-generator"
 source_path: "README.md"
-source_ref: "c22c6140"
+source_ref: "hugmesh/hugmesh-generator@HEAD"
 ---
 
 Crossdev / native build scripts that produce **hardened Gentoo images** for the
@@ -175,11 +175,12 @@ _As of 2026-08-05. State key: **✅ shipped** (on `main`) · **🚧 in-flight** 
 - **✅ Optional services (add/remove)** — **19 slugs** in
   [`specs/cluster/optional-services.yaml`](specs/cluster/optional-services.yaml):
   akkoma / tuwunel / phpBB / games / owncast / LocalTube (`tube`) /
-  **character-studio** (VN character-creator + chat remote, default-off; the
-  federation-module DB registration is a documented cross-repo TODO — see
-  [`specs/cluster/manifests/character-studio/FEDERATION-REGISTRATION-TODO.md`](specs/cluster/manifests/character-studio/FEDERATION-REGISTRATION-TODO.md))
+  **character-studio** (VN character-creator + chat remote, default-off;
+  registered as a federation module via hugmesh-federation-api's
+  `040-register-character-studio-module.xml`)
   / **character-forge** (3D character forge — BFF + DB + federated UI, apps
-  `38b`/`39b`/`49c`; same cross-repo federation-registration TODO) / **edge-AI**
+  `38b`/`39b`/`49c`; likewise registered via hugmesh-federation-api's
+  `038`/`039` changesets) / **edge-AI**
   (+ `edge-ai-analysis`, `edge-ai-tts`; GPU inference, OpenAI model API to the
   mesh — [docs/EDGE-AI.md](docs/EDGE-AI.md)) / **coturn** / **meshbridge**
   (Meshtastic LoRa mesh ↔ Matrix bridge, DEFAULT-OFF runtime-only,
