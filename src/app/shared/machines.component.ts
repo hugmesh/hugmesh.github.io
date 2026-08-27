@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/c
 
 /** One slide: either an inline diagram (drawn in the template) or a capture. */
 export interface MachineSlide {
-  readonly id: 'topology' | 'provisioning' | 'login' | 'chat' | 'fediverse' | 'console';
+  readonly id: 'topology' | 'provisioning' | 'login' | 'chat' | 'fediverse' | 'console' | 'avatar-cam';
   /** Read under the controls; also the accessible name of the slide's dot. */
   readonly caption: string;
   /** Set only on capture slides; diagram slides render inline SVG instead. */
@@ -62,6 +62,12 @@ export class MachinesComponent {
       caption: "Going live: the streamer's console with the stream online and a viewer watching.",
       src: 'assets/img/captures/shot-owncast-console.jpg',
       alt: 'The Owncast admin console with the stream ONLINE, one viewer, and the inbound 1280 by 720 stream details',
+    },
+    {
+      id: 'avatar-cam',
+      caption: 'Live as your own 2D avatar: the Avatar cam swaps three mouth frames with your voice; OBS captures the window.',
+      src: 'assets/img/captures/shot-avatar-cam.jpg',
+      alt: 'The Owncast console\'s Avatar cam: a 2D avatar built in the Character Forge on a green screen, mouth open, above the avatar, expression and background pickers',
     },
   ];
 
