@@ -92,11 +92,11 @@ export class HomeComponent {
     {
       name: 'Video',
       icon: 'M4 7.5A1.5 1.5 0 0 1 5.5 6h9A1.5 1.5 0 0 1 16 7.5v9A1.5 1.5 0 0 1 14.5 18h-9A1.5 1.5 0 0 1 4 16.5v-9ZM16 10.5l4-2.5v8l-4-2.5',
-      blurb: 'Upload, transcode and stream — plus live broadcast when you want it.',
+      blurb: 'Upload, transcode and stream — plus live broadcast when you want it, as yourself or as your own 2D avatar.',
       accent: '#ffd6a5',
       route: '/architecture',
       shot: 'assets/img/captures/card-video.jpg',
-      shotAlt: 'A live Owncast stream — carol, live from the mesh — with chat, and the streamer\'s console inset showing ONLINE and one viewer',
+      shotAlt: 'A live Owncast stream — carol, live as her 2D avatar, the mic driving its mouth — with chat, and the Avatar cam console inset showing the avatar on a green screen with its mouth open',
     },
     {
       name: 'Games',
