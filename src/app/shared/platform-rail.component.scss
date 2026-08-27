@@ -1,0 +1,141 @@
+@use 'tokens' as t;
+
+:host { display: block; }
+
+.rail {
+  margin: 2.5rem 0 0;
+  padding: 1.15rem 1.25rem;
+  border: 1px solid var(--hug-border);
+  border-radius: t.$radius-lg;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.rail-main {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.rail-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.8rem;
+
+  svg { width: 1.35rem; height: 1.35rem; }
+}
+
+.rail-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+
+.rail-name {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+
+  strong { font-size: 1.05rem; }
+}
+
+.tag {
+  padding: 0.1rem 0.5rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-family: t.$font-mono;
+  font-size: 0.7rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.tag-picked { color: var(--hug-text-muted); }
+
+.pkg {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: var(--hug-bg-2);
+  color: var(--hug-text-muted);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rail-note {
+  color: var(--hug-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.rail-cta {
+  flex: 0 0 auto;
+  padding: 0.7rem 1.4rem;
+  border: 1px solid var(--hug-border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--hug-text);
+  font-weight: 700;
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible { border-color: t.$neon; }
+}
+
+.rail-switch {
+  margin: 0.9rem 0 0;
+  color: var(--hug-text-muted);
+  font-size: 0.875rem;
+}
+
+.switch {
+  margin-left: 0.4rem;
+  padding: 0.15rem 0.6rem;
+  border: 1px solid var(--hug-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--hug-text);
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    border-color: t.$neon;
+    color: t.$neon-bright;
+  }
+}
+
+.rail-install {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin: 0.85rem 0 0;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--hug-border);
+  font-size: 0.875rem;
+
+  // --hug-text-muted is 8.77:1 — AAA. t.$muted (#777777) measures 4.42:1 and
+  // would FAIL the 4.5:1 AA floor at this size, which is why it is not used.
+  code {
+    flex: 1 1 20rem;
+    min-width: 0;
+    overflow-x: auto;
+    padding: 0.4rem 0.6rem;
+    border-radius: 0.4rem;
+    background: var(--hug-bg-2);
+    color: var(--hug-text-muted);
+    font-family: t.$font-mono;
+    font-size: 0.8125rem;
+    white-space: nowrap;
+  }
+
+  a { color: t.$neon; white-space: nowrap; }
+}

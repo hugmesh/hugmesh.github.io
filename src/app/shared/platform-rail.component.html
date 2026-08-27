@@ -1,0 +1,37 @@
+<section class="rail" aria-labelledby="rail-title">
+  <h2 id="rail-title" class="visually-hidden">Get the Studio</h2>
+  <div class="rail-main">
+    <span class="rail-icon" [style.background]="offer().accent + '1f'" aria-hidden="true">
+      <svg viewBox="0 0 24 24" [attr.stroke]="offer().accent" fill="none" stroke-width="1.6">
+        <path d="M4 5.5h16v10H4zM9 19h6M12 15.5V19" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </span>
+    <span class="rail-body">
+      <span class="rail-name">
+        <strong>{{ offer().name }}</strong>
+        @if (isGuess()) {
+          <span class="tag" [style.color]="offer().accent" [style.border-color]="offer().accent">detected</span>
+        } @else {
+          <span class="tag tag-picked">selected</span>
+        }
+        <span class="pkg">{{ offer().badge }}</span>
+      </span>
+      <span class="rail-note">{{ offer().note }}</span>
+    </span>
+    <a class="rail-cta" routerLink="/downloads">
+      @if (offer().packaged) { Get the Studio } @else { Run from source }
+    </a>
+  </div>
+
+  <p class="rail-switch">
+    Not your platform?
+    @for (p of otherPlatforms(); track p.id) {
+      <button type="button" class="switch" (click)="choose(p.id)">{{ p.name }}</button>
+    }
+  </p>
+
+  <p class="rail-install">
+    <code>{{ offer().install[0] }}</code>
+    <a routerLink="/downloads">Full install notes for every platform →</a>
+  </p>
+</section>

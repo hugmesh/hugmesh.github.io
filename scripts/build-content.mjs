@@ -411,6 +411,9 @@ async function main() {
       title: entry.title,
       summary: entry.summary ?? data.summary ?? plain.slice(0, 180),
       hasMermaid: html.includes('class="mermaid"'),
+      // The COUNT, not just the flag: the front door publishes a diagram total,
+      // and a number nothing derives is a number that quietly goes stale.
+      mermaidCount: (html.match(/class="mermaid"/g) ?? []).length,
       readingMinutes: Math.max(1, Math.round(plain.split(' ').length / 220)),
       toc,
       source,
@@ -456,7 +459,11 @@ async function main() {
       generatedFrom: meta.description ?? 'docs.manifest.json',
       sectionOrder: SECTIONS.map((s) => s.id),
       sections,
-      totals: { sections: sections.length, pages: pages.length },
+      totals: {
+        sections: sections.length,
+        pages: pages.length,
+        diagrams: pages.reduce((n, p) => n + (p.mermaidCount ?? 0), 0),
+      },
     }),
     'utf8',
   );
