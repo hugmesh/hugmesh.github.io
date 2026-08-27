@@ -390,8 +390,8 @@ section {
   height: 1rem;
 }
 
-// ── Worlds ───────────────────────────────────────────────────────────────────
-.worlds-head {
+// ── Services ───────────────────────────────────────────────────────────────────
+.services-head {
   display: flex;
   align-items: baseline;
   gap: 1.5rem;
@@ -407,7 +407,7 @@ section {
   }
 }
 
-.world-grid {
+.service-grid {
   display: grid;
   // Three across, then two rows — six cards. `auto-fit` fitted FOUR at 1440px
   // and left a two-card orphan row with a hole beside it, which reads as a
@@ -426,20 +426,20 @@ section {
     display: block;
     height: 100%;
     padding: 1.25rem;
-    border: 1px solid color-mix(in srgb, var(--world-accent) 30%, transparent);
+    border: 1px solid color-mix(in srgb, var(--service-accent) 30%, transparent);
     border-radius: t.$radius-lg;
     background: var(--hug-bg-1);
     text-decoration: none;
 
     &:hover,
     &:focus-visible {
-      border-color: var(--world-accent);
+      border-color: var(--service-accent);
     }
   }
 
   // 16% tint with nothing inside it painted as plain grey — measured, not
   // guessed. The glyph is what makes the accent legible at this size.
-  .world-icon {
+  .service-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -447,7 +447,7 @@ section {
     height: 2.75rem;
     margin-bottom: 0.9rem;
     border-radius: 0.8rem;
-    background: color-mix(in srgb, var(--world-accent) 14%, transparent);
+    background: color-mix(in srgb, var(--service-accent) 14%, transparent);
 
     svg { width: 1.4rem; height: 1.4rem; }
   }

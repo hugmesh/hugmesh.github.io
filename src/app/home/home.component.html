@@ -34,20 +34,20 @@
     </p>
   }
 
-  <!-- ── the worlds ─────────────────────────────────────────────────────── -->
-  <section class="worlds" aria-labelledby="worlds-title">
-    <div class="worlds-head">
-      <h2 id="worlds-title">Six worlds, one mesh.</h2>
+  <!-- ── the services ─────────────────────────────────────────────────────── -->
+  <section class="services" aria-labelledby="services-title">
+    <div class="services-head">
+      <h2 id="services-title">Six services. One world.</h2>
       <p class="section-lede">
         Every service federates and shares one identity. Switch off the ones your
         people do not want.
       </p>
     </div>
-    <ul class="world-grid">
-      @for (w of worlds; track w.name) {
-        <li [style.--world-accent]="w.accent">
+    <ul class="service-grid">
+      @for (w of services; track w.name) {
+        <li [style.--service-accent]="w.accent">
           <a [routerLink]="w.route">
-            <span class="world-icon" aria-hidden="true">
+            <span class="service-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" [attr.stroke]="w.accent"
                    stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
                 <path [attr.d]="w.icon" />

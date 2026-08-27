@@ -5,9 +5,10 @@ import { ContentService } from '../content/content.service';
 import { SECTIONS } from '../content/sections';
 import { PlatformRailComponent } from '../shared/platform-rail.component';
 
-/** One of the services a mesh stands up. Pastels key the cards; every one is
- *  AAA against --hug-bg-0 (measured, not assumed — see _tokens.scss). */
-interface World {
+/** One of the services a mesh stands up — "world" is reserved for the mesh
+ *  itself, the whole world it hosts for its people. Pastels key the cards;
+ *  every one is AAA against --hug-bg-0 (measured, not assumed — _tokens.scss). */
+interface MeshService {
   readonly name: string;
   readonly blurb: string;
   readonly accent: string;
@@ -45,8 +46,8 @@ export class HomeComponent {
   readonly sections = SECTIONS;
   readonly indexFailed = this.content.indexFailed;
 
-  // ── the worlds ────────────────────────────────────────────────────────────
-  readonly worlds: readonly World[] = [
+  // ── the services ──────────────────────────────────────────────────────────
+  readonly services: readonly MeshService[] = [
     {
       name: 'Chat',
       icon: 'M20 12.4c0 3.9-3.6 7-8 7a9 9 0 0 1-2.6-.4L5 20.5l1.2-3.4A6.6 6.6 0 0 1 4 12.4c0-3.9 3.6-7 8-7s8 3.1 8 7Z',
