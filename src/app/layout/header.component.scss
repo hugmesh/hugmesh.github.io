@@ -193,6 +193,16 @@
 // navigate a documentation site, so burying it behind a second tap is the wrong
 // trade.
 @media (max-width: t.$bp-xl) {
+  // .primary below asks for `flex: 1 0 100%` so it drops onto its own line, but
+  // a flex container is `nowrap` by default — so it never wrapped. It stayed in
+  // the bar as a 366px-wide item that `max-height: 0` merely made INVISIBLE,
+  // pushing the row to 856px inside a 390px viewport. The page scrolled
+  // sideways with nothing visibly out of place, which is why this survived.
+  .bar {
+    flex-wrap: wrap;
+    row-gap: 0;
+  }
+
   .menu-toggle {
     display: inline-flex;
     order: 3;
