@@ -74,11 +74,18 @@ section {
 }
 
 .btn-primary {
-  background: var(--hug-accent);
-  border: 1px solid var(--hug-accent);
-  // #ffffff on #7c4dff is 5.1:1 — AA. The accent is a background-only token
-  // against the PAGE, but the roles invert on a filled button.
-  color: #ffffff;
+  // The canvas direction fills the front door's CTA with the brand gold.
+  // #0a0a0a on #ffd700 is 12.6:1 — AAA; the purple --hug-accent stays the
+  // link-and-chrome accent everywhere else on the site.
+  background: t.$neon;
+  border: 1px solid t.$neon;
+  color: t.$black;
+
+  &:hover,
+  &:focus-visible {
+    background: t.$neon-bright;
+    border-color: t.$neon-bright;
+  }
 }
 
 .btn-ghost {
@@ -407,6 +414,13 @@ section {
   }
 }
 
+.service-note {
+  margin: 1.1rem 0 0;
+  font-family: t.$font-mono;
+  font-size: 0.78rem;
+  color: var(--hug-text-muted);
+}
+
 .service-grid {
   display: grid;
   // Three across, then two rows — six cards. `auto-fit` fitted FOUR at 1440px
@@ -435,6 +449,15 @@ section {
     &:focus-visible {
       border-color: var(--service-accent);
     }
+  }
+
+  .service-shot {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-bottom: 1rem;
+    border: 1px solid var(--hug-border);
+    border-radius: t.$radius-md;
   }
 
   // 16% tint with nothing inside it painted as plain grey — measured, not

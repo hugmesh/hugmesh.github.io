@@ -1,0 +1,160 @@
+@use 'tokens' as t;
+
+.machines-head {
+  display: flex;
+  align-items: baseline;
+  gap: 1.75rem;
+  flex-wrap: wrap;
+
+  h2 { margin: 0; }
+
+  .section-lede {
+    margin: 0;
+    color: t.$muted;
+    max-width: 46ch;
+  }
+}
+
+.machines-row {
+  display: flex;
+  gap: 1.75rem;
+  align-items: stretch;
+  margin-top: 2.1rem;
+}
+
+figure {
+  margin: 0;
+}
+
+.stage-panel {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 1.6rem 1.6rem 1.1rem;
+  border: 1px solid var(--hug-border);
+  border-radius: t.$radius-lg;
+  background: var(--hug-bg-1);
+}
+
+.stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 27rem;
+
+  svg {
+    width: min(40rem, 100%);
+    height: auto;
+  }
+
+  img {
+    max-width: 100%;
+    max-height: 29rem;
+    border-radius: t.$radius-md;
+    border: 1px solid var(--hug-border);
+  }
+}
+
+// The diagrams' text, kept as classes so both SVGs stay lean and consistent.
+.t-mono      { font-family: t.$font-mono; font-size: 12px; fill: t.$light; }
+.t-body      { font-family: t.$font-sans; font-size: 13px; fill: #999999; }
+.t-dim       { fill: t.$light; }
+.t-gold      { fill: t.$neon; }
+.t-gold-soft { fill: t.$neon-bright; }
+.node        { fill: var(--hug-bg-2); }
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 1rem;
+}
+
+.step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--hug-border);
+  background: none;
+  color: t.$light;
+  cursor: pointer;
+  transition: border-color t.$transition-base, color t.$transition-base;
+
+  svg { width: 1rem; height: 1rem; }
+
+  &:hover,
+  &:focus-visible {
+    border-color: t.$neon;
+    color: t.$neon;
+  }
+}
+
+.dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  cursor: pointer;
+
+  &.on { background: t.$neon; }
+
+  &:focus-visible {
+    outline: 2px solid t.$neon;
+    outline-offset: 2px;
+  }
+}
+
+.counter {
+  font-family: t.$font-mono;
+  font-size: 0.75rem;
+  color: t.$muted;
+}
+
+.stage-panel figcaption {
+  margin-top: 0.55rem;
+  font-size: 0.82rem;
+  color: t.$muted;
+}
+
+.phone {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+
+  .phone-frame {
+    display: block;
+    padding: 0.55rem;
+    border: 1px solid var(--hug-border);
+    border-radius: 1.75rem;
+    background: var(--hug-bg-1);
+  }
+
+  img {
+    display: block;
+    border-radius: 1.25rem;
+  }
+
+  figcaption {
+    max-width: 30ch;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: t.$muted;
+    text-align: center;
+  }
+}
+
+// The phone column leaves no room on small screens; the panel alone tells the
+// story there, and the captures still carry the proof.
+@media (max-width: t.$bp-lg) {
+  .machines-row { flex-direction: column; }
+  .phone { align-self: center; }
+}

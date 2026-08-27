@@ -4,6 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ContentService } from '../content/content.service';
 import { SECTIONS } from '../content/sections';
 import { PlatformRailComponent } from '../shared/platform-rail.component';
+import { MachinesComponent } from '../shared/machines.component';
 
 /** One of the services a mesh stands up — "world" is reserved for the mesh
  *  itself, the whole world it hosts for its people. Pastels key the cards;
@@ -17,6 +18,10 @@ interface MeshService {
   readonly icon: string;
   /** Where the docs explain it. */
   readonly route: string;
+  /** A real capture of the service running — the e2e suite's or a live one.
+   *  Absent means no capture exists yet; the card says nothing false instead. */
+  readonly shot?: string;
+  readonly shotAlt?: string;
 }
 
 /**
@@ -35,7 +40,7 @@ interface MeshService {
  */
 @Component({
   selector: 'hug-home',
-  imports: [RouterLink, PlatformRailComponent],
+  imports: [RouterLink, PlatformRailComponent, MachinesComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -54,6 +59,8 @@ export class HomeComponent {
       blurb: 'Matrix, end-to-end encrypted, federating with the wider network.',
       accent: '#ffc8dd',
       route: '/architecture',
+      shot: 'assets/img/captures/card-chat.jpg',
+      shotAlt: 'Two people talking in a Matrix room',
     },
     {
       name: 'Fediverse',
@@ -61,6 +68,8 @@ export class HomeComponent {
       blurb: 'An Akkoma instance under your domain, following anyone on the fediverse.',
       accent: '#bde0fe',
       route: '/architecture',
+      shot: 'assets/img/captures/card-fedi.jpg',
+      shotAlt: 'An Akkoma home timeline with a compose box and a published post',
     },
     {
       name: 'Wiki',
@@ -82,13 +91,17 @@ export class HomeComponent {
       blurb: 'Upload, transcode and stream — plus live broadcast when you want it.',
       accent: '#ffd6a5',
       route: '/architecture',
+      shot: 'assets/img/captures/card-video.jpg',
+      shotAlt: 'A connected Matrix video call with two live feeds',
     },
     {
       name: 'Games',
       icon: 'M7.5 8.5h9A3.5 3.5 0 0 1 20 12v3.5A2.5 2.5 0 0 1 17.5 18c-1.2 0-1.8-.7-2.5-1.5h-6C8.3 17.3 7.7 18 6.5 18A2.5 2.5 0 0 1 4 15.5V12a3.5 3.5 0 0 1 3.5-3.5ZM8 11.5v3M6.5 13h3M15.5 12h.01M17.5 14h.01',
-      blurb: 'A Godot studio in the browser: build worlds, publish them, play together.',
+      blurb: 'Chess, a Godot studio in the browser, a WASM game lane: build, publish, play together.',
       accent: '#fdffb6',
       route: '/games',
+      shot: 'assets/img/captures/card-games.jpg',
+      shotAlt: 'A chess game in progress — the Ruy Lopez on the board, Black to move',
     },
   ];
 

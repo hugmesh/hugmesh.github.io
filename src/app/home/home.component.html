@@ -7,12 +7,12 @@
     <h1>Your own corner of the internet.</h1>
     <p class="lede">
       HugMesh builds you a private world — chat, fediverse, wiki, forum, video and
-      games — on hardware you own, under a domain you control, behind an identity
-      provider you run. Bring six friends. Or six hundred.
+      games — on your hardware, your domain, your identity provider. Bring six
+      friends. Or six hundred.
     </p>
     <div class="cta-row">
       <a class="btn btn-primary" routerLink="/tutorials">
-        Create a world
+        Create your world
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
           <path d="M5 12h13M12 5.5 18.5 12 12 18.5" fill="none" stroke="currentColor"
                 stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" />
@@ -37,7 +37,7 @@
   <!-- ── the services ─────────────────────────────────────────────────────── -->
   <section class="services" aria-labelledby="services-title">
     <div class="services-head">
-      <h2 id="services-title">Six services. One world.</h2>
+      <h2 id="services-title">Your Services, Your Hardware, Your Cloud, Your people.</h2>
       <p class="section-lede">
         Every service federates and shares one identity. Switch off the ones your
         people do not want.
@@ -47,6 +47,9 @@
       @for (w of services; track w.name) {
         <li [style.--service-accent]="w.accent">
           <a [routerLink]="w.route">
+            @if (w.shot) {
+              <img class="service-shot" [src]="w.shot" [alt]="w.shotAlt" loading="lazy" />
+            }
             <span class="service-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" [attr.stroke]="w.accent"
                    stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
@@ -59,6 +62,10 @@
         </li>
       }
     </ul>
+    <p class="service-note">
+      Every screenshot is the real thing running — e2e-suite captures and live ones.
+      Wiki and forum have no camera on them yet.
+    </p>
   </section>
 
   <!-- ── it is yours ────────────────────────────────────────────────────── -->
@@ -75,7 +82,7 @@
       <article>
         <span class="kicker">Your identity</span>
         <p>
-          One identity provider you run. One session across every world. No third
+          One identity provider you run. One session across every service. No third
           party learns who your people are.
         </p>
       </article>
@@ -88,6 +95,8 @@
       </article>
     </div>
   </section>
+
+  <hug-machines />
 
   @if (firstSteps().length) {
     <section class="start" aria-labelledby="start-here">

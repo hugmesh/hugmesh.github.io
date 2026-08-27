@@ -1,0 +1,141 @@
+<section class="machines" aria-labelledby="machines-title">
+  <div class="machines-head">
+    <h2 id="machines-title">Five machines. One world.</h2>
+    <p class="section-lede">
+      Four Pis and a GPU box. One USB key provisions them all at first boot.
+    </p>
+  </div>
+
+  <div class="machines-row">
+    <figure class="stage-panel">
+      <div class="stage">
+        @switch (current().id) {
+          @case ('topology') {
+            <!-- Redrawn from content/architecture/cluster-architecture.md -->
+            <svg viewBox="0 0 640 430" fill="none" role="img"
+                 aria-label="Cluster topology: the internet reaches a Cloudflare edge, then the frontend and backend gateways, then the frontend, backend and pki Raspberry Pis and a GPU node; a KEYS USB stick provisions every node at first boot">
+              <rect x="200" y="8" width="240" height="34" rx="17" stroke="rgba(255,255,255,0.22)" />
+              <text x="320" y="29" text-anchor="middle" class="t-mono t-dim">internet · cloudflare edge</text>
+              <path d="M320 42 V58 H180 V76 M320 58 H460 V76" stroke="rgba(255,255,255,0.16)" />
+              <rect x="76" y="76" width="208" height="34" rx="17" stroke="rgba(255,215,0,0.45)" />
+              <text x="180" y="97" text-anchor="middle" class="t-mono t-gold-soft">fe-gateway · hugmesh.net</text>
+              <rect x="342" y="76" width="236" height="34" rx="17" stroke="rgba(255,215,0,0.30)" />
+              <text x="460" y="97" text-anchor="middle" class="t-mono t-gold">be-gateway · api / matrix / fedi</text>
+              <path d="M180 110 V131 H112 V150 M460 110 V131 H320 V150 M460 131 H528 V150" stroke="rgba(255,255,255,0.16)" />
+
+              <rect x="16" y="150" width="192" height="122" rx="14" class="node" stroke="rgba(255,200,221,0.35)" />
+              <text x="34" y="178" class="t-mono" fill="#ffc8dd">frontend Pis</text>
+              <text x="34" y="204" class="t-body">Angular host shell</text>
+              <text x="34" y="226" class="t-body">every service's UI</text>
+
+              <rect x="224" y="150" width="192" height="122" rx="14" class="node" stroke="rgba(189,224,254,0.35)" />
+              <text x="242" y="178" class="t-mono" fill="#bde0fe">backend Pis</text>
+              <text x="242" y="204" class="t-body">tuwunel · Matrix</text>
+              <text x="242" y="226" class="t-body">Akkoma · fediverse</text>
+              <text x="242" y="248" class="t-body">Spring APIs + DBs</text>
+
+              <rect x="432" y="150" width="192" height="122" rx="14" class="node" stroke="rgba(208,180,245,0.35)" />
+              <text x="450" y="178" class="t-mono" fill="#d0b4f5">pki Pi</text>
+              <text x="450" y="204" class="t-body">Casdoor · identity</text>
+              <text x="450" y="226" class="t-body">Cassandra</text>
+              <text x="450" y="248" class="t-body">headscale · mesh</text>
+
+              <path d="M112 272 V296 M320 272 V296 M528 272 V296" stroke="rgba(255,255,255,0.16)" />
+              <rect x="16" y="296" width="608" height="58" rx="14" class="node" stroke="rgba(202,255,191,0.35)" />
+              <text x="34" y="322" class="t-mono" fill="#caffbf">GPU node</text>
+              <text x="34" y="342" class="t-body">inference · games · AI — x86_64 or Jetson</text>
+
+              <path d="M320 354 V382" stroke="rgba(255,215,0,0.5)" stroke-dasharray="4 4" />
+              <g transform="translate(240,388)">
+                <rect x="0" y="4" width="22" height="14" rx="3" stroke="#ffd700" stroke-width="1.4" />
+                <path d="M22 8h6M22 14h6" stroke="#ffd700" stroke-width="1.4" />
+              </g>
+              <text x="278" y="404" class="t-mono t-gold-soft">KEYS usb — provisions every node at first boot</text>
+            </svg>
+          }
+          @case ('provisioning') {
+            <svg viewBox="0 0 640 430" fill="none" role="img"
+                 aria-label="Provisioning flow: the Studio on your laptop writes an image per machine and one KEYS stick; you plug them in and power on; first boot mints certificates, joins the private mesh and the cluster; GitOps converges and the world is up">
+              <rect x="170" y="10" width="300" height="36" rx="18" stroke="rgba(255,215,0,0.45)" />
+              <text x="320" y="33" text-anchor="middle" class="t-mono t-gold-soft">Studio — a wizard on your laptop</text>
+              <path d="M320 46 V56" stroke="rgba(255,255,255,0.16)" />
+              <text x="320" y="72" text-anchor="middle" class="t-body">writes an image per machine — and one KEYS stick</text>
+              <path d="M320 80 V92" stroke="rgba(255,255,255,0.16)" />
+              <g class="t-mono">
+                <rect x="88" y="96" width="64" height="34" rx="8" class="node" stroke="rgba(255,200,221,0.35)" />
+                <text x="120" y="117" text-anchor="middle" fill="#ffc8dd">fe·1</text>
+                <rect x="168" y="96" width="64" height="34" rx="8" class="node" stroke="rgba(255,200,221,0.35)" />
+                <text x="200" y="117" text-anchor="middle" fill="#ffc8dd">fe·2</text>
+                <rect x="248" y="96" width="64" height="34" rx="8" class="node" stroke="rgba(189,224,254,0.35)" />
+                <text x="280" y="117" text-anchor="middle" fill="#bde0fe">be</text>
+                <rect x="328" y="96" width="64" height="34" rx="8" class="node" stroke="rgba(208,180,245,0.35)" />
+                <text x="360" y="117" text-anchor="middle" fill="#d0b4f5">pki</text>
+                <rect x="408" y="96" width="64" height="34" rx="8" class="node" stroke="rgba(202,255,191,0.35)" />
+                <text x="440" y="117" text-anchor="middle" fill="#caffbf">gpu</text>
+                <rect x="488" y="96" width="64" height="34" rx="8" class="node" stroke="#ffd700" stroke-width="1.4" />
+                <text x="520" y="117" text-anchor="middle" class="t-gold-soft">KEYS</text>
+              </g>
+              <path d="M320 130 V140" stroke="rgba(255,255,255,0.16)" />
+              <text x="320" y="156" text-anchor="middle" class="t-body">plug in · power on · walk away</text>
+              <path d="M320 164 V176" stroke="rgba(255,255,255,0.16)" />
+              <rect x="120" y="180" width="400" height="56" rx="14" class="node" stroke="rgba(208,180,245,0.35)" />
+              <text x="320" y="203" text-anchor="middle" class="t-mono" fill="#d0b4f5">first boot — no keyboard, no monitor</text>
+              <text x="320" y="223" text-anchor="middle" class="t-body">certificates · private mesh · cluster join</text>
+              <path d="M320 236 V256" stroke="rgba(255,255,255,0.16)" />
+              <rect x="120" y="260" width="400" height="56" rx="14" class="node" stroke="rgba(202,255,191,0.35)" />
+              <text x="320" y="283" text-anchor="middle" class="t-mono" fill="#caffbf">GitOps converges</text>
+              <text x="320" y="303" text-anchor="middle" class="t-body">every manifest pulled, verified, applied</text>
+              <path d="M320 316 V336" stroke="rgba(255,215,0,0.5)" stroke-dasharray="4 4" />
+              <rect x="80" y="340" width="480" height="66" rx="16" stroke="rgba(255,215,0,0.45)" />
+              <text x="320" y="366" text-anchor="middle" class="t-mono t-gold-soft">your world is up</text>
+              <g>
+                <circle cx="255" cy="386" r="5" fill="#ffc8dd" />
+                <circle cx="281" cy="386" r="5" fill="#bde0fe" />
+                <circle cx="307" cy="386" r="5" fill="#caffbf" />
+                <circle cx="333" cy="386" r="5" fill="#d0b4f5" />
+                <circle cx="359" cy="386" r="5" fill="#ffd6a5" />
+                <circle cx="385" cy="386" r="5" fill="#fdffb6" />
+              </g>
+            </svg>
+          }
+          @default {
+            <img [src]="current().src" [alt]="current().alt" loading="lazy" />
+          }
+        }
+      </div>
+
+      <div class="controls">
+        <button type="button" class="step" (click)="prev()" aria-label="Previous slide">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M14.5 6 8.5 12l6 6" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+        @for (s of slides; track s.id; let i = $index) {
+          <button type="button" class="dot" [class.on]="isCurrent(i)"
+                  [attr.aria-current]="isCurrent(i) ? 'true' : null"
+                  [attr.aria-label]="'Slide ' + (i + 1) + ' of ' + slides.length + ': ' + s.caption"
+                  (click)="go(i)"></button>
+        }
+        <button type="button" class="step" (click)="next()" aria-label="Next slide">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M9.5 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+        <span class="counter" aria-hidden="true">{{ counter() }}</span>
+      </div>
+      <figcaption aria-live="polite">{{ current().caption }}</figcaption>
+    </figure>
+
+    <figure class="phone">
+      <span class="phone-frame">
+        <img src="assets/img/captures/login-phone.jpg" width="260" height="562" loading="lazy"
+             alt="The sign-in page on a phone, captured from a running mesh" />
+      </span>
+      <figcaption>
+        Not a mockup. The sign-in page as a phone sees it, live from a running mesh.
+      </figcaption>
+    </figure>
+  </div>
+</section>
