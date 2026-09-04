@@ -1,6 +1,6 @@
 {
   "_comment": "Integrity record for the vendored content/ tree, written by scripts/sync-content.mjs. scripts/check-content-integrity.mjs verifies every file against it WITHOUT network access, which is what makes hand-editing a vendored document a build failure rather than silent drift. Do not edit by hand.",
-  "syncedAt": "2026-09-04T23:16:35.171Z",
+  "syncedAt": "2026-09-04T23:51:54.681Z",
   "docs": [
     {
       "path": "content/architecture/backend-gateway.md",
@@ -98,7 +98,7 @@
       "sourceRepo": "hugmesh-remote-fragment",
       "sourcePath": "README.md",
       "sourceRef": "hugmesh/hugmesh-remote-fragment@HEAD",
-      "sha256": "5aefc7f507f90729859a7e9430e038b6d48b697bd830f02c7c30541a14ffaaf0"
+      "sha256": "10bfbcb76d36d9befad14e436d5b2228747993caffadb5d654ab5159eb84d31d"
     },
     {
       "path": "content/architecture/reserved-prefixes.md",
@@ -1701,7 +1701,7 @@
       "sourceRepo": "hugmesh-wiki-ui",
       "sourcePath": "README.md",
       "sourceRef": "hugmesh/hugmesh-wiki-ui@HEAD",
-      "sha256": "3d0658069c7d5545d5bfd2dea1831482e8f7a5d57233a45bb835562dd9a5a71d"
+      "sha256": "8c20b01ff78c10c456c604124efde4600488236aa380a55c70630f0fe2631f48"
     },
     {
       "path": "content/security/actions-security.md",
@@ -1848,7 +1848,7 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "docs/STUDIO-WALKTHROUGH.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "2260daf1bb2e7e9193677ac4628e18ef59eeddd66fb6eed8af32e57063253917"
+      "sha256": "83891c93a2a35340ca559d39db9a45a6754f88d68a6d2b128b964f0a6e4ee366"
     },
     {
       "path": "content/studio/wizard-flow.md",
