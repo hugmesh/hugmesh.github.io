@@ -3,9 +3,9 @@ title: "Third-party assets — godot/character-forge"
 section: "reference"
 slug: "third-party-assets-godot"
 summary: "Aggregated attributions for every third-party file vendored into the character-forge Godot project."
-source_repo: "hugmesh-character-forge-bff-api"
-source_path: "godot/character-forge/THIRD_PARTY_ASSETS.md"
-source_ref: "b1a2754"
+source_repo: "hugmesh-games"
+source_path: "games/character-forge/THIRD_PARTY_ASSETS.md"
+source_ref: "hugmesh/hugmesh-games@HEAD"
 ---
 
 Aggregated attributions for every third-party file vendored into this Godot

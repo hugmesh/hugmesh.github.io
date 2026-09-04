@@ -5,7 +5,7 @@ slug: "cluster-architecture"
 summary: "Full cluster topology: per-namespace Spring Cloud Gateways validating one internal Casdoor JWT, identity, multi-tenancy, superadmin and the role cascade."
 source_repo: "hugmesh-generator"
 source_path: "docs/ARCHITECTURE.md"
-source_ref: "4e77ec20"
+source_ref: "hugmesh/hugmesh-generator@HEAD"
 ---
 
 Everything connects **behind `hugmesh.net`** through per-namespace
@@ -21,7 +21,7 @@ those gateways (configured later, out of scope here).
 | `backend` | `build-rpi5-stage4.sh --role backend` | aarch64 (RPi 5) | tuwunel (Matrix), Akkoma (fediverse), Spring APIs, databases, `hugmesh-be-gateway` |
 | `frontend` | `build-rpi5-stage4.sh --role frontend` | aarch64 (RPi 5) | `hugmesh.net` Angular host federating `hugmesh-matrix-ui` + `hugmesh-mastodon-ui` + `hugmesh-wiki-ui` + login/admin/mod/user/forum remotes, `hugmesh-fe-gateway` |
 | `host` | `build-x86-host-stage4.sh` | x86_64 (desktop/server) | GPU worker: ArgoCD, GitLab/Runner/binhost (devops), `hugmesh.games`, owncast + tube (GPU-dependent video), heavy datastores (Kafka/ClickHouse/Uptrace), local-path/node-storage default (Mesa/Vulkan via `/dev/dri`) |
-| `edge_ai` | `build-x86-host-stage4.sh --role edge_ai` (x86_64) **/** `build-jetson-stage4.sh --role edge_ai` (Jetson Orin Nano, arm64 crossdev — the x86 builder is amd64-only and cannot produce a Jetson image) | x86_64 / Jetson Orin Nano (arm64) | GPU **inference** node: Ollama serving an OpenAI-compatible model API (`/v1`) to the mesh over k8s (ClusterIP) + tailnet (`ai.<domain>` gateway route); NVIDIA proprietary + CUDA + `nvidia-device-plugin` (which also makes the GPU schedulable for owncast/coturn/tube voice+video). Model library is the `edge-ai-models` ConfigMap. See [EDGE-AI.md](EDGE-AI.md) |
+| `edge-ai` | `build-x86-host-stage4.sh --role edge-ai` (x86_64) **/** `build-jetson-stage4.sh --role edge-ai` (Jetson Orin Nano, arm64 crossdev — the x86 builder is amd64-only and cannot produce a Jetson image) | x86_64 / Jetson Orin Nano (arm64) | GPU **inference** node: Ollama serving an OpenAI-compatible model API (`/v1`) to the mesh over k8s (ClusterIP) + tailnet (`ai.<domain>` gateway route); NVIDIA proprietary + CUDA + `nvidia-device-plugin` (which also makes the GPU schedulable for owncast/coturn/tube voice+video). Model library is the `edge-ai-models` ConfigMap. See [EDGE-AI.md](EDGE-AI.md) |
 
 All nodes are hardened Gentoo, join one Kubernetes cluster, sit on one headscale
 mesh, and are provisioned at first boot from a USB **KEYS** stick (see
@@ -59,7 +59,7 @@ flowchart TD
         HS["headscale (mesh control)"]
     end
 
-    subgraph INFER["hugmesh-inference (edge_ai GPU node — x86_64 or Jetson)"]
+    subgraph INFER["hugmesh-inference (edge-ai GPU node — x86_64 or Jetson)"]
         EDGEAI["edge-ai (Ollama /v1)"]
         EDGEAIAN["edge-ai-analysis"]
     end
@@ -533,7 +533,7 @@ implementation on `main`.
 - **🔭 Group-call SFU** — coturn is a 1:1/mesh relay only; MatrixRTC / Element
   Call / LiveKit-class group calling does not exist in any form.
 - **🔭 Desktop-governance SSO greeter / PAM token producer** (FD-07 increment 2).
-- **🚧 MDM phones (GrapheneOS on Pixel)** — the fourth onboarding form: `scripts/phone-wizard.sh` flashes signature-verified GrapheneOS, enrolls the handset into the orchestration superdomain (headscale tailnet, ADR-14 register-and-approve), escrows a separately-encrypted enterprise profile, and emits a `phone-ingest/v2` device-registry record; Azure Intune is a co-equal provider alongside Headwind. Real pre-deploy gaps remain — see [`MDM.md`](MDM.md) "Deferred".
+- **🚧 MDM phones (GrapheneOS on Pixel)** — the fourth onboarding form: `scripts/phone-wizard.sh` flashes signature-verified GrapheneOS, enrolls the handset into the Tailscale root domain (headscale tailnet, ADR-14 register-and-approve), escrows a separately-encrypted enterprise profile, and emits a `phone-ingest/v2` device-registry record; Azure Intune is a co-equal provider alongside Headwind. Real pre-deploy gaps remain — see [`MDM.md`](MDM.md) "Deferred".
 - **🚧 Notifications external channels** — Matrix DM + Akkoma feed + phpBB + email
   adapters on top of the shipped in-app MVP; mod-bff `notify_channels` directive.
 - **🔭 Live in-cluster image build** — the always-on Kaniko pipeline
@@ -603,7 +603,7 @@ implementation on `main`.
 | `hugmesh/hugmesh-owncast-ui` | Owncast console remote (My Stream + admin broadcast grants + mod view) |
 | `hugmesh/hugmesh-tube-ui` | Tube console remote (My Tube + admin access grants + storage budgets) |
 | `hugmesh/hugmesh-api-docs` | Admin-gated remote: browse the platform OpenAPI specs |
-| `hugmesh/hugmesh-superadmin-service-catalog-ui` | Superadmin App-Store / Service Catalog console (tailnet-only, mounted at `/appstore`) |
+| `hugmesh/hugmesh-superadmin-service-catalog-ui` | Superadmin App-Store / Service Catalog console (tailnet-only, mounted at `/superadmin/service-catalog`) |
 | `hugmesh/hugmesh-remote-fragment` | Sync-and-serve-static nginx fleet serving DB-hosted federated fragment bundles |
 | `hugmesh/hugmesh-games` | Godot 4 WASM game studio and portal (runs on the x86_64 GPU worker) |
 | `owncast` / LocalTube (`tube`) | Upstream GPU-dependent video services (per-domain enable, federated per-user remotes) |

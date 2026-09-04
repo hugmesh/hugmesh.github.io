@@ -1,6 +1,6 @@
 {
   "_comment": "Integrity record for the vendored content/ tree, written by scripts/sync-content.mjs. scripts/check-content-integrity.mjs verifies every file against it WITHOUT network access, which is what makes hand-editing a vendored document a build failure rather than silent drift. Do not edit by hand.",
-  "syncedAt": "2026-08-27T07:42:58.346Z",
+  "syncedAt": "2026-09-04T23:16:35.171Z",
   "docs": [
     {
       "path": "content/architecture/backend-gateway.md",
@@ -14,14 +14,14 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "brands/README.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "6c18d850de804092f997c62dff552d06bce8a6fffdb6d27f95244262bf16eb5f"
+      "sha256": "20cdaa0d6b94d7be7b37c38bda9c478d3923cbbb346b3653711972b7b17511af"
     },
     {
       "path": "content/architecture/cluster-architecture.md",
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "docs/ARCHITECTURE.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "8a166bd4f6ae61170e07d889145f03a2791b5fefe83c8024b577f061ce2eb4e2"
+      "sha256": "fb2b0db90d425738264655b900664f0737ddc1a5b127ceeafea2f402c7b23972"
     },
     {
       "path": "content/architecture/federation-api.md",
@@ -56,7 +56,7 @@
       "sourceRepo": "hugmesh-gateway",
       "sourcePath": "README.md",
       "sourceRef": "hugmesh/hugmesh-gateway@HEAD",
-      "sha256": "40b408ec8864b2b305ac8c4e14bd7a6639884c51f3c3ccd7714e3cedcf28d4d5"
+      "sha256": "6f1c18eb08befb54bbbff4341ae71e800f543ecfae3fd9b4f0e98d2fbefad983"
     },
     {
       "path": "content/architecture/heavy-tier.md",
@@ -98,7 +98,7 @@
       "sourceRepo": "hugmesh-remote-fragment",
       "sourcePath": "README.md",
       "sourceRef": "hugmesh/hugmesh-remote-fragment@HEAD",
-      "sha256": "c7dd034f58476f525555361e79507488f21d0f95713b9f0804b819ff583311ba"
+      "sha256": "5aefc7f507f90729859a7e9430e038b6d48b697bd830f02c7c30541a14ffaaf0"
     },
     {
       "path": "content/architecture/reserved-prefixes.md",
@@ -119,7 +119,7 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "docs/BRANDING.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "772f5388ae3826a3d455177442c0bdaa6d7e8da0c94fcb82ac8f5513931e69b7"
+      "sha256": "6a5a206d74e5169d20648ebd480bd98a4b2fc2a33d3dd4296b1c081298195b31"
     },
     {
       "path": "content/architecture/tenant-repo-publishing.md",
@@ -196,7 +196,7 @@
       "sourceRepo": "hugmesh-character-forge-bff-api",
       "sourcePath": "tools/asset-pipeline/README.md",
       "sourceRef": "hugmesh/hugmesh-character-forge-bff-api@HEAD",
-      "sha256": "bab3a2d383a75221a83b4f3d2da2ad8dc3447b8b02e2df3f21c51b5ea940e97b"
+      "sha256": "d5aa3f6b0e6074fc44566b3a0c0e949dae1235efcee257fdea23f28a2ef8e52d"
     },
     {
       "path": "content/developer-guide/edge-ai-analysis-image.md",
@@ -252,7 +252,7 @@
       "sourceRepo": "hugmesh-login-ui",
       "sourcePath": "e2e/README.md",
       "sourceRef": "hugmesh/hugmesh-login-ui@HEAD",
-      "sha256": "351d5a9a4abb737bfe26bb14c3090c0f6dea52be0314a98361bfd5369baf4ff7"
+      "sha256": "b9b9bff5668938eac2329a8de432330ca356b3a9e182be75b660727969f4eefd"
     },
     {
       "path": "content/developer-guide/mastodon-ui-e2e.md",
@@ -287,7 +287,7 @@
       "sourceRepo": "hugmesh-mod-ui",
       "sourcePath": "e2e/README.md",
       "sourceRef": "hugmesh/hugmesh-mod-ui@HEAD",
-      "sha256": "a2b144711b4ae34487782a6e42dbe5598913a64b63dc6e12529cb4d8637a7036"
+      "sha256": "4aba21c08fceb2f2b007739454d822025269cefc3047144983c0f8c02e924ce3"
     },
     {
       "path": "content/developer-guide/multi-issuer-slice-character-forge.md",
@@ -343,14 +343,14 @@
       "sourceRepo": "hugmesh-owncast-ui",
       "sourcePath": "e2e/README.md",
       "sourceRef": "hugmesh/hugmesh-owncast-ui@HEAD",
-      "sha256": "7b4865f44b23c07dac87df02f2895e021bdd8b128d30992466c7e1d7410dbec3"
+      "sha256": "85977a0893cf403c122203280b91e5d4ad08092270efe7b697fb20afa04e531c"
     },
     {
       "path": "content/developer-guide/qemu-integration-test.md",
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "tests/qemu/README.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "e3093bde16ae3858c839d815b76c0d4d600da203b80b04a1637cd83df8c00f0a"
+      "sha256": "e0465c4107b8ed30e49144482d8ecdad55454d183fc9eeddcb5d3c1eb0eea25d"
     },
     {
       "path": "content/developer-guide/scaffold-angular-host.md",
@@ -406,7 +406,7 @@
       "sourceRepo": "hugmesh-auth-core",
       "sourcePath": "README.md",
       "sourceRef": "hugmesh/hugmesh-auth-core@HEAD",
-      "sha256": "faa320af92d656bf9d1238add1edc0df55f2fd049ab7cc6cc3e3f12cd2edb4ca"
+      "sha256": "d993eee3dd4f2b04f37020ca705d14719a0b441ba55df78bcae2b2364378ea7a"
     },
     {
       "path": "content/developer-guide/shared-build-config.md",
@@ -441,21 +441,21 @@
       "sourceRepo": "hugmesh-tube-ui",
       "sourcePath": "e2e/README.md",
       "sourceRef": "hugmesh/hugmesh-tube-ui@HEAD",
-      "sha256": "f5f940e7ebf8bdf070b5d68a8ff07ff35eae6d8606f3e679930736044eb18270"
+      "sha256": "b06ad8d963f41f62c94b6f92c806f1fea53f4ce6e706d07bbed184edee269997"
     },
     {
       "path": "content/developer-guide/user-ui-e2e.md",
       "sourceRepo": "hugmesh-user-ui",
       "sourcePath": "e2e/README.md",
       "sourceRef": "hugmesh/hugmesh-user-ui@HEAD",
-      "sha256": "3dbdbb480fe052e472ade425c46b07cf2a145e97c88495bc3065954f75a47c84"
+      "sha256": "fb5a8b3083ebdcb5da55aae9831c528ba56a32dbb00b25f4f9f897105d936243"
     },
     {
       "path": "content/developer-guide/wiki-ui-e2e.md",
       "sourceRepo": "hugmesh-wiki-ui",
       "sourcePath": "e2e/README.md",
       "sourceRef": "hugmesh/hugmesh-wiki-ui@HEAD",
-      "sha256": "16fa4aa55f92f318ff622eb9d9067aaf2d5b7504771694ad79b0928c26053172"
+      "sha256": "fcc6f754d409195d5a22ca26f5f31089ced7b800eaea07c722431d01cc8dd7f1"
     },
     {
       "path": "content/devices/auditor-coupling-checklist.md",
@@ -476,7 +476,7 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "docs/CLIENT-IMAGES.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "f1349bf5985631b2053580474c0541329b5886ed67a2393fda3c333245ee022a"
+      "sha256": "6e04b64a126bd494ab64fa3d3005dd3529a4db376d3194907fcad54078ad2b68"
     },
     {
       "path": "content/devices/desktop-governance-config.md",
@@ -504,21 +504,21 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "specs-jetson/installer/TEGRAFLASH.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "214c9a11fbad8b908025694cd204f03233a02bf41b2a3ad5c1ffce197e6ff4eb"
+      "sha256": "f5551714fee80b68ed1bfe253aef8fb32933576552bddd6219d0110d507396c0"
     },
     {
       "path": "content/devices/jetson-kernel.md",
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "specs-jetson/kernel/README.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "4e3c3728781b33faac054e7648ce6e28c9a59ffbd1b361731cbc4f2fc35dc8c2"
+      "sha256": "b97dbd7ed417965cdabfe094885270e1410dcb93588aa1902462fed92a7fbd4d"
     },
     {
       "path": "content/devices/jetson-orin.md",
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "specs-jetson/README.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "762a488344453f9c034f2e626dec20b6848339467845cd646d714be6ee3d813d"
+      "sha256": "17c9a1370d760140a8972adc85e2ffa3a58e30d515c91361abc33bc0f37289d0"
     },
     {
       "path": "content/devices/jetson-power.md",
@@ -539,7 +539,7 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "docs/MDM.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "ddd09c6cfc1d45344b1e075cc098cc3ad3a51a74e572bfd444ce2a0a4a995415"
+      "sha256": "1b64bc39bb5aaacbb547054d889d0d4b7ff738c8a6a51f9e70ce92136e9b513d"
     },
     {
       "path": "content/devices/orangepi-3-lts.md",
@@ -588,7 +588,7 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "docs/STANDALONE-DESKTOP.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "a59962706a1f6fa03d4d85dc21330b4beed74d11fab589d7ee55522d0486535d"
+      "sha256": "e239bd206eb5797769287313af426088994874973ba6bdf1920cdad58ae9dbfe"
     },
     {
       "path": "content/games/001-native-federation.md",
@@ -910,7 +910,7 @@
       "sourceRepo": "hugmesh-games",
       "sourcePath": "docs/wiki/guides/godot-developer.md",
       "sourceRef": "hugmesh/hugmesh-games@HEAD",
-      "sha256": "5f42f979f8455522d05f278c889e2401b80dd2abed67e25ebbf6bb52f1c2cf0d"
+      "sha256": "761238e81d13f4d78c9c7a2e99c6a6436a0e7c9b41db258e5d1b255debc68a72"
     },
     {
       "path": "content/games/godot-export-tools.md",
@@ -1099,7 +1099,7 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "docs/ADMIN-CONSOLES.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "9ab6411d29c4a9a5d1bb39fbf8228439eebd2398f86f6ae09494da4589069d6c"
+      "sha256": "bc54a8dce120f2a5f30e24e648601dc7d15829c8fc088ebdfbfd4ade58c7bfb2"
     },
     {
       "path": "content/operations/backup-recovery-worker.md",
@@ -1155,7 +1155,7 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "docs/EDGE-AI.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "f5e3483c4650af8b47ea818f3e516b78302426e910b73691ea5f267a925dd204"
+      "sha256": "8bb29596d729a983008d51ef545f9e447589aaddc4f8eddf6764255865b321d0"
     },
     {
       "path": "content/operations/egress-vpn.md",
@@ -1190,7 +1190,7 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "docs/GO-LIVE-WIZARD.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "b0e6a73c124fd73fb0f803951236286a2aa2b2b2362c1d584f9f7cf4299107cc"
+      "sha256": "58b1f29ec801d7d85af3cd618e92b884bae5df4cc64c8963b85c15c9d27fdaf1"
     },
     {
       "path": "content/operations/home-seed-stack.md",
@@ -1218,7 +1218,7 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "keys-template/README.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "ae1fe03192815c976f5fed6ca20792fc905da8c0c0e079dcd8d357850c758ea5"
+      "sha256": "80b6e2a9b35f786a32935df2ad9816c3eea3eec1bb0f420e39205cea365ad380"
     },
     {
       "path": "content/operations/kind-local-bringup.md",
@@ -1239,7 +1239,7 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "docs/MANAGED-SERVICES.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "cd4c6ef06c5cdc8c88abc09f38b58f386ef30e951069c737d726139e0a496a4c"
+      "sha256": "cbb5e72640fec399eb541a880a5cba5991df71f8ed62d8d7cb2aaed880650559"
     },
     {
       "path": "content/operations/mesh-device-visibility.md",
@@ -1267,7 +1267,7 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "docs/OPTIONAL-SERVICES.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "f0978b93c2f51050a3b26161f233057e2a3d0cc896716097433ed6248fbf0c19"
+      "sha256": "52a2db9918bb4936620dde049949baf436406ea31628ce3985d917e0413ad26f"
     },
     {
       "path": "content/operations/per-domain-idp.md",
@@ -1337,7 +1337,7 @@
       "sourceRepo": "hugmesh-admin-bff-api",
       "sourcePath": "README.md",
       "sourceRef": "hugmesh/hugmesh-admin-bff-api@HEAD",
-      "sha256": "23e9d8ef668b394af7989cdfef68c43c32ba93bfc85de91d870909ef8dfc8fc1"
+      "sha256": "4d182a9eb39e694eb36fbc154f0e6e617bffaf74060542267ef5e058b884eb65"
     },
     {
       "path": "content/reference/admin-ui.md",
@@ -1351,7 +1351,7 @@
       "sourceRepo": "hugmesh-api-docs",
       "sourcePath": "README.md",
       "sourceRef": "hugmesh/hugmesh-api-docs@HEAD",
-      "sha256": "01c32e4702be560e5efb87448c9b0cc8026cbdf86939066a726087de0b452c8d"
+      "sha256": "eeac05f198e10f86240ac17ccf578fd39d4367efd1c5630eb147fd09cfec5eb1"
     },
     {
       "path": "content/reference/biome-texture-licenses.md",
@@ -1372,14 +1372,14 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "docs/BUILD-MATRIX.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "19cd2ad81b5c0fb3e31d24b09257f3461afad42c8a64e380978770d137de772d"
+      "sha256": "bb77a758a90d59f4e80f0025a61b40c1c3d799a6941e6c729801dea080b2572e"
     },
     {
       "path": "content/reference/character-forge-bff.md",
       "sourceRepo": "hugmesh-character-forge-bff-api",
       "sourcePath": "README.md",
       "sourceRef": "hugmesh/hugmesh-character-forge-bff-api@HEAD",
-      "sha256": "5a1932a1cbad23715c3f64777086fd63e3d5420652dcd0382865e08d43e33e6a"
+      "sha256": "893ac6e8513404e93a6b14f1306ee5be33f48f989d28bd410cb35efea15ea1b6"
     },
     {
       "path": "content/reference/character-forge-frontend.md",
@@ -1390,17 +1390,17 @@
     },
     {
       "path": "content/reference/character-forge-godot.md",
-      "sourceRepo": "hugmesh-character-forge-bff-api",
-      "sourcePath": "godot/character-forge/README.md",
-      "sourceRef": "hugmesh/hugmesh-character-forge-bff-api@HEAD",
-      "sha256": "f056552337b27e33a46250f5b2625ba7f4a6e6a94ff395bad953e88c91e9d28b"
+      "sourceRepo": "hugmesh-games",
+      "sourcePath": "games/character-forge/README.md",
+      "sourceRef": "hugmesh/hugmesh-games@HEAD",
+      "sha256": "ad39a5a0833756bf5a0155bb3170f2309715284bbbb031bec8cfb090e679cf03"
     },
     {
       "path": "content/reference/character-studio-ui.md",
       "sourceRepo": "hugmesh-character-studio-ui",
       "sourcePath": "README.md",
       "sourceRef": "hugmesh/hugmesh-character-studio-ui@HEAD",
-      "sha256": "043d7330047798fb0d35f6c9d60a60c5a1ef98f2d8e1fb8787c38b1ad19e0395"
+      "sha256": "367d9f6a1a16993274845e17cc1a1aca9864d74526a7a91ba46e6a5040402603"
     },
     {
       "path": "content/reference/chibi-art-style-guide.md",
@@ -1435,14 +1435,14 @@
       "sourceRepo": "hugmesh-forum-bff-api",
       "sourcePath": "README.md",
       "sourceRef": "hugmesh/hugmesh-forum-bff-api@HEAD",
-      "sha256": "1bf5c83320e294a2fa2ffe2a8ff9b863f529f3e29d747710aa039b673e0f0c56"
+      "sha256": "bb4fd22ddb6689d512bc68013a8f8c00e90f7e13d4161d2c70994414affdd201"
     },
     {
       "path": "content/reference/forum-ui.md",
       "sourceRepo": "hugmesh-forum-ui",
       "sourcePath": "README.md",
       "sourceRef": "hugmesh/hugmesh-forum-ui@HEAD",
-      "sha256": "f6d94135af99fc6cae5441b69e131fc557ac0b0caad10797e6629efdc51b054d"
+      "sha256": "7f8971bedc9d8f1c3cdbb8494b49ee7c6fdef7cbc67cb1fdfdc4d7d7e7a77297"
     },
     {
       "path": "content/reference/gateway-docs-index.md",
@@ -1456,7 +1456,7 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "docs/IMAGE-INVENTORY.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "bd2c9eb640fe3cbc55de93d379c80c088dd5f1ed6d36b369856df2527d6cbc7e"
+      "sha256": "558f9ab0b175678128c175bfbbac8b30a777ab2c7a6a05fc7ab79da289ba7c9f"
     },
     {
       "path": "content/reference/keys-certs.md",
@@ -1547,7 +1547,7 @@
       "sourceRepo": "hugmesh-login-ui",
       "sourcePath": "README.md",
       "sourceRef": "hugmesh/hugmesh-login-ui@HEAD",
-      "sha256": "310caf0464a29401092807b4846bf73925e8fc954a2a2562633d4c45f2aa968d"
+      "sha256": "ef8c3dd8281d871ae1a003d220b9be8cbfeb8574ea2936da16e552518ccdeb98"
     },
     {
       "path": "content/reference/mastodon-ui.md",
@@ -1596,7 +1596,7 @@
       "sourceRepo": "hugmesh-owncast-ui",
       "sourcePath": "README.md",
       "sourceRef": "hugmesh/hugmesh-owncast-ui@HEAD",
-      "sha256": "89457c7dc506759837cdb007bfe0c68666b593453449c1702f5ea1e9c863e865"
+      "sha256": "db03cebf3d877f498d5c14e7a5fba3b89460df924aed0fe96f4d0fc574526803"
     },
     {
       "path": "content/reference/package-flag-badges.md",
@@ -1610,7 +1610,7 @@
       "sourceRepo": "hugmesh-superadmin-service-catalog-ui",
       "sourcePath": "README.md",
       "sourceRef": "hugmesh/hugmesh-superadmin-service-catalog-ui@HEAD",
-      "sha256": "b2988b03159e51c7b190c48ae867eeeffb3e39f4f71d3d59044a06082680634b"
+      "sha256": "ec4dcfd9fb0576abff841452e1d07ab558b68f1755a83a8d28bc3fc87baeb7af"
     },
     {
       "path": "content/reference/shared-binpkg-pools.md",
@@ -1628,10 +1628,10 @@
     },
     {
       "path": "content/reference/third-party-assets-godot.md",
-      "sourceRepo": "hugmesh-character-forge-bff-api",
-      "sourcePath": "godot/character-forge/THIRD_PARTY_ASSETS.md",
-      "sourceRef": "hugmesh/hugmesh-character-forge-bff-api@HEAD",
-      "sha256": "7e1d78b2788526ee9b09a2188b3dbe35a1c82566f846e027db4004fdf5c03e16"
+      "sourceRepo": "hugmesh-games",
+      "sourcePath": "games/character-forge/THIRD_PARTY_ASSETS.md",
+      "sourceRef": "hugmesh/hugmesh-games@HEAD",
+      "sha256": "088942856995b88adc0524f08f8d02eda0057fa5756a570b8b6bac835c325f0f"
     },
     {
       "path": "content/reference/tube-bff.md",
@@ -1645,14 +1645,14 @@
       "sourceRepo": "hugmesh-tube-ui",
       "sourcePath": "README.md",
       "sourceRef": "hugmesh/hugmesh-tube-ui@HEAD",
-      "sha256": "5858195650fcb77fbdb07b57e8526a04b676ef668379f6856ee5dc4cb4220a77"
+      "sha256": "f0b5c42314aad419006a45d8ebd6e3e1d87295b4a7c444ce82d70ae7c89b4f15"
     },
     {
       "path": "content/reference/user-bff.md",
       "sourceRepo": "hugmesh-user-bff-api",
       "sourcePath": "README.md",
       "sourceRef": "hugmesh/hugmesh-user-bff-api@HEAD",
-      "sha256": "ad0c61ffd225e6c678a66e08f737ffef7c878ecbdb28f8fb6f5ac082f07930a4"
+      "sha256": "2da573494fb5fd5a54e3e00259b6b6c82783f4001aa227f24730158ce4a83eb5"
     },
     {
       "path": "content/reference/user-mesh-ui.md",
@@ -1694,14 +1694,14 @@
       "sourceRepo": "hugmesh-wiki-bff-api",
       "sourcePath": "README.md",
       "sourceRef": "hugmesh/hugmesh-wiki-bff-api@HEAD",
-      "sha256": "2d3d0412c0d4d80c8a44f7fc66982b7b9337426b83d52162ca1dc3d5deabb4a8"
+      "sha256": "8572ea1291fb8c2cc3eed3f5ef6dbe5c725bc0206db358e9de455748fbae5a5d"
     },
     {
       "path": "content/reference/wiki-ui.md",
       "sourceRepo": "hugmesh-wiki-ui",
       "sourcePath": "README.md",
       "sourceRef": "hugmesh/hugmesh-wiki-ui@HEAD",
-      "sha256": "cdb6246c208be140aebc1e5ddb9e92bc6bfd16143bee94716173e14f9a5c1f28"
+      "sha256": "3d0658069c7d5545d5bfd2dea1831482e8f7a5d57233a45bb835562dd9a5a71d"
     },
     {
       "path": "content/security/actions-security.md",
@@ -1806,7 +1806,7 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "docs/SECURITY.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "286f5818d4a0dfd349e6a60cdc14a5dac39ead90c10a2d57779a37bca9abb6f7"
+      "sha256": "084f426530c3bbf04bd22c812311916859b9504e5b70a5173a9fe7fc311112d3"
     },
     {
       "path": "content/security/selinux-module-loading.md",
@@ -1841,21 +1841,21 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "studio/README.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "bf8651cd5fc3e5f5f028482572485be61edc08645ce94ef641c3098c55c713d8"
+      "sha256": "2746d7c7222f71052eaa2e367962dd11e66f421df46fb7c228508277afaed1e4"
     },
     {
       "path": "content/studio/walkthrough.md",
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "docs/STUDIO-WALKTHROUGH.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "86a8caa8b01b3368131bc4ade30c612a69be94771f3ce9a6503ffe6ceadc7e51"
+      "sha256": "2260daf1bb2e7e9193677ac4628e18ef59eeddd66fb6eed8af32e57063253917"
     },
     {
       "path": "content/studio/wizard-flow.md",
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "docs/STUDIO-WIZARD-FLOW.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "569ce1ea0f8193deebfe5d35d4b60844ffaaa3f26d9e43eeb039f3e8d387dbaf"
+      "sha256": "d3af6ecc01cfe0264968da1b57ba0dcafbe3a07da8041c7ac03ea3ccf6a6ffbe"
     },
     {
       "path": "content/troubleshooting/arm-firewalld-unresolvable.md",
@@ -1883,7 +1883,7 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "docs/PYTHON-TARGETS-SEED-DRIFT.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "db6b89a45aeb1463a0f71196f151ac739f4d3d0c3ee8630e62a2b207c915b9fa"
+      "sha256": "2acc6d27980a77f7bebb7e5c685d4512864ef572a7996132313c9f10271a7b78"
     },
     {
       "path": "content/tutorials/documentation-index.md",
@@ -1904,7 +1904,7 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "README.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "de54445c6983b24a68339cc768756c3367693751fc94219c8e834b150a7bd7f1"
+      "sha256": "4fdd9415b34668d5ca331fb9de4ed63dec92f96692c569ef7cbdd8586d26a1d2"
     },
     {
       "path": "content/tutorials/local-docker-stack.md",
@@ -1918,7 +1918,7 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "docs/LOCAL-TESTING.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "88245ec4ecdb5836ec157b15e7f5da1365e58b7de6be067d2810b18a01aadb1a"
+      "sha256": "4617a1b7b88ac608a0a9528b1c558a217ad5bc097175c4ceb400703d320ac7fa"
     },
     {
       "path": "content/tutorials/nixos-steamos-launchers.md",
@@ -1932,7 +1932,7 @@
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "docs/RUNNING.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "b67834359f5c25a67158e1bfb76a71476c210a4eb477e2ec75344dfe1549884b"
+      "sha256": "45a40c8a95e55c042757f79b9f4e6889efad7d6d47aa45a75ba3ec006f48c44e"
     },
     {
       "path": "content/tutorials/serve-your-mesh.md",

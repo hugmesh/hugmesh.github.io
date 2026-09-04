@@ -252,6 +252,11 @@ _As of 2026-08-05. State key: **✅ shipped** (on `main`) · **🚧 in-flight** 
   restricted to a read-only first-token allowlist, port-forward to a curated
   app-tier triple list, and namespaces to an allowlist that mirrors the RBAC
   bindings. See [`docs/OPTIONAL-SERVICES.md`](docs/OPTIONAL-SERVICES.md) §7.2.
+  **For "how do I see stats / which versions are running?"** — the four gates
+  counted separately, the exact order to open them, and the missing aggregate
+  version surface — see
+  [`docs/WORKLOAD-CONSOLE-STATS-AND-VERSIONS.md`](docs/WORKLOAD-CONSOLE-STATS-AND-VERSIONS.md),
+  and read your own posture with `scripts/workload-console-posture.sh`.
 - **✅ Games App-Store control plane**, **✅ Device-license registry** (per-node
   sshd obeys the signed export), **✅ Superadmin Service Catalog** (data layer +
   tailnet superadmin-gateway + Kaniko builder, ships dark), **✅ Pen-test CI**
@@ -461,7 +466,7 @@ none), and compose green is not evidence for the cluster._
   the running mesh, and the pinned channel factory refuses without an ACTIVE row
   carrying a matching `host_key_fp` (TOFU forbidden), so the flag is inert even
   when true. And no laptop / chromebook / desktop image has ever been built: the
-  default `X86_ROLE_LIST` is `pki be fe be+gpu`, and 28 build sessions contain no
+  default `X86_ROLE_LIST` is `pki backend frontend backend-gpu`, and 28 build sessions contain no
   such artifact — so the desktop boot-verify (Qt6/KF6 Discover pull, the
   `hugmesh-desktop` PKCE client, the desktop-sudo claim → polkit path) has never
   run.
@@ -496,13 +501,30 @@ none), and compose green is not evidence for the cluster._
   the namespace + NetworkPolicy, the ESO wiring, the always-on ArgoCD Application
   (out of `apps-optional/`) and the `ROLE_IMAGE_BUILDER` seed + gateway route row
   all landed; the pipeline is correct-by-construction and lint-gated but has never
-  run a real build, blocked behind bringing a cluster up. Two things are fixable
-  without one: the `service-catalog-builder-registry` push credential mounted by
-  `kaniko-build-job.template.yaml` has **no ExternalSecret** anywhere (its
-  image-builder twin does), and the three AddServiceEffector legs
-  (`APPSTORE_EFFECTOR_ENABLED`, `APPSTORE_BUILDER_ENABLED`,
-  `CASDOOR_ADMIN_ENABLED`) are still absent from the admin-BFF deployment, so the
-  "always-on flip" is wired but not thrown.
+  run a real build, blocked behind bringing a cluster up. `APPSTORE_EFFECTOR_ENABLED`
+  and `APPSTORE_FEDERATION_ENABLED` are now **`true`** in the admin-BFF deployment
+  (the ArgoCD and federation seams are the real clients, not the Noop ones), but
+  neither leg's bearer token has a source in this tree — `APPSTORE_ARGOCD_AUTH_TOKEN`
+  and `APPSTORE_FEDERATION_AUTH_TOKEN` both default empty and there is no
+  ExternalSecret for either, so both legs make a real call that comes back **401**
+  until they are provisioned. `APPSTORE_BUILDER_ENABLED` is deliberately still
+  **`false`**: the push credential the Kaniko build pod mounts has **no
+  ExternalSecret** anywhere (its image-builder twin does), and because that mount is
+  NOT `optional`, enabling the builder first leaves the build pod wedged in
+  `ContainerCreating` for 1800s rather than failing. Worse, the two Kaniko templates
+  disagree about what to create: this repo's ships
+  `service-catalog-builder-registry` / key `.dockerconfigjson`, while the template
+  `KanikoBuildLauncher` actually loads from the admin-BFF classpath asks for
+  `service-catalog-registry-credentials` / key `config.json` — **the runtime name is
+  the one that must exist**. Both must be created **in `hugmesh-service-catalog-builds`**
+  (the namespace `APPSTORE_BUILDER_NAMESPACE` pins): a pod can only mount a Secret
+  from its own namespace, so copying `external-secrets/image-builder-externalsecrets.yaml`
+  and leaving its `namespace: hugmesh-image-builds` in place reproduces the wedge with
+  every name and key correct. `tests/scripts/test-appstore-effector-flags.sh` derives
+  both contracts from the templates, requires them in that namespace from a manifest
+  the kustomization actually applies, and turns RED if the builder flag is flipped
+  without them, so the ordering cannot be got wrong silently. `CASDOOR_ADMIN_ENABLED`
+  is still absent from the deployment (the per-service role leg stays skipped).
 - **🔭 DB-hardening flips. (needs a live cluster)** Merged dark, awaiting an
   operator: PG in-cluster TLS is implemented but `PG_TLS_ENABLED` is `"false"` on
   all 9 DB deployments (flip per DB only after each `<db>-mtls` ESO Secret
@@ -583,9 +605,9 @@ ships a full multi-tenant platform. State key: **✅ shipped** (on `main`) ·
 | **backend** (RPi 5) | `./build-rpi5-stage4.sh --role backend` | tuwunel (Matrix) + Akkoma (fediverse), Spring APIs, DBs, be-gateway, LAN wildcard DNS (test) |
 | **frontend** (RPi 5) | `./build-rpi5-stage4.sh --role frontend` | hugmesh.net Angular host + login/matrix/mastodon/wiki remotes, fe-gateway |
 | **host** (x86_64) | `sudo ./build-x86-host-stage4.sh` | GPU worker: ArgoCD, hugmesh.games, backend capacity |
-| **edge_ai** (x86_64 / Jetson) | `./build-x86-host-stage4.sh --role edge_ai` | GPU inference node: serves an OpenAI-compatible model API (Ollama) to the mesh over k8s + tailnet; NVIDIA + CUDA + nvidia-device-plugin. See [docs/EDGE-AI.md](docs/EDGE-AI.md) |
+| **edge-ai** (x86_64 / Jetson) | `./build-x86-host-stage4.sh --role edge-ai` | GPU inference node: serves an OpenAI-compatible model API (Ollama) to the mesh over k8s + tailnet; NVIDIA + CUDA + nvidia-device-plugin. See [docs/EDGE-AI.md](docs/EDGE-AI.md) |
 | **Frite light desktop** (Libre Computer, arm64) — *opt-in client* | `make frite` (or `./build-frite-stage4.sh`) | LEAN LXDE desktop on the Amlogic La Frite / Le Potato SBC; joins the tailnet + Casdoor login. LIVE + INSTALLER flavors, `--desktop light\|none` |
-| **Jetson Orin edge-AI** (NVIDIA Tegra234, arm64) — **EXPERIMENTAL** | `make jetson` (or `./build-jetson-stage4.sh --role edge_ai\|gpu-host\|full\|desktop`) | arm64 edge-AI node family on the Jetson Orin Nano/NX: same mesh + KEYS provisioning + shared cluster tree; mainline kernel (NO CUDA yet — the L4T/CUDA flavor is a documented stub). **Hardware validation pending** — see [`specs-jetson/README.md`](specs-jetson/README.md) |
+| **Jetson Orin edge-AI** (NVIDIA Tegra234, arm64) — **EXPERIMENTAL** | `make jetson` (or `./build-jetson-stage4.sh --role edge-ai\|backend-gpu\|full\|desktop`) | arm64 edge-AI node family on the Jetson Orin Nano/NX: same mesh + KEYS provisioning + shared cluster tree; mainline kernel (NO CUDA yet — the L4T/CUDA flavor is a documented stub). **Hardware validation pending** — see [`specs-jetson/README.md`](specs-jetson/README.md) |
 | **Orange Pi family** (6 boards, arm64) — **EXPERIMENTAL** | `make orangepi5` / `orangepi4-lts` / `orangepizero2` / `orangepizero2w` / `orangepizero3` / `orangepi3-lts` (each `-live` / `-installer` too) | Light desktops on Rockchip (**Orange Pi 5 / 5 Plus** RK3588/RK3588S, `--board` axis; **Orange Pi 4 LTS** RK3399, single-board, blob-free boot chain) and headless appliances on Allwinner (**Zero 2** H616; **Zero 2W** + **Zero 3** H618 — headless is forced, no mainline display-engine driver; **3 LTS** H6, headless by scope). Same mesh + KEYS provisioning. **Hardware validation pending on all six** — see [`docs/BUILD-MATRIX.md`](docs/BUILD-MATRIX.md) and each `specs-orangepi*/README.md` |
 
 > The friendlier path is the **Makefile** (`make local` / `make prod` /
@@ -627,7 +649,7 @@ make local                                  # ENV=test + brands/local.conf (hugm
 make prod                                   # ENV=prod, real domain (announced)
 make build-all ENV=test BRAND=acme          # any brand, test
 make build-all ENV=prod BRAND=acme DOMAIN=acme.example
-./build-x86-host-stage4.sh --env test --config brands/local.conf --role be+gpu
+./build-x86-host-stage4.sh --env test --config brands/local.conf --role backend-gpu
 ./scripts/build-all-roles.sh --env prod
 ```
 
@@ -830,9 +852,9 @@ make docker-image       # one-time: build the self-contained Gentoo builder imag
 make local              # LAN .test fleet: ENV=test + brands/local.conf (hugmesh.test)
 make prod               # PROD fleet: ENV=prod, real domain (announced)
 
-make build-all          # the default fleet (3 Pi + x86 pki/be/fe/be+gpu), ENV defaults to test
+make build-all          # the default fleet (3 Pi + x86 pki/backend/frontend/backend-gpu), ENV defaults to test
 make rpi                # all 3 Pi roles        make rpi-frontend     # one Pi role
-make x86                # the 4 x86 roles       make x86-be+gpu       # one x86 role
+make x86                # the 4 x86 roles       make x86-backend-gpu       # one x86 role
 make omnibus            # opt-in x86 all-in-one node
 ```
 
@@ -1120,7 +1142,19 @@ screenshots in `tests/e2e/screenshots/`:
 
 # or, against an already-running stack (tests/stack/up.sh):
 ./tests/e2e/run.sh
+
+# the GHERKIN lane, against any of the three meshes (NOTHING is started for you):
+./tests/e2e/run.sh --bdd --env docker      # the compose stack above
+./tests/e2e/run.sh --bdd --env kind        # the local devops cluster
+./tests/e2e/run.sh --bdd --env qemu        # an emulated device
+./tests/e2e/run.sh --print-command --env kind   # the plan as JSON; executes nothing
+./tests/e2e/run.sh --evidence              # where this run's screenshots/transcripts went
 ```
+
+`run.sh` is the single entry point: `make stack-e2e-bdd [BDD_ENV=…] [BDD_TAGS=…]
+[BDD_FEATURES=…]` and `make stack-e2e-bdd-evidence` delegate to it, so there is
+one way to spell a run rather than several that drift. `tests/e2e/features/README.md`
+§4d has the whole flag set; `tests/scripts/test-e2e-cli-lane.sh` is its gate.
 
 > `tests/stack/mock-*.mjs` are fast in-memory test doubles. `tests/stack/up-real.sh`
 > brings up real tuwunel + Casdoor + Mastodon (+ the platform Cassandra) from
@@ -1183,18 +1217,18 @@ live list). Common overrides: `ENV=test|prod`, `BRAND=`, `DOMAIN=`,
 | `make menu` | interactive console build menu (`scripts/build-menu.sh`) — pick images with live progress; quit without stopping the build. On NixOS/SteamOS/no-`make` hosts, `scripts/studio-launch.sh --menu` reaches it too (see [`docs/NIXOS-STEAMOS.md`](docs/NIXOS-STEAMOS.md)). |
 | `make local` | ENV=test + `brands/local.conf` → the LAN `hugmesh.test` fleet. |
 | `make prod` | ENV=prod, real domain (announced; creds from the keys USB). |
-| `make build-all` / `make rebuild` | the default fleet (3 Pi + x86 pki/be/fe/be+gpu); `rebuild` wipes first. |
+| `make build-all` / `make rebuild` | the default fleet (3 Pi + x86 pki/backend/frontend/backend-gpu); `rebuild` wipes first. |
 | `make rpi` / `make rpi-<role>` | all 3 Pi roles / one Pi role (`rpi-frontend`). |
-| `make x86` / `make x86-<role>` | the 4 x86 roles / one (`x86-be+gpu`, `x86-pki`, `x86-omnibus`). |
+| `make x86` / `make x86-<role>` | the 4 x86 roles / one (`x86-backend-gpu`, `x86-pki`, `x86-omnibus`). |
 | `make omnibus` | the opt-in x86 all-namespaces-on-one-node image. |
 | `make frite` / `frite-live` / `frite-installer` | the opt-in Frite client (`FRITE_BOARD=`, `FRITE_FLAVOR=`, `FRITE_DESKTOP=light\|none`). |
-| `make jetson` / `make jetson-<role>` | the **EXPERIMENTAL** Jetson Orin edge-AI platform (`jetson-edge_ai`, `jetson-gpu-host`, `jetson-full`, `jetson-desktop`; `JETSON_BOARD=`, `JETSON_KERNEL_FLAVOR=`). Hardware validation pending. |
-| `make build-everything` | the **FULL documented matrix**: 3 Pi + all 11 x86 roles (nodes + omnibus + edge_ai + clients + standalone) + Frite + all 4 Jetson roles (honors `ENV=test\|prod`). |
+| `make jetson` / `make jetson-<role>` | the **EXPERIMENTAL** Jetson Orin edge-AI platform (`jetson-edge-ai`, `jetson-backend-gpu`, `jetson-omnibus`, `jetson-desktop`; `JETSON_BOARD=`, `JETSON_KERNEL_FLAVOR=`). Hardware validation pending. |
+| `make build-everything` | the **FULL documented matrix**: 3 Pi + all 11 x86 roles (nodes + omnibus + edge-ai + clients + standalone) + Frite + all 4 Jetson roles (honors `ENV=test\|prod`). |
 | `make matrix-check` | **dry-run validate the whole build matrix** across all four channels via the builders' `--print-plan` (no root, no writes; `tests/build-matrix/check.sh`). |
 | `make flash DEV=/dev/sdX ROLE=frontend ARCH=arm64` | write a role image to a disk (`.img` preferred). |
 | `make qemu` (`qemu-rpi` / `qemu-x86`) | boot a role image under QEMU (`ARCH=arm64`→Pi, `x86`→q35+OVMF). |
 | `make e2e` | boot a role VM under QEMU and run the Playwright e2e with seeded accounts. |
-| `make ci` / `make ci-quick` | full pipeline (rebuild fleet → e2e) / fast (build x86 be+gpu → e2e). |
+| `make ci` / `make ci-quick` | full pipeline (rebuild fleet → e2e) / fast (build x86 backend-gpu → e2e). |
 | `make clean` | wipe the work dir. |
 
 ### Build channels — all options in all menus

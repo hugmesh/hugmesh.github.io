@@ -5,7 +5,7 @@ slug: "python-targets-seed-drift"
 summary: "Root-cause analysis of two mirror-image fleet build failures caused by hardcoding python3_NN instead of deriving PYTHON_TARGETS from the stage3 seed."
 source_repo: "hugmesh-generator"
 source_path: "docs/PYTHON-TARGETS-SEED-DRIFT.md"
-source_ref: "30d9edfc"
+source_ref: "hugmesh/hugmesh-generator@HEAD"
 ---
 
 **Status:** analysis, 2026-07-30. Written against `origin/main` @ `21f0ca0`.
@@ -406,7 +406,7 @@ The `package.use/python-targets` header records it:
 > jaraco-context, hatchling, flit-core, urllib3, jinja2, cython, …) come up with
 > `python_targets_python3_12` UNSET and the @world/payload emerge ABORTS behind a
 > wall of "The following USE changes are necessary to proceed:
-> `>=dev-python/… python_targets_python3_12`" (real jetson edge_ai fleet failure
+> `>=dev-python/… python_targets_python3_12`" (real jetson edge-ai fleet failure
 > 2026-07-16 01:31, session 20260715-235432)
 
 The vdb evidence from that era's sysroots agrees with the comment's premise for

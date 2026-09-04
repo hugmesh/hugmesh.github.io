@@ -5,7 +5,7 @@ slug: "jetson-kernel"
 summary: "The mainline-versus-L4T kernel decision for Orin and how --kernel-flavor selects between the two stacks."
 source_repo: "hugmesh-generator"
 source_path: "specs-jetson/kernel/README.md"
-source_ref: "30d9edfc"
+source_ref: "hugmesh/hugmesh-generator@HEAD"
 ---
 
 The Jetson Orin family boots one of TWO kernel stacks. `build-jetson-stage4.sh`
@@ -27,8 +27,8 @@ line points at the board DTB (Orin Nano Developer Kit:
 `nvidia/tegra234-p3768-0000+p3767-0005.dtb`).
 
 **What mainline gives you:** a bootable, hardened arm64 node — serial console,
-SD/NVMe storage, Ethernet, USB, thermal — i.e. everything the `edge_ai`,
-`gpu-host` and `full` roles need to JOIN the mesh + cluster and run CPU
+SD/NVMe storage, Ethernet, USB, thermal — i.e. everything the `edge-ai`,
+`backend-gpu` and `omnibus` roles need to JOIN the mesh + cluster and run CPU
 workloads, plus basic tegra-drm/simple-framebuffer display for the `desktop`
 role.
 

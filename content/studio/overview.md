@@ -5,7 +5,7 @@ slug: "overview"
 summary: "The cross-platform desktop app building images with a Calamares-style wizard and running a local mesh node from the system tray."
 source_repo: "hugmesh-generator"
 source_path: "studio/README.md"
-source_ref: "30d9edfc"
+source_ref: "hugmesh/hugmesh-generator@HEAD"
 ---
 
 A cross-platform desktop app (Linux **and Windows**) that builds HugMesh images with a
@@ -25,7 +25,7 @@ a **local mesh node** from the system tray.
   builder) and the rpi5 `generic` unbranded arm64 server; the laptop/chromebook/desktop
   clients **and the arm64 La Frite family** (board + live/installer flavor +
   light/headless desktop); every cluster role on **x86 or Raspberry Pi 5**, plus the
-  **NVIDIA Jetson Orin** roles (`edge_ai`, `gpu-host`, `full`, `jetson-desktop`) —
+  **NVIDIA Jetson Orin** roles (`edge-ai`, `backend-gpu`, `omnibus`, `jetson-desktop`) —
   Jetson is **EXPERIMENTAL, hardware validation pending**. The platform axis picks the
   builder script (`build-{x86-host,rpi5,frite,jetson}-stage4.sh`).
 - **Every generator flag** is on a wizard page: hardware/GPU (the builder's **full

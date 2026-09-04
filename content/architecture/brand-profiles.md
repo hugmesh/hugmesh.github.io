@@ -5,7 +5,7 @@ slug: "brand-profiles"
 summary: "Drop-in brand profiles: a shell file the builders source to rewrite every namespace, hostname, gateway, ingress host and title."
 source_repo: "hugmesh-generator"
 source_path: "brands/README.md"
-source_ref: "30d9edfc"
+source_ref: "hugmesh/hugmesh-generator@HEAD"
 ---
 
 A **brand profile** is a plain shell file the image builders `source` to rebrand
@@ -76,7 +76,7 @@ declares them — it does not configure headscale itself.)
 Directly with a builder:
 
 ```sh
-./build-x86-host-stage4.sh --config brands/example.conf --role be+gpu
+./build-x86-host-stage4.sh --config brands/example.conf --role backend-gpu
 ./build-rpi5-stage4.sh     --config brands/example.conf --role frontend
 ```
 
@@ -85,7 +85,7 @@ Through `make` (threads `--config brands/$(BRAND).conf` into every builder):
 ```sh
 make build-all BRAND=example                       # uses brands/example.conf as-is
 make build-all BRAND=acme DOMAIN=acme.example      # override the domain
-make x86-be+gpu BRAND=acme DOMAIN=acme.example HEADSCALE_URL=https://hs.acme.example
+make x86-backend-gpu BRAND=acme DOMAIN=acme.example HEADSCALE_URL=https://hs.acme.example
 ```
 
 Precedence: **built-in defaults < the profile < explicit CLI flags**, so

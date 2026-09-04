@@ -5,7 +5,7 @@ slug: "go-live-wizard"
 summary: "The superadmin go-live wizard with five implemented providers and three front-ends (CLI, ncurses, Studio GUI)."
 source_repo: "hugmesh-generator"
 source_path: "docs/GO-LIVE-WIZARD.md"
-source_ref: "30d9edfc"
+source_ref: "hugmesh/hugmesh-generator@HEAD"
 ---
 
 > **Status: v1 CONSOLIDATED.** One architecture. This ships the shared driver,
@@ -129,13 +129,14 @@ always a direct, unproxied A/AAAA at the relay node (`--turn-ip` /
 `--turn-ipv6`, defaulting to the ingress pair), never a tunnel CNAME — TURN is
 raw UDP/TCP and a proxied record would advertise a relay that answers nothing.
 
-> **The go-live wizard flips only the public apex — never the orchestration
-> superdomain.** Two domains coexist on a mesh and must not be conflated:
+> **The go-live wizard flips only the public apex — never the Tailscale root
+> domain.** Two domains coexist on a mesh and must not be conflated:
 >
 > - **Public apex** — `cluster_domain` (`/etc/hugmesh/cluster-domain`, e.g.
 >   `hugmesh.net`). This is the go-live *target*: the wizard provisions the
 >   public edge for it and trips `release-state` `internal → public`.
-> - **Orchestration superdomain** — `<brand>.internal` (default
+> - **Tailscale root domain** (formerly "orchestration superdomain", the name
+>   Studio and this document used before 2026-09) — `<brand>.internal` (default
 >   `hugmesh.internal`), the headscale MagicDNS `base_domain` every mesh node
 >   joins. It is **permanently internal**: it carries the tailnet + `kube-api.<superdomain>`
 >   control-plane endpoint, is never routable, and is **never** go-live-flipped.
