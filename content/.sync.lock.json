@@ -1,6 +1,6 @@
 {
   "_comment": "Integrity record for the vendored content/ tree, written by scripts/sync-content.mjs. scripts/check-content-integrity.mjs verifies every file against it WITHOUT network access, which is what makes hand-editing a vendored document a build failure rather than silent drift. Do not edit by hand.",
-  "syncedAt": "2026-09-05T04:45:14.171Z",
+  "syncedAt": "2026-09-05T04:53:43.174Z",
   "docs": [
     {
       "path": "content/architecture/backend-gateway.md",
@@ -1701,7 +1701,7 @@
       "sourceRepo": "hugmesh-wiki-ui",
       "sourcePath": "README.md",
       "sourceRef": "hugmesh/hugmesh-wiki-ui@HEAD",
-      "sha256": "8c20b01ff78c10c456c604124efde4600488236aa380a55c70630f0fe2631f48"
+      "sha256": "2d2f3d4e2afc46663de44d11efa62bdbc69c5db6b0f537846e92ac39c939115c"
     },
     {
       "path": "content/security/actions-security.md",
