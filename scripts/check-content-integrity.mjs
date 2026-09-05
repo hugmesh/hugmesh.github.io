@@ -22,12 +22,22 @@
  *
  *   - a vendored file with no lock entry          -> fail
  *   - a lock entry with no file                   -> fail
+ *   - a lock entry whose recorded source no       -> fail
+ *     longer matches the manifest's { repo, path }
  *   - a file under content/ that is neither       -> fail
  *     vendored nor declared authored:"site"
  *   - a missing or unparseable lock               -> fail
  *   - a lock that covers zero documents           -> fail
  *
  * A gate that can report "nothing to check" and still exit 0 is not a gate.
+ *
+ * PROVENANCE IS PART OF INTEGRITY. A sha256 alone only answers "is this file the
+ * bytes we synced?" — it says nothing about WHERE those bytes came from. Repointing
+ * a manifest entry at a different repo or path without re-vendoring leaves the sha
+ * matching, so the old check passed while the rendered page's "generated from ..."
+ * line — which is read from the manifest, not the lock — attributed the text to a
+ * source it was never taken from. The manifest is the site's publication allowlist,
+ * so a silently false attribution is exactly the failure this repo exists to prevent.
  */
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
@@ -79,6 +89,7 @@ async function main() {
   const { docs } = await loadManifest(ROOT);
   const authored = new Set(docs.filter((d) => d.authored).map((d) => d.contentPath));
   const vendored = new Set(docs.filter((d) => d.repo).map((d) => d.contentPath));
+  const byContentPath = new Map(docs.filter((d) => d.repo).map((d) => [d.contentPath, d]));
 
   const onDisk = new Set(await walk(CONTENT));
 
@@ -92,6 +103,19 @@ async function main() {
     if (!onDisk.has(rel)) {
       failures.push(`${rel}: locked, but the file is missing`);
       continue;
+    }
+    const entry = byContentPath.get(rel);
+    if (record.sourceRepo !== entry.repo || record.sourcePath !== entry.path) {
+      failures.push(
+        `${rel}: PROVENANCE MISMATCH — docs.manifest.json and the lock disagree about the source\n` +
+          `    manifest says ${entry.repo}/${entry.path}\n` +
+          `    lock says     ${record.sourceRepo}/${record.sourcePath}\n` +
+          '    The published page credits the MANIFEST, so this file is attributed to a\n' +
+          '    source it was not vendored from. Re-run `npm run refresh:content` so the\n' +
+          '    bytes and the attribution come from the same place.',
+      );
+      // No `continue`: the sha check below is independent of provenance, and a file
+      // that was both repointed and hand-edited must report both problems.
     }
     const actual = sha256(await readFile(path.join(ROOT, rel), 'utf8'));
     if (actual !== record.sha256) {

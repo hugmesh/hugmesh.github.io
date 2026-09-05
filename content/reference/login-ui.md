@@ -202,8 +202,6 @@ see `docker-entrypoint.d/` for the exact mechanism.
 - Move remaining credentialed API calls onto the generated typed client (the anonymous/public reads
   are already migrated).
 - Add end-to-end coverage for the passwordless local-sign-in flow (currently unit-tested only).
-- Move session storage fully onto the httpOnly-cookie model, retiring the legacy `localStorage`
-  fallback.
 
 ## License
 

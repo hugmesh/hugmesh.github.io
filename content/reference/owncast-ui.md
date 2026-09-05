@@ -68,6 +68,11 @@ build` succeeds and emits `remoteEntry.json`; `npx tsc -p tsconfig.app.json
   proves the suite compiles + is discoverable offline, not that it passes
   against a live stack.
 
+- **Avatar cam** (`/owncast/avatar-cam`, STREAM role): go live as your own 2D
+  avatar — the games avatar you built in the Character Forge, rendered in three
+  mouth frames by the games avatar API (`image.svg?mouth=`) and swapped by the
+  loudness your microphone hears. See "Avatar cam" below for how it goes on air.
+
 **Known gaps (deferred, not hidden):**
 
 - Stricter response headers (CSP, COEP/CORP, Permissions-Policy) are
@@ -80,6 +85,39 @@ build` succeeds and emits `remoteEntry.json`; `npx tsc -p tsconfig.app.json
 - The e2e harness has never been run against a live stack from this repo (it
   needs the host shell + owncast-bff + a Casdoor seed); only the offline
   compile/discovery gate has been exercised.
+
+## Avatar cam
+
+`src/app/avatar-cam/` — stream **as your own 2D avatar**, mouth following your
+voice, the way a visual novel's talking sprite works (closed / half / open with
+hysteresis and a minimum hold, so a value hovering on a threshold cannot
+flicker and frames read as speech rather than a meter).
+
+How it goes on air, honestly: a browser cannot push RTMP, and the bff exposes
+no stream key — Owncast's ingest stays what it is (OBS → tailnet → your
+Owncast `:1935`). The page is the **camera**:
+
+1. It lists your saved games avatars (`GET {games}/api/avatars`, the session
+   cookie, `credentials: 'include'`; the games backend's CORS allowlist admits
+   the mesh's origins) and picks the **active** one.
+2. For the chosen avatar + expression it fetches three frames from the games
+   avatar API — `image.svg?expression=…&mouth=0|0.45|0.9` — as text and shows
+   them as `data:` URLs (no cross-origin `<img>`, no `blob:` CSP entry).
+3. **Use my microphone** turns loudness into a frame (the amplitude→openness
+   math is vendored byte-faithful from hugmesh-matrix-ui `vn/voice`, the same
+   copy the character-studio remote carries — native-federation forbids a
+   shared cross-remote runtime import). Without a mic the three frame buttons
+   preview by hand.
+4. **Pop out the camera** opens `?capture=1&bg=green&avatar=…&expression=…`:
+   the avatar and nothing else, sized to the window, on the keyed colour. In
+   OBS add a *Window Capture* of that window and a *Chroma Key* filter, then go
+   live from OBS as usual.
+
+The games host is derived from the page's own host (`https://games.<host>`,
+the generator's `games.<CLUSTER_DOMAIN>` route); the host shell may pin it
+with `globalThis.__HUG_GAMES_URL__`, the `__HUG_OWNCAST_URL__` precedent. The
+route is gated by `owncastStreamGuard`, exactly like My Stream, and the nav
+shows it to STREAM only.
 
 ## Federation contract
 

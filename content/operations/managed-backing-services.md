@@ -5,7 +5,7 @@ slug: "managed-backing-services"
 summary: "Pointing an in-mesh backing datastore at a hosted AWS or Azure equivalent instead of running it in-cluster; additive and opt-in."
 source_repo: "hugmesh-generator"
 source_path: "docs/MANAGED-SERVICES.md"
-source_ref: "30d9edfc"
+source_ref: "hugmesh/hugmesh-generator@HEAD"
 ---
 
 Point an in-mesh **backing service** (a datastore/infra the mesh normally runs
@@ -35,7 +35,7 @@ builders — client/standalone images have no cluster tree):
 MANAGED_SERVICES="kafka=msk-broker:9098 postgres-admin-bff=my.rds.amazonaws.com:5432"
 
 # or the repeatable CLI flag (APPENDS to MANAGED_SERVICES):
-build-x86-host-stage4.sh --role be \
+build-x86-host-stage4.sh --role backend \
   --managed-service kafka=msk-broker:9098 \
   --managed-service postgres-admin-bff=my.rds.amazonaws.com:5432
 ```

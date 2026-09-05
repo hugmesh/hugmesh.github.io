@@ -1,17 +1,17 @@
 ---
-title: "Per-user client device images (FD-04 … FD-09"
+title: "Per-user client device images (FD-04 … FD-09)"
 section: "devices"
 slug: "client-images"
 summary: "The staged plan for per-user client device images (laptop, chromebook, desktop) as distinct from the Kubernetes node roles."
 source_repo: "hugmesh-generator"
 source_path: "docs/CLIENT-IMAGES.md"
-source_ref: "30d9edfc"
+source_ref: "hugmesh/hugmesh-generator@HEAD"
 ---
 
 Status: **FD-04 shipped; desktop app governance implemented (ships dark); other
 later increments deferred.** This document is the staged
 implementation plan for the per-user *client* device images, distinct from the
-five Kubernetes **node** roles (`pki / be / fe / be+gpu / omnibus`). A *client* is
+five Kubernetes **node** roles (`pki / backend / frontend / backend-gpu / omnibus`). A *client* is
 a **person's device** — a desktop that joins the Tailscale mesh and runs the
 platform UI — not a cluster node.
 
@@ -66,7 +66,7 @@ platform UI — not a cluster node.
 
 ## Two orthogonal axes (do not overload `--role`)
 
-- **node role** (existing): `pki|be|fe|be+gpu|omnibus` — k8s scheduling/compute. `ROLE`.
+- **node role** (existing): `pki|backend|frontend|backend-gpu|omnibus` — k8s scheduling/compute. `ROLE`.
 - **device class** (new): `laptop | chromebook | desktop` (thin laptop + thin
   Chromebook are the FD-04 defaults; full desktop is opt-in). A device class sets
   `ROLE_CLIENT=true`.

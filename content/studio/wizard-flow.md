@@ -29,9 +29,20 @@ the page registry + mode-gated flow are in
 ## Screen 0 — Welcome
 
 [`welcome.py`](../studio/hugmesh_studio/gui/pages/welcome.py) — the hugmesh explainer
-(with the README getting-started link) plus THREE large icon buttons (issue #50):
-**Start building** (→ the mode menu below, journey-ordered), **Start a local mesh**
-(→ the local-stack flow directly), and **Review prior sessions** (→ Screen 0b).
+(with the README getting-started link) plus TWO large icon buttons (issue #50):
+**Start building** (→ the mode menu below, journey-ordered) and **Review prior
+sessions** (→ Screen 0b).
+
+The third card, **Start a local mesh**, was removed on **2026-08-26**. It routed to the
+same `LocalMeshPage` as the mode menu's own "Local Docker mesh" card, raising the same
+transient `wiz.localmesh_selected` flag — two doors onto one flow, and one of the
+duplicates behind the operator's report that the wizard "is asking same questions
+seemingly multiple times". The mode menu keeps the card; welcome carries no routing
+target for it, because a target for a card nobody can pick is an unreachable branch in
+`nextId()`. `WelcomePage.validatePage` still lowers the flag unconditionally, so a Back
+navigation out of the mode menu cannot strand a stale `True`. The TUI
+(`tui/journey.py`, `WELCOME_CHOICES`/`WELCOME_TARGET`) dropped the same entry and is
+parity-pinned against this page.
 
 ## Screen 0b — Prior sessions
 
@@ -85,7 +96,7 @@ non-monotonically across a path). The conceptual steps:
 | 2 | Pick the target MACHINE, then the image type / per-node hardware | `role.py` (image paths — **arch-first**: architecture selector → family-grouped searchable device browser (status badges) → the device's derived image-type list → inline board/flavor + the x86 machine-profile preset) · `worklist.py` (mesh: one row per node, with a per-row Encryption column) · `hardware.py` (GPU/Wi-Fi/kernel TUNING + this-machine scan) |
 | 3 | Optional cluster services | the services group on `network.py` (mesh/cloud) |
 | 4 | The domain joined + tailnet/SSO login + first-login registration | `network.py` (cloud) · `users.py` (per-user registration method) |
-| 5 | The orchestration superdomain + the other domains | the mesh-control-plane group on `network.py` · `domains.py` |
+| 5 | The Tailscale root domain + the other domains | the Headscale / mesh-networking group on `network.py` · `domains.py` |
 | 6 | Per-domain admins + named users | `domains.py` (default admin) · `users.py` |
 | 7 | Network identity / egress / security + home / encryption / login / packages | `network.py` (standalone) · `system.py` · `home.py` |
 
@@ -108,12 +119,72 @@ collected into `cfg`.
   `welcome → mode → role → hardware → branding → network → keyzip → domains → users → system → home → build`
 - **Standalone Gentoo desktop** (`standalone`) — skips idp/worklist/keyzip/domains/users:
   `welcome → mode → role → hardware → branding → network → system → home → build`
+  (then `launch → progress`). **The unaffiliated role walks the identical
+  sequence.** It used to be this same walk *minus* `branding`, because
+  `BrandingPage.applies_to` removed the page for that role; the 2026-08-26
+  identity/look split put the page back (see below), so there is no longer any
+  page-level difference between an unaffiliated and a branded standalone image —
+  the difference moved inside the branding screen, to two hidden identity widgets.
 
 `ProgressPage` terminates each image path once it lands (WS-REVIEWUI).
 
+## Duplicate-question collapse (2026-08-26)
+
+Operator report, against session `20260826-151356-64070a`
+(`role=standalone-unaffiliated`, `platform=x86`):
+
+> "standalone menu is asking same questions seemingly multiple times when nothing
+> should be an image there related to the mesh or domain at all. There should also be
+> no inbetween menu for configuring domain. There should be the menu for adding the
+> themes as in the branded images"
+
+No page was ever visited twice — the repeats were the *same question asked by different
+widgets on different screens*. Each was collapsed to a single asker. Every hide below is
+**emission-neutral**: the widget is hidden *and* its field reset to the `ImageConfig`
+dataclass default, and the gate is re-evaluated on every `initializePage` so a field that
+becomes applicable again is both reachable and emitted.
+
+| Duplicate | Kept | Removed from |
+|---|---|---|
+| "Identity & Domain" (apex domain / games domain / release state) | cloud + mesh, and every ARM platform | `network.py` on a standalone x86 image — the "in-between menu for configuring domain" (`cluster_identity_applies`) |
+| Default account | `home.py` "Local user" | `system.py` "Default user" on desktop-class flows (`default_user_is_local_user`) |
+| Machine hardware scan | `hardware.py` | the synthetic `this-machine-scan` profile row on `role.py` |
+| "Themes" (web login) vs "Desktop theme" | both, retitled | the bare "Themes" label — the web group is now "Web login theme", and is mesh-only |
+| "Seed stack code" | branded images | `home.py` on an unaffiliated image |
+| Image posture / `--capable` / desktop weight | roles where they genuinely compose | roles whose builder arm already pins them (`role_presets_standalone` / `role_presets_capable`) |
+| Sunshine | tailnet client desktops | standalone mode |
+| "Unaffiliated" | the role ROW | the composable checkbox, in standalone mode only |
+| "Start a local mesh" | the mode menu | the welcome screen |
+
+Two hides are deliberately **not** paired with a clear. `--standalone` and `--capable` on a
+role whose builder arm already sets them are *redundant*, not inapplicable: the image is
+byte-identical either way, and clearing would silently rewrite a loaded config on a mere
+page visit. Inapplicable hides (Sunshine, the composable unaffiliated flag) do clear.
+
+### Identity vs look on an unaffiliated image
+
+The third ask reverses part of an earlier fix. `BrandingPage` used to delete itself for
+`standalone-unaffiliated`, which was correct while *every* branding flag was a builder
+hard conflict — the screen could only render greyed behind an apology note. The rule is
+now split: **a brand names whose image this is; a wallpaper names nobody.**
+
+- **Identity — still refused**: `--brand`, `--brand-title`, `--org`, `--brand-logo`,
+  `--brand-locked`, and a `--config` brand profile.
+- **Look — now allowed**: `--theme`, `--branding-dir`, `--wallpaper`,
+  `--grub-background`, `--grub-theme`, `--login-background`, `--accent-color`,
+  `--color-scheme`, baked under neutral artefact names (`/etc/gentoo/branding`,
+  `/usr/sbin/branding`, `gentoo-background.png`).
+
+So the page is back in the flow and only its two identity widgets (the brand-logo row and
+"Lock branding") are hidden and cleared. `--brand-logo` stays on the identity side because
+the logo *is* the mark — the applier installs it as the greeter's default-user-image — and
+because every `--theme` preset ships one, the unaffiliated bake removes `logo.png` from the
+assembled brand dir so the conflict cannot be walked around through a preset.
+
 ## What got clearer in this pass
 
-- The first screen presents **four** usable choices; the fourth (Local Docker mesh) is
+- The first screen presents **two** cards (was three — see Screen 0); the mode menu it
+  opens presents **four** usable choices; the fourth (Local Docker mesh) is
   **functional** end-to-end (was previously a crash-on-click dead end — its
   `LocalMeshConfig`/`LocalMeshDialog` modules now exist and are test-covered).
 - The Welcome subtitle names **all four** paths (dropped the retired "branded cloud
@@ -150,7 +221,7 @@ A GUI-only reorganisation — **emission is byte-identical** (the build-matrix `
   is meaningless — hidden on the desktop standalone/cloud paths and on ARM. On the mesh
   flow the gate keys on the **worklist entries themselves** — shown iff *any* checked row
   is a node-class role on the x86 builder — never on the base config: the base role is
-  just the *first* checked row (catalog order puts `rpi5-desktop` before `edge_ai`) and
+  just the *first* checked row (catalog order puts `rpi5-desktop` before `edge-ai`) and
   the base platform is forced `x86` for the shared option-superset pages, so a base-keyed
   gate would hide+clear creds an x86 node row still consumes (emission loss) and show
   them on an all-ARM worklist that consumes them nowhere. The creds are blanked only when
@@ -168,8 +239,22 @@ A GUI-only reorganisation — **emission is byte-identical** (the build-matrix `
   unattended LUKS passphrase (set once on the Home step) applies to **every** encrypted node.
   The column is additive and defaults to `default` (inherit the base), so an untouched
   worklist is byte-identical to before.
+- **Per-image hostname** (`system.py` / `core/worklist.py`; issue #229). System identity
+  was one image-config setting even when generating several images — fine for the
+  timezone and the default account, which stay mesh-wide, but a hostname shared by every
+  node is a collision, not a setting. `WorklistEntry.hostname` is the per-image
+  `-H/--hostname` (`""` = inherit the base, and a blank base lets the builder derive the
+  role name; `materialize()` fails loudly if two images would bake the same explicit
+  name). On the System step a **multi-row** mesh worklist withdraws the single Hostname
+  row and shows one editor per image, placeholdered with the name that node derives when
+  left blank; a one-row worklist keeps the plain field but writes the entry; both blank
+  the base so one value can never ride onto every node again. Refusals (duplicate name,
+  a name the identity allowlist rejects) are inline, never modal. The TUI's System step
+  (`tui/journey.py::SystemScreen`) hosts the same per-image table (`N NAME` / `N -`);
+  headlessly it is `entries[].hostname` in the envelope, and `--print-commands` emits
+  each image's own `--hostname`. An untouched worklist still emits no `--hostname`.
 
-## Emission note — the one additive manifest field
+## Emission note — the additive manifest fields
 
 `User.registration` (default `""` = derive) is an **additive** field on the mesh
 manifest / `--print-specs` surface (design WS-E7). It is manifest-only: `User` never
@@ -178,6 +263,11 @@ is unchanged. `from_dict` tolerates and round-trips it. The external cluster-pro
 consumer of `mesh_manifest` JSON is expected to ignore unknown keys (forward-compat); if
 a strict byte-identity reading of the manifest is ever required, that is the one field to
 account for.
+
+The second one is the manifest v2 image record's `hostname` (issue #229): the explicit
+per-image name that build bakes (`""` = the builder derives the role name), so a
+provisioning consumer can tell the nodes apart by the name each actually boots with.
+Additive in the same sense — absent before, ignorable by a consumer that does not read it.
 
 ### Honest note — node fallback creds are widget-scoped, not argv-gated
 

@@ -5,7 +5,7 @@ slug: "jetson-flashing"
 summary: "Flashing an Orin, distinguishing out-of-band QSPI firmware from the rootfs image that is this repo's artifact."
 source_repo: "hugmesh-generator"
 source_path: "specs-jetson/installer/TEGRAFLASH.md"
-source_ref: "30d9edfc"
+source_ref: "hugmesh/hugmesh-generator@HEAD"
 ---
 
 Unlike the RPi5 (`dd` the .img to SD) and the x86 hosts (installer ISO), a
@@ -22,7 +22,7 @@ distro-boots our image directly:
 # microSD or NVMe-over-USB adapter on any Linux box:
 xz -dc hugmesh-jetson-orin-nano-arm64-edge_ai-test-<ts>.img.xz | \
     sudo dd of=/dev/sdX bs=4M conv=fsync status=progress
-# or:  sudo scripts/flash-disk.sh --arch arm64 --role edge_ai /dev/sdX
+# or:  sudo scripts/flash-disk.sh --arch arm64 --role edge-ai /dev/sdX
 ```
 
 Insert the card / NVMe, power on: UEFI's L4TLauncher finds
