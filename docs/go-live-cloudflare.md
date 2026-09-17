@@ -9,13 +9,17 @@ This file is a runbook, not a secret store. It contains only values that are alr
 observable from public DNS, and nothing here is a credential. Do not add one.
 
 Everything under "Where this stands" was **measured from this repository's checkout on
-2026-09-17 ~21:45Z**, with the commands given beside it. `dig` is not installed on the
+2026-09-17 ~21:45Z and re-measured on 2026-09-17 23:13-23:16Z**, with the commands given
+beside it. Both readings agree; the re-measure is noted because the two facts that drive
+step B2 — the apex having no record, and `www` answering a live 1016 — are the ones a
+reader is most likely to assume have already been fixed. `dig` is not installed on the
 build box, so DNS was read over DNS-over-HTTPS:
 
 ```bash
 q() { curl -s -H 'accept: application/dns-json' \
         "https://cloudflare-dns.com/dns-query?name=$1&type=$2"; echo; }
 q hugmesh.net A ; q hugmesh.net AAAA ; q hugmesh.net CNAME ; q hugmesh.net NS ; q hugmesh.net DS
+q www.hugmesh.net A ; q www.hugmesh.net AAAA ; q www.hugmesh.net CNAME
 ```
 
 ---
@@ -26,20 +30,26 @@ q hugmesh.net A ; q hugmesh.net AAAA ; q hugmesh.net CNAME ; q hugmesh.net NS ; 
 |---|---|---|
 | The zone is already on Cloudflare | `NS alexia.ns.cloudflare.com`, `gabriel.ns.cloudflare.com` | `q hugmesh.net NS` |
 | DNSSEC is already **on** | `DS 2371 13 2 78037bcd0f83078c3764837846e44374d5d20bf1d4203afd5d806d57da105902` | `q hugmesh.net DS` |
-| **The apex has no record at all** | `A`, `AAAA` and `CNAME` all return NOERROR/NODATA (SOA in AUTHORITY, no ANSWER) | `q hugmesh.net A` |
-| …so the apex does not resolve | `curl: (6) Could not resolve host: hugmesh.net` | `curl -sSI https://hugmesh.net/` |
-| **`www.hugmesh.net` already exists, is proxied, and is broken** | `104.21.84.37`, `172.67.186.17` → **HTTP 530, Cloudflare error 1016 "Origin DNS error"** | `curl -sS -o /dev/null -D - https://www.hugmesh.net/` |
+| **The apex has no record at all** | `A`, `AAAA` and `CNAME` all return NOERROR/NODATA (SOA in AUTHORITY, no ANSWER) — unchanged on the 23:16Z re-measure | `q hugmesh.net A` |
+| …so the apex does not resolve | `curl: (6) Could not resolve host: hugmesh.net (DNS server returned answer with no data)` | `curl -sSI https://hugmesh.net/` |
+| **`www.hugmesh.net` already exists, is proxied, and is broken** | `A 104.21.84.37`, `172.67.186.17`; `AAAA 2606:4700:3030::6815:5425`, `2606:4700:3031::ac43:ba11` → **HTTP 530, Cloudflare error 1016 "Origin DNS error"** | `curl -sS -o /dev/null -D - https://www.hugmesh.net/` |
+| …on plain `http://` too, not only `https://` | `HTTP/1.1 530`, `server: cloudflare`, same `error code: 1016` in the body | `curl -sS -o /dev/null -D - http://www.hugmesh.net/` |
+| …and it really is *proxied*, not merely aimed at Cloudflare | `q www.hugmesh.net CNAME` → NOERROR/**NODATA** while `A`/`AAAA` answer. A proxied record publishes the flattened edge address and hides its target; the target is visible only in the dashboard, which is why this runbook cannot name what it points at today | `q www.hugmesh.net CNAME` |
 | …and those are Cloudflare edge IPs | `104.21.84.37` ∈ `104.16.0.0/13`, `172.67.186.17` ∈ `172.64.0.0/13` | `curl -sS https://www.cloudflare.com/ips-v4` |
+| …Cloudflare's *edge* certificate for `www` is already fine | the 530 arrives over a completed TLS handshake (`HTTP/2 530`, `alt-svc: h3`). The failure is entirely origin-side, so nothing about it is a certificate problem to chase | `curl -sS -D - https://www.hugmesh.net/` |
 | GitHub Pages is **not** enabled here | `"private": true`, `"has_pages": false`; `GET /repos/hugmesh/hugmesh.github.io/pages` → `404 Not Found` | `gh api repos/hugmesh/hugmesh.github.io` |
 | `hugmesh.github.io` answers, but with nothing | `185.199.108-111.153`, `2606:50c0:800{0,1,2,3}::153`; `HTTP/2 404` — *"There isn't a GitHub Pages site here"* | `curl -sS https://hugmesh.github.io/` |
 | A Pages origin caches for 10 minutes | `cache-control: max-age=600` on the two `200`s I probed (HTML and JSON) on another Pages site. `hugmesh.github.io`'s own `404` carries **no** `cache-control` at all — re-measure on this site once it serves `200`s | `curl -sSI https://pages.github.com/` ; `curl -sSI https://pages.github.com/versions.json` ; `curl -sSI https://hugmesh.github.io/` |
 
 Two things in that table are not just "nothing configured yet":
 
-1. **`www.hugmesh.net` is live and failing right now.** Error 1016 means a *proxied*
-   DNS record exists whose origin hostname does not resolve. Anyone who types
-   `www.hugmesh.net` today gets a Cloudflare error page. It has to be repointed or
-   deleted as part of go-live — see the open question at the bottom.
+1. **`www.hugmesh.net` is live and failing right now — and this is not a go-live
+   problem.** Error 1016 means a *proxied* DNS record exists whose origin hostname does
+   not resolve. Anyone who types `www.hugmesh.net` today, over `https://` or plain
+   `http://`, gets a Cloudflare error page, and has been getting one for as long as that
+   record has pointed where it points. Nothing in steps A, C, D, E or F changes that:
+   **step B2 is the one that stops it**, and B2 is now a decided step rather than an open
+   question — decision 47 = (a), `www` is this site's alias.
 2. **The apex is free, but the subdomain namespace is not.** The published docs in this
    repository already name `registry.`, `attestation.`, `id.`, `scale.`, `admin.`,
    `gitlab.`, `games.`, `vault.`, `platform.`, `matrix.`, `mastodon.` and `ai.`
@@ -53,7 +63,7 @@ Two things in that table are not just "nothing configured yet":
 
 | Where | What it says |
 |---|---|
-| `src/CNAME:1` | `hugmesh.net` — the apex, shipped inside the Pages artifact |
+| `src/CNAME:1` | `hugmesh.net` — the apex, shipped inside the Pages artifact. It is also what makes Pages issue the `www → apex` 301 for free (step **B2**) |
 | `angular.json:46` | `src/CNAME` is an asset, so the build copies it into `dist/browser` |
 | `scripts/spa-fallback.mjs:47-53` | the build **fails** if `CNAME` is missing from the output |
 | `.github/workflows/pages.yml:90-92` | step *"Verify the Pages artifact"* re-asserts `index.html`, `404.html`, `CNAME`, `.nojekyll` |
@@ -85,9 +95,19 @@ The last two rows are the whole reason the cache rules in step E look the way th
 
 ## B. DNS in Cloudflare — **DNS only (grey cloud) at this stage**
 
-The grey cloud is not optional here. It is what lets GitHub complete its ACME
-validation and issue a Let's Encrypt certificate for `hugmesh.net`. Turn the proxy on
-in step D, after the certificate exists.
+The grey cloud is not optional here, and the reason is mechanical rather than a matter
+of taste. A **proxied** record publishes Cloudflare's edge addresses, not the origin's —
+that is exactly what the `www` rows in "Where this stands" show. GitHub's custom-domain
+DNS check looks the name up and expects to see *GitHub's own* addresses; behind an orange
+cloud it does not, the check fails, no Let's Encrypt certificate is ever requested, and
+"Enforce HTTPS" stays greyed out with nothing to retry. Turning the proxy off while the
+certificate is provisioned is GitHub's own documented requirement, not a local
+superstition; nobody here has run it end to end, so expect to watch the Pages settings
+page report a failed DNS check if a record is orange at this point. GitHub runs that
+check and issues those certificates **per hostname**, so the apex and `www` pass or fail
+independently.
+Both records are therefore created DNS-only here and both go orange in step **D3**,
+after the certificates exist.
 
 **B1. The apex.** Pick one shape:
 
@@ -114,15 +134,59 @@ changed this set before.** Re-read it on the day
 and re-check GitHub's docs. Option 1 survives such a change with no edit; Option 2 does
 not. That is the reason to prefer Option 1.
 
-**B2. `www`.** A record for `www` **already exists and is broken** (error 1016). Edit or
-delete it — do not add a second one beside it:
+**B2. `www` — decided: it is this site's alias.** This used to be an open question at the
+bottom of this file. It is now answered: **decision 47 = (a)**, by the operator on
+2026-09-17 ([the record](https://github.com/hugmesh/hugmesh-generator/issues/347#issuecomment-5722430270)).
+`www.hugmesh.net` is the docs site's alias and nothing else is reserving it, so the
+record that exists today is **edited in place** — change its target, do not add a second
+record beside it, and do not delete-then-recreate, because it is that edit which clears
+the live 1016:
 
 | Type | Name | Target | Proxy | TTL |
 |---|---|---|---|---|
-| `CNAME` | `www` | `hugmesh.github.io` | **DNS only** initially, proxied in step D | Auto |
+| `CNAME` | `www` | `hugmesh.github.io` | **DNS only** here and through step C; **Proxied** from **D3** | Auto |
 
-With the artifact's `CNAME` file naming the apex (`src/CNAME:1`), GitHub Pages issues
-the `www → apex` 301 itself; no Cloudflare redirect rule is needed for it.
+**No Cloudflare redirect rule, Page Rule, Bulk Redirect or Worker is needed for
+`www → apex`.** The Pages artifact ships a `CNAME` file naming the apex
+(`src/CNAME:1`), and GitHub Pages issues the `www → https://hugmesh.net/` 301 off that
+file by itself. A Cloudflare redirect on top would be a second, competing source of
+truth for the same 301, and the first thing to suspect the day the redirect target is
+wrong.
+
+**What this step fixes, and what it does not.** Be precise, because "fix the 1016" and
+"make `www` work" are not the same date:
+
+- **It ends the 1016, and that is available today.** The error means a proxied record
+  whose origin hostname does not resolve; the moment the target is `hugmesh.github.io`,
+  which does resolve (`185.199.108-111.153`, measured), Cloudflare has an origin again.
+  B2 has no prerequisite anywhere in this runbook — it is a grey-cloud record edit that
+  touches nothing else — so it can be applied before A1 if the operator simply wants the
+  marketing hostname to stop serving a Cloudflare error page.
+- **It does not make `www` serve the site.** Grey cloud takes Cloudflare *out* of the
+  path, so the browser connects straight to GitHub Pages with `www.hugmesh.net` as SNI.
+  Until C1-C2 have bound the custom domain and issued the certificates, GitHub has no
+  certificate for that name, so `https://www.hugmesh.net/` fails on a certificate-name
+  mismatch, and plain `http://` gets GitHub's *"There isn't a GitHub Pages site here"*
+  404 (measured today against `hugmesh.github.io`). That is a different and shorter-lived
+  breakage substituted for the 1016 — an honest step forward, not a finished one.
+- **It does nothing whatsoever for the apex.** `hugmesh.net` is a separate record that
+  still does not exist at all (re-measured 23:16Z); `curl https://hugmesh.net/` fails to
+  *resolve*, which is **B1**'s job, not this one's. The two failures look unrelated to a
+  visitor and they are.
+- **`www` is only actually correct** — a `301` to the apex over a publicly trusted
+  certificate — after **C2** (certificates issued), **C4**'s `www`-specific test, and
+  **D3** (proxy on). Verification is item 5 in step G.
+
+**Where this sits in the order, and why it must not move.** The record is created at
+**B**, stays **DNS only** through **C**, and goes **Proxied** at **D3** — the same
+sequence the apex follows, for the same reason given in the B preamble above: a proxied
+`www` resolves to Cloudflare edge addresses, GitHub's per-hostname DNS check does not
+find GitHub's addresses there, and the `www` certificate is never issued. So `www` must
+not be flipped orange early to "fix" the 1016 faster; flipping it orange before its
+certificate exists is what would strand it. It goes orange only after **C4**'s `www`
+`--resolve` test returns a `301` over a valid certificate. If that test still fails,
+leave `www` grey and flip only the apex in D3 — nothing else in this runbook depends on
+`www` being proxied.
 
 **B3. Do NOT create `*.hugmesh.net`.** Pages matches on the `Host` header against the
 one configured custom domain; every other host gets *"There isn't a GitHub Pages site
@@ -158,9 +222,10 @@ interacts with it.
   A `HTTP/2 200` means GitHub is serving a publicly trusted certificate for the apex and
   Full (strict) will work. A TLS error means C2 has not finished — **do not proceed**.
 
-  Run the **same test for `www`** before D3 proxies it, because Full (strict) validates
-  the origin certificate per hostname and GitHub issues a separate certificate for the
-  `www` variant:
+  Run the **same test for `www`** before D3 proxies it — `www` is a real alias of this
+  site (**B2**, decision 47 = (a)), not an optional extra — because Full (strict)
+  validates the origin certificate per hostname and GitHub issues a separate certificate
+  for the `www` variant:
 
   ```bash
   curl -sS -m 15 -o /dev/null -D - --resolve www.hugmesh.net:443:185.199.108.153 \
@@ -188,7 +253,9 @@ interacts with it.
 - **D2. SSL/TLS → Edge Certificates:** Always Use HTTPS **On**; Automatic HTTPS Rewrites
   **On**; Minimum TLS Version **1.2**; TLS 1.3, HTTP/2 and HTTP/3 **On** (HTTP/3 is
   already enabled on this zone — today's `www` probe answered over `HTTP/3`).
-- **D3.** Flip the apex and `www` records from DNS-only to **Proxied**.
+- **D3.** Flip the apex and `www` records from DNS-only to **Proxied**. This is the only
+  step that changes `www`'s proxy status after B2 created it grey, and it is gated on
+  C4's `www` test passing — flip the two records independently if only one is ready.
 - **D4. HSTS: leave it off for now.** It is a one-way door for the `max-age` you pick —
   a browser that has seen the header will refuse the site over HTTP until it expires,
   and there is a standing scar in this fleet from exactly that
@@ -289,7 +356,13 @@ curl -sSI https://hugmesh.net/assets/content/index.json | head -12
 
 # 5. www redirects to the apex and no longer 1016s
 curl -sS -o /dev/null -D - https://www.hugmesh.net/ | grep -iE '^(HTTP|location)'
-# expect: 301 -> https://hugmesh.net/    (today: HTTP 530, error 1016)
+# expect: 301 -> https://hugmesh.net/, issued by GitHub Pages off src/CNAME (B2) and NOT
+#         by any Cloudflare rule. Today: HTTP 530 / error 1016, on http:// and https://
+#         alike. Re-run the same probe against http:// too — the 1016 answers both.
+q www.hugmesh.net A
+# expect: after D3, Cloudflare edge addresses again, but now with a live origin behind
+#         them. Between B2 and D3 (grey cloud) it answers GitHub's 185.199.10{8,9,10,11}
+#         .153 instead — that difference is how you tell which stage the zone is in.
 
 # 6. http is upgraded, not looped — this is the Flexible-SSL detector
 curl -sS -o /dev/null -w '%{num_redirects} %{url_effective} %{http_code}\n' -L http://hugmesh.net/
@@ -311,18 +384,3 @@ The issue can be closed when (1) reports `cname: hugmesh.net` with
 can run from a build box moves any of that: every remaining action is inside the
 operator's Cloudflare dashboard and this repository's settings.
 
----
-
-## Open question for the operator
-
-**What is `www.hugmesh.net` for?** There is a proxied record on it today whose origin
-does not resolve (HTTP 530 / Cloudflare error 1016, measured). Two answers, and this
-runbook cannot pick one:
-
-- **(a)** `www` is the docs site's alias → set it as in **B2**, and GitHub Pages will
-  301 it to the apex for free.
-- **(b)** `www` is reserved for something else (a mesh deployment, a redirect to a
-  different property) → say what, and **delete the broken record** regardless; leaving a
-  live 1016 on the marketing hostname through go-live is worse than having no record.
-
-Nothing else in this checklist depends on the answer.
