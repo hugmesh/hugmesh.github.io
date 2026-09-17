@@ -120,8 +120,10 @@ starting with an underscore — which is how Angular names some chunks) and veri
 
 The repository must be **public** (Pages custom domains require it on this plan), with
 Settings → Pages → Source = **GitHub Actions**, the custom domain set to `hugmesh.net`,
-Enforce HTTPS enabled once DNS resolves, and a proxied Cloudflare `CNAME`
-`hugmesh.net` → `hugmesh.github.io`.
+Enforce HTTPS enabled once DNS resolves, and proxied Cloudflare `CNAME`s
+`hugmesh.net` → `hugmesh.github.io` and `www` → the same. `www` is a decided alias of
+this site; GitHub Pages issues the `www` → apex 301 itself off `src/CNAME`, so no
+Cloudflare redirect rule exists for it.
 
 `.github/workflows/pages.yml` deploys on every push to `main`.
 
@@ -130,7 +132,9 @@ once: **[`docs/go-live-cloudflare.md`](docs/go-live-cloudflare.md)** is the orde
 runbook — the exact DNS records, why the Cloudflare proxy has to stay **off** until
 GitHub has issued the certificate, the two cache rules the unhashed `assets/content/`
 payload needs, the Cloudflare features that break an Angular SPA, and the `curl`
-transcript that closes hugmesh.github.io#15.
+transcript that closes hugmesh.github.io#15. It also records that `www.hugmesh.net`
+serves a live Cloudflare **error 1016** today, independently of go-live, and which
+single step stops it.
 
 ## A note on links
 
