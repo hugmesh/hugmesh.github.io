@@ -32,7 +32,7 @@ q hugmesh.net A ; q hugmesh.net AAAA ; q hugmesh.net CNAME ; q hugmesh.net NS ; 
 | …and those are Cloudflare edge IPs | `104.21.84.37` ∈ `104.16.0.0/13`, `172.67.186.17` ∈ `172.64.0.0/13` | `curl -sS https://www.cloudflare.com/ips-v4` |
 | GitHub Pages is **not** enabled here | `"private": true`, `"has_pages": false`; `GET /repos/hugmesh/hugmesh.github.io/pages` → `404 Not Found` | `gh api repos/hugmesh/hugmesh.github.io` |
 | `hugmesh.github.io` answers, but with nothing | `185.199.108-111.153`, `2606:50c0:800{0,1,2,3}::153`; `HTTP/2 404` — *"There isn't a GitHub Pages site here"* | `curl -sS https://hugmesh.github.io/` |
-| A Pages origin caches for 10 minutes | `cache-control: max-age=600` on every response | `curl -sSI https://pages.github.com/` |
+| A Pages origin caches for 10 minutes | `cache-control: max-age=600` on the two `200`s I probed (HTML and JSON) on another Pages site. `hugmesh.github.io`'s own `404` carries **no** `cache-control` at all — re-measure on this site once it serves `200`s | `curl -sSI https://pages.github.com/` ; `curl -sSI https://pages.github.com/versions.json` ; `curl -sSI https://hugmesh.github.io/` |
 
 Two things in that table are not just "nothing configured yet":
 
@@ -56,9 +56,9 @@ Two things in that table are not just "nothing configured yet":
 | `src/CNAME:1` | `hugmesh.net` — the apex, shipped inside the Pages artifact |
 | `angular.json:46` | `src/CNAME` is an asset, so the build copies it into `dist/browser` |
 | `scripts/spa-fallback.mjs:47-53` | the build **fails** if `CNAME` is missing from the output |
-| `.github/workflows/pages.yml:86-88` | the workflow re-asserts `index.html`, `404.html`, `CNAME`, `.nojekyll` |
-| `.github/workflows/pages.yml:12-18` | the four prerequisites, as prose |
-| `.github/workflows/pages.yml:97-134` | the deploy is **probed and skipped**, not failed, until Pages is enabled |
+| `.github/workflows/pages.yml:90-92` | step *"Verify the Pages artifact"* re-asserts `index.html`, `404.html`, `CNAME`, `.nojekyll` |
+| `.github/workflows/pages.yml:12-16` | the four prerequisites, as prose (`:17-20` points back here) |
+| `.github/workflows/pages.yml:101-142` | step `id: probe` — the deploy is **probed and skipped**, not failed, until Pages is enabled |
 | `src/index.html:5` | `<base href="/">` — the site must be served from the **domain root** |
 | `src/index.html:27,41` | `og:url` and `rel=canonical` are already `https://hugmesh.net/` |
 | `angular.json:85` | `outputHashing: "all"` — Angular's own `.js`/`.css` are content-hashed |
@@ -71,12 +71,15 @@ The last two rows are the whole reason the cache rules in step E look the way th
 
 ## A. Pre-flight, no DNS change yet
 
-- **A1. Make the repository public.** Pages custom domains need it on this plan
-  (`.github/workflows/pages.yml:13`). Verify: `gh api repos/hugmesh/hugmesh.github.io
-  --jq .visibility` → `public`.
+- **A1. Make the repository public.** On the Free plan it is GitHub Pages *itself* —
+  not merely the custom domain — that requires a public repository; the pre-existing
+  prose at `.github/workflows/pages.yml:13` says "custom domains", which understates it.
+  The operator action is identical either way. Verify:
+  `gh api repos/hugmesh/hugmesh.github.io --jq .visibility` → `public`.
 - **A2. Settings → Pages → Source = "GitHub Actions".** The workflow deliberately does
   **not** call `actions/configure-pages` with `enablement: true`, because enabling
-  publication silently is an operator decision (`pages.yml:99-103`).
+  publication silently is an operator decision (`pages.yml:103-107`, the comment above
+  `id: probe`).
 - **A3. Leave the custom domain blank for now.** Set it in step C, after DNS exists, so
   GitHub's DNS check passes on the first attempt instead of sitting in an error state.
 
@@ -155,6 +158,19 @@ interacts with it.
   A `HTTP/2 200` means GitHub is serving a publicly trusted certificate for the apex and
   Full (strict) will work. A TLS error means C2 has not finished — **do not proceed**.
 
+  Run the **same test for `www`** before D3 proxies it, because Full (strict) validates
+  the origin certificate per hostname and GitHub issues a separate certificate for the
+  `www` variant:
+
+  ```bash
+  curl -sS -m 15 -o /dev/null -D - --resolve www.hugmesh.net:443:185.199.108.153 \
+       https://www.hugmesh.net/ | head -3
+  ```
+
+  Expect a `301` to `https://hugmesh.net/` over a valid certificate. A TLS error here
+  means the `www` certificate has not been issued yet — **leave `www` DNS-only** and flip
+  only the apex in D3; the same do-not-proceed rule applies to each hostname separately.
+
 - **C5.** Keep `src/CNAME` and the GitHub setting in agreement. They are two records of
   the same fact: the Settings value binds the domain, and the file in the artifact keeps
   it bound across deploys. If the domain ever changes, change both in the same PR, or the
@@ -181,10 +197,13 @@ interacts with it.
 
 ## E. Cache rules
 
-**The minimum safe configuration is to add none.** GitHub Pages sends
-`cache-control: max-age=600` on everything (measured), and Cloudflare's default cache
-behaviour respects the origin, so nothing is held at the edge longer than ten minutes and
-a deploy is visible within one TTL. Add rules only to make the hashed bundles cache
+**The minimum safe configuration is to add none.** GitHub Pages sent
+`cache-control: max-age=600` on both `200` responses I probed (see "Where this stands";
+the one `404` I could probe carried none, and a `404` is not cached hard by default
+either), and Cloudflare's default cache behaviour respects the origin, so nothing is
+held at the edge longer than ten minutes and a deploy is visible within one TTL.
+Confirm that with `curl -sSI https://hugmesh.net/` once step C is done, before deciding
+whether any rule is worth adding. Add rules only to make the hashed bundles cache
 longer — and if you do, add **both** of these, in this order, under Rules → Cache Rules.
 
 **Rule 1 — "docs: never cache the shell or the content payload"**
@@ -199,9 +218,15 @@ or (starts_with(http.request.uri.path, "/assets/content/"))
 
 Why each entry is in that list:
 - `/`, `/index.html`, `/404.html` are unhashed, and `404.html` is a byte-for-byte copy of
-  `index.html` (`scripts/spa-fallback.mjs:41`, asserted at `pages.yml:89-92`). They name
+  `index.html` (`scripts/spa-fallback.mjs:41`, asserted by the `cmp -s` at
+  `pages.yml:93-96`). They name
   the hashed bundles; a stale one points at bundles that no longer exist and the site is
-  blank.
+  blank. **Note what this list does not name:** Pages serves that same unhashed shell at
+  *every* SPA route (`/developer-guide/…` and so on — that is the whole point of the
+  `404.html` copy). Those paths are extensionless, so Cloudflare's default
+  extension-based caching already leaves them uncached and Rule 1 is sufficient as
+  written. If anyone ever adds a "Cache Everything" rule to this zone, this bypass list
+  stops covering the shell and must be widened first.
 - `/assets/content/**` is `index.json`, `search.json` and one JSON per page. The build
   **deletes and regenerates the whole tree every time** under names that never change
   (`scripts/build-content.mjs:346-347`, `:423-425`, `:456-457`, `:470`). Caching it hard
@@ -273,8 +298,12 @@ curl -sS -o /dev/null -w '%{num_redirects} %{url_effective} %{http_code}\n' -L h
 
 # 7. no wildcard leak onto the mesh names
 curl -sS -o /dev/null -w '%{http_code}\n' https://id.hugmesh.net/
-# expect: anything EXCEPT the docs site. If this returns the docs front page,
-#         a wildcard record was created — see B3.
+# expect: anything EXCEPT the docs site. Today id.hugmesh.net has no record, so this
+#         exits 6 ("Could not resolve host") and prints 000 — that is a PASS by
+#         absence, not a measurement. The real check is the day a mesh hostname does
+#         resolve: if it then returns the docs front page, a wildcard record was
+#         created — see B3. Cross-check meanwhile with
+#         `q '*.hugmesh.net' A`, which must be NOERROR/NODATA.
 ```
 
 The issue can be closed when (1) reports `cname: hugmesh.net` with
