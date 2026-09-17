@@ -111,6 +111,7 @@ starting with an underscore — which is how Angular names some chunks) and veri
 | `scripts/build-content.mjs` | renders `content/` → `src/assets/content/` |
 | `scripts/spa-fallback.mjs` | post-build: `404.html`, `.nojekyll`, CNAME assertion |
 | `scripts/serve-dist.mjs` | local preview with Pages semantics |
+| `docs/go-live-cloudflare.md` | the Cloudflare + Pages go-live runbook |
 | `src/app/content/` | the document renderer, section index and content service |
 | `src/app/layout/` | header, section rail, footer |
 | `src/app/search/` | the client-side search page and its scorer |
@@ -123,6 +124,13 @@ Enforce HTTPS enabled once DNS resolves, and a proxied Cloudflare `CNAME`
 `hugmesh.net` → `hugmesh.github.io`.
 
 `.github/workflows/pages.yml` deploys on every push to `main`.
+
+None of that can be done from a build box, and the details matter enough to get wrong
+once: **[`docs/go-live-cloudflare.md`](docs/go-live-cloudflare.md)** is the ordered
+runbook — the exact DNS records, why the Cloudflare proxy has to stay **off** until
+GitHub has issued the certificate, the two cache rules the unhashed `assets/content/`
+payload needs, the Cloudflare features that break an Angular SPA, and the `curl`
+transcript that closes hugmesh.github.io#15.
 
 ## A note on links
 
