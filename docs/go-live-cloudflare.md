@@ -9,11 +9,11 @@ This file is a runbook, not a secret store. It contains only values that are alr
 observable from public DNS, and nothing here is a credential. Do not add one.
 
 Everything under "Where this stands" was **measured from this repository's checkout on
-2026-09-17 ~21:45Z and re-measured on 2026-09-17 23:13-23:16Z**, with the commands given
-beside it. Both readings agree; the re-measure is noted because the two facts that drive
-step B2 — the apex having no record, and `www` answering a live 1016 — are the ones a
-reader is most likely to assume have already been fixed. `dig` is not installed on the
-build box, so DNS was read over DNS-over-HTTPS:
+2026-09-17 ~21:45Z, re-measured at 23:13-23:16Z and measured a third time at 23:57Z**,
+with the commands given beside it. All three readings agree; the re-measures are noted
+because the two facts that drive section **B** — the apex having no record, and `www`
+answering a live 1016 — are the ones a reader is most likely to assume have already been
+fixed. `dig` is not installed on the build box, so DNS was read over DNS-over-HTTPS:
 
 ```bash
 q() { curl -s -H 'accept: application/dns-json' \
@@ -34,28 +34,52 @@ q www.hugmesh.net A ; q www.hugmesh.net AAAA ; q www.hugmesh.net CNAME
 | …so the apex does not resolve | `curl: (6) Could not resolve host: hugmesh.net (DNS server returned answer with no data)` | `curl -sSI https://hugmesh.net/` |
 | **`www.hugmesh.net` already exists, is proxied, and is broken** | `A 104.21.84.37`, `172.67.186.17`; `AAAA 2606:4700:3030::6815:5425`, `2606:4700:3031::ac43:ba11` → **HTTP 530, Cloudflare error 1016 "Origin DNS error"** | `curl -sS -o /dev/null -D - https://www.hugmesh.net/` |
 | …on plain `http://` too, not only `https://` | `HTTP/1.1 530`, `server: cloudflare`, same `error code: 1016` in the body | `curl -sS -o /dev/null -D - http://www.hugmesh.net/` |
-| …and it really is *proxied*, not merely aimed at Cloudflare | `q www.hugmesh.net CNAME` → NOERROR/**NODATA** while `A`/`AAAA` answer. A proxied record publishes the flattened edge address and hides its target; the target is visible only in the dashboard, which is why this runbook cannot name what it points at today | `q www.hugmesh.net CNAME` |
+| …and it really is *proxied* | **the 1016 itself is the proof** — only a hostname Cloudflare is configured to proxy gets a Cloudflare *error page* rather than a connection failure. (`q www.hugmesh.net CNAME` → NOERROR/**NODATA** while `A`/`AAAA` answer is *consistent* with a proxied `CNAME`, but does not prove it: a plain DNS-only `A` record aimed at those same addresses would read identically.) A proxied record hides its target, which is visible only in the dashboard, which is why this runbook cannot name what `www` points at today | `curl -sS https://www.hugmesh.net/` ; `q www.hugmesh.net CNAME` |
 | …and those are Cloudflare edge IPs | `104.21.84.37` ∈ `104.16.0.0/13`, `172.67.186.17` ∈ `172.64.0.0/13` | `curl -sS https://www.cloudflare.com/ips-v4` |
 | …Cloudflare's *edge* certificate for `www` is already fine | the 530 arrives over a completed TLS handshake (`HTTP/2 530`, `alt-svc: h3`). The failure is entirely origin-side, so nothing about it is a certificate problem to chase | `curl -sS -D - https://www.hugmesh.net/` |
 | GitHub Pages is **not** enabled here | `"private": true`, `"has_pages": false`; `GET /repos/hugmesh/hugmesh.github.io/pages` → `404 Not Found` | `gh api repos/hugmesh/hugmesh.github.io` |
+| **…and the deploy pipeline is dead right now** | `Deploy Pages` last succeeded **2026-08-27T10:08Z** (run `33061712300`). Every run since — `33066072754`, `33073800663`, `33945745743`, and today's `35280630942` at 22:10Z — failed in 2-4 s with the job annotation *"The job was not started because recent account payments have failed or your spending limit needs to be increased"*. PR checks die the same way (`35286294059`, 1 s) | `gh run list --workflow "Deploy Pages"` ; `gh api repos/hugmesh/hugmesh.github.io/check-runs/<job-id>/annotations` |
 | `hugmesh.github.io` answers, but with nothing | `185.199.108-111.153`, `2606:50c0:800{0,1,2,3}::153`; `HTTP/2 404` — *"There isn't a GitHub Pages site here"* | `curl -sS https://hugmesh.github.io/` |
 | A Pages origin caches for 10 minutes | `cache-control: max-age=600` on the two `200`s I probed (HTML and JSON) on another Pages site. `hugmesh.github.io`'s own `404` carries **no** `cache-control` at all — re-measure on this site once it serves `200`s | `curl -sSI https://pages.github.com/` ; `curl -sSI https://pages.github.com/versions.json` ; `curl -sSI https://hugmesh.github.io/` |
 
-Two things in that table are not just "nothing configured yet":
+Three things in that table are not just "nothing configured yet":
 
-1. **`www.hugmesh.net` is live and failing right now — and this is not a go-live
-   problem.** Error 1016 means a *proxied* DNS record exists whose origin hostname does
-   not resolve. Anyone who types `www.hugmesh.net` today, over `https://` or plain
-   `http://`, gets a Cloudflare error page, and has been getting one for as long as that
-   record has pointed where it points. Nothing in steps A, C, D, E or F changes that:
-   **step B2 is the one that stops it**, and B2 is now a decided step rather than an open
-   question — decision 47 = (a), `www` is this site's alias.
+1. **`www.hugmesh.net` is live and failing right now, and the empty apex is the reason
+   given for it.** Error 1016 is *"Origin DNS error"*: a **proxied** record exists whose
+   origin hostname does not resolve. Anyone who types `www.hugmesh.net` today, over
+   `https://` or plain `http://`, gets a Cloudflare error page, and has been getting one
+   for as long as that record has pointed where it points. **Decision 47 is explicit that
+   the `www` record change does not end this by itself** — verbatim: *"Note this does
+   **not** fix today's HTTP 530 / error 1016 on its own — the apex still has no record at
+   all."* That note is load-bearing precisely because it names something this runbook
+   cannot measure: the proxy hides the record's target, so the origin hostname behind
+   `www` is visible only in the operator's dashboard. Read with an apex that has no
+   records at all, the operator's sentence describes the textbook shape of a 1016 — `www`
+   proxied at an origin that is, or resolves through, an apex that does not exist — in
+   which case **B1**, creating the apex, is what supplies the missing origin. So treat the
+   1016 as a symptom of section **B as a whole**, not as something **B2** clears on its
+   own; "What this step fixes, and what it does not" under B2 sets out exactly what a
+   `www`-only change buys and what it does not.
 2. **The apex is free, but the subdomain namespace is not.** The published docs in this
    repository already name `registry.`, `attestation.`, `id.`, `scale.`, `admin.`,
    `gitlab.`, `games.`, `vault.`, `platform.`, `matrix.`, `mastodon.` and `ai.`
    `.hugmesh.net` as mesh service hostnames
    (`grep -rhoaE '[A-Za-z0-9_-]+\.hugmesh\.net' content/ src/`). The docs site takes the
    **apex and `www` only**. Never create a wildcard — see step B3.
+3. **Nothing can be published today even with perfect DNS, and the fix for that is not
+   settled.** `Deploy Pages` has produced no artifact since 2026-08-27 (row above): the
+   job is refused before it starts, on billing. Step **A2**, step **C1** and every check
+   in step **G** assume a site that has actually been built and served — G item 1 expects
+   `status: "built"`, which with Source = GitHub Actions only ever comes from a successful
+   run. This collides with step **A1**. Decision **48 = B**, in the same operator comment
+   that answers 47, chose a self-hosted `hugmesh-x86` runner and put the free tier
+   *later*, "when the repos go public". A self-hosted runner changes where the **build**
+   executes; it does not change whether GitHub will **host** Pages for a private
+   repository, which is a plan entitlement, and `actions/deploy-pages` publishes to
+   GitHub's Pages infrastructure whatever the runner label. So "make the repository
+   public" is no longer a settled prerequisite — see **A1**, which now lists the three
+   shapes this can take. **This runbook does not resolve it. It is an open operator
+   decision and it gates everything from A2 onward.**
 
 ---
 
@@ -81,11 +105,26 @@ The last two rows are the whole reason the cache rules in step E look the way th
 
 ## A. Pre-flight, no DNS change yet
 
-- **A1. Make the repository public.** On the Free plan it is GitHub Pages *itself* —
-  not merely the custom domain — that requires a public repository; the pre-existing
-  prose at `.github/workflows/pages.yml:13` says "custom domains", which understates it.
-  The operator action is identical either way. Verify:
-  `gh api repos/hugmesh/hugmesh.github.io --jq .visibility` → `public`.
+- **A1. Publication entitlement — OPEN, do not treat this as decided.** On the Free plan
+  it is GitHub Pages *itself* — not merely the custom domain — that requires a public
+  repository; the pre-existing prose at `.github/workflows/pages.yml:13` says "custom
+  domains", which understates it. Making the repository public was this runbook's original
+  answer, and it is still one of three: decision **48 = B** (2026-09-17, the same comment
+  that answers 47) chose a self-hosted `hugmesh-x86` runner over going public and put the
+  free tier "later, when the repos go public", while `Deploy Pages` itself has been dead
+  on billing since 2026-08-27 (point 3 under "Where this stands"). The three shapes, one
+  of which the operator has to pick before A2:
+  1. **Make this repository public.** Pages and Actions both fall into the free tier.
+     Verify: `gh api repos/hugmesh/hugmesh.github.io --jq .visibility` → `public`. This is
+     what the rest of this runbook, `pages.yml:13` and `README.md` were written against.
+  2. **Keep it private and restore paid billing** — raise the spending limit and hold a
+     plan that includes Pages for private repositories. Nothing else in this file changes.
+  3. **Keep it private, register the `hugmesh-x86` runner, and host the site off GitHub
+     Pages.** That is a *different* runbook: `src/CNAME`, the CNAME assertion in
+     `scripts/spa-fallback.mjs:47-53`, the `pages.yml` probe and the entire Cloudflare
+     ordering below are all written against Pages, and steps B through G would need
+     rewriting rather than adjusting.
+  Registering a runner is operator-held and so is billing; no agent can do any of it.
 - **A2. Settings → Pages → Source = "GitHub Actions".** The workflow deliberately does
   **not** call `actions/configure-pages` with `enablement: true`, because enabling
   publication silently is an operator decision (`pages.yml:103-107`, the comment above
@@ -139,8 +178,8 @@ bottom of this file. It is now answered: **decision 47 = (a)**, by the operator 
 2026-09-17 ([the record](https://github.com/hugmesh/hugmesh-generator/issues/347#issuecomment-5722430270)).
 `www.hugmesh.net` is the docs site's alias and nothing else is reserving it, so the
 record that exists today is **edited in place** — change its target, do not add a second
-record beside it, and do not delete-then-recreate, because it is that edit which clears
-the live 1016:
+record beside it, and do not delete-then-recreate; a second record, or a
+delete-and-recreate, is how a zone ends up with two sources of truth for one name:
 
 | Type | Name | Target | Proxy | TTL |
 |---|---|---|---|---|
@@ -154,21 +193,27 @@ truth for the same 301, and the first thing to suspect the day the redirect targ
 wrong.
 
 **What this step fixes, and what it does not.** Be precise, because "fix the 1016" and
-"make `www` work" are not the same date:
+"make `www` work" are not the same date — and decision 47 draws that line itself:
 
-- **It ends the 1016, and that is available today.** The error means a proxied record
-  whose origin hostname does not resolve; the moment the target is `hugmesh.github.io`,
-  which does resolve (`185.199.108-111.153`, measured), Cloudflare has an origin again.
-  B2 has no prerequisite anywhere in this runbook — it is a grey-cloud record edit that
-  touches nothing else — so it can be applied before A1 if the operator simply wants the
-  marketing hostname to stop serving a Cloudflare error page.
+- **It is not a standalone fix for today's 1016. Decision 47 says so in terms**, in the
+  same breath as choosing option (a): *"Note this does **not** fix today's HTTP 530 /
+  error 1016 on its own — the apex still has no record at all."* Take that at face value.
+  The operator can see the record's target in the dashboard; this runbook cannot (see
+  "Where this stands"). Mechanically a 1016 is Cloudflare failing to resolve the *origin*
+  behind a proxied name, so an apex with no records is a sufficient cause by itself, and
+  **B1** is then what clears it. Retargeting `www` at `hugmesh.github.io` **DNS only**
+  does stop a *Cloudflare* error page appearing, but only because grey cloud removes
+  Cloudflare from the path entirely — there is no edge left to report anything — and what
+  the visitor gets instead is the next bullet. **Do not apply B2 ahead of the rest of
+  section B hoping to quietly end the 1016.** Run B1 and B2 together, in order, as part of
+  go-live.
 - **It does not make `www` serve the site.** Grey cloud takes Cloudflare *out* of the
   path, so the browser connects straight to GitHub Pages with `www.hugmesh.net` as SNI.
   Until C1-C2 have bound the custom domain and issued the certificates, GitHub has no
   certificate for that name, so `https://www.hugmesh.net/` fails on a certificate-name
   mismatch, and plain `http://` gets GitHub's *"There isn't a GitHub Pages site here"*
-  404 (measured today against `hugmesh.github.io`). That is a different and shorter-lived
-  breakage substituted for the 1016 — an honest step forward, not a finished one.
+  404 (measured today against `hugmesh.github.io`). A visitor is no better served than
+  they are by the 1016; the error has changed, not gone.
 - **It does nothing whatsoever for the apex.** `hugmesh.net` is a separate record that
   still does not exist at all (re-measured 23:16Z); `curl https://hugmesh.net/` fails to
   *resolve*, which is **B1**'s job, not this one's. The two failures look unrelated to a
@@ -359,7 +404,8 @@ curl -sS -o /dev/null -D - https://www.hugmesh.net/ | grep -iE '^(HTTP|location)
 # expect: 301 -> https://hugmesh.net/, issued by GitHub Pages off src/CNAME (B2) and NOT
 #         by any Cloudflare rule. Today: HTTP 530 / error 1016, on http:// and https://
 #         alike. Re-run the same probe against http:// too — the 1016 answers both.
-q www.hugmesh.net A
+curl -s -H 'accept: application/dns-json' \
+  'https://cloudflare-dns.com/dns-query?name=www.hugmesh.net&type=A'; echo
 # expect: after D3, Cloudflare edge addresses again, but now with a live origin behind
 #         them. Between B2 and D3 (grey cloud) it answers GitHub's 185.199.10{8,9,10,11}
 #         .153 instead — that difference is how you tell which stage the zone is in.
@@ -376,11 +422,17 @@ curl -sS -o /dev/null -w '%{http_code}\n' https://id.hugmesh.net/
 #         absence, not a measurement. The real check is the day a mesh hostname does
 #         resolve: if it then returns the docs front page, a wildcard record was
 #         created — see B3. Cross-check meanwhile with
-#         `q '*.hugmesh.net' A`, which must be NOERROR/NODATA.
+#           curl -s -H 'accept: application/dns-json' \
+#             'https://cloudflare-dns.com/dns-query?name=*.hugmesh.net&type=A'
+#         which must be NOERROR/NODATA.
 ```
 
 The issue can be closed when (1) reports `cname: hugmesh.net` with
-`https_enforced: true` and `status: built`, and (2) through (6) match. Nothing an agent
-can run from a build box moves any of that: every remaining action is inside the
-operator's Cloudflare dashboard and this repository's settings.
+`https_enforced: true` and `status: built`, and (2) through (6) match. **None of that is
+reachable while `Deploy Pages` cannot start** — with Source = GitHub Actions,
+`status: "built"` comes only from a successful run, and there has not been one since
+2026-08-27 (point 3 under "Where this stands", and step **A1**). Perfect DNS in front of a
+site that was never published still answers nothing. Nothing an agent can run from a build
+box moves any of this: every remaining action is inside the operator's Cloudflare
+dashboard, this repository's settings, and the account's billing or runner configuration.
 

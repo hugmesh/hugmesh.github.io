@@ -13,7 +13,7 @@
 #   1. the repository is public (Pages custom domains require it on this plan);
 #   2. Settings -> Pages -> Source = "GitHub Actions";
 #   3. custom domain hugmesh.net, with "Enforce HTTPS" once DNS resolves;
-#   4. Cloudflare CNAME hugmesh.net -> hugmesh.github.io, and www -> the same, proxied.
+#   4. Cloudflare CNAME hugmesh.net -> hugmesh.github.io and www -> the same, DNS-only.
 # The ordered runbook with the exact record values, the decided www alias, the reason the
 # Cloudflare proxy has to stay OFF until GitHub has issued the certificate, the cache
 # rules the unhashed assets/content/ payload needs, and the verification transcript that
@@ -130,7 +130,7 @@ jobs:
               echo '1. Make the repository **public** (Pages custom domains require it on this plan).'
               echo '2. Settings → Pages → Source = **GitHub Actions**.'
               echo '3. Set the custom domain to `hugmesh.net`, and enable Enforce HTTPS once DNS resolves.'
-              echo '4. Add proxied Cloudflare `CNAME`s `hugmesh.net` and `www` → `hugmesh.github.io`.'
+              echo '4. Add Cloudflare `CNAME`s `hugmesh.net` and `www` → `hugmesh.github.io`, DNS-only.'
               echo
               echo 'Exact record values, ordering and the verification transcript are in'
               echo '`docs/go-live-cloudflare.md` in this repository. Note step 4: the'
