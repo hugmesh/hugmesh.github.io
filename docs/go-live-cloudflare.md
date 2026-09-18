@@ -66,20 +66,24 @@ Three things in that table are not just "nothing configured yet":
    `.hugmesh.net` as mesh service hostnames
    (`grep -rhoaE '[A-Za-z0-9_-]+\.hugmesh\.net' content/ src/`). The docs site takes the
    **apex and `www` only**. Never create a wildcard — see step B3.
-3. **Nothing can be published today even with perfect DNS, and the fix for that is not
-   settled.** `Deploy Pages` has produced no artifact since 2026-08-27 (row above): the
-   job is refused before it starts, on billing. Step **A2**, step **C1** and every check
-   in step **G** assume a site that has actually been built and served — G item 1 expects
-   `status: "built"`, which with Source = GitHub Actions only ever comes from a successful
-   run. This collides with step **A1**. Decision **48 = B**, in the same operator comment
-   that answers 47, chose a self-hosted `hugmesh-x86` runner and put the free tier
-   *later*, "when the repos go public". A self-hosted runner changes where the **build**
-   executes; it does not change whether GitHub will **host** Pages for a private
+3. **Nothing can be published today even with perfect DNS, and the billing fix is on the
+   operator, not this runbook.** `Deploy Pages` has produced no artifact since 2026-08-27
+   (row above): the job is refused before it starts, on billing. Step **A2**, step **C1**
+   and every check in step **G** assume a site that has actually been built and served —
+   G item 1 expects `status: "built"`, which with Source = GitHub Actions only ever comes
+   from a successful run. This collides with step **A1**. Decision **48 = B**, in the same
+   operator comment that answers 47, chose a self-hosted `hugmesh-x86` runner and put the
+   free tier *later*, "when the repos go public". A self-hosted runner changes where the
+   **build** executes; it does not change whether GitHub will **host** Pages for a private
    repository, which is a plan entitlement, and `actions/deploy-pages` publishes to
    GitHub's Pages infrastructure whatever the runner label. So "make the repository
-   public" is no longer a settled prerequisite — see **A1**, which now lists the three
-   shapes this can take. **This runbook does not resolve it. It is an open operator
-   decision and it gates everything from A2 onward.**
+   public" is **not** the prerequisite this runbook was originally written against — see
+   **A1**, which records **decision 52 = B (operator, 2026-09-18)**: stay private and pay
+   for Pages on a private-repo plan until launch, then flip to public before
+   **2026-10-20**, with the self-hosted runner removed or restricted to trusted events
+   before that flip. **Restoring billing is still an open operator task** — it gates
+   everything from A2 onward — tracked as hugmesh.github.io#19; the public-flip half is
+   hugmesh.github.io#20.
 
 ---
 
@@ -105,26 +109,44 @@ The last two rows are the whole reason the cache rules in step E look the way th
 
 ## A. Pre-flight, no DNS change yet
 
-- **A1. Publication entitlement — OPEN, do not treat this as decided.** On the Free plan
-  it is GitHub Pages *itself* — not merely the custom domain — that requires a public
-  repository; the pre-existing prose at `.github/workflows/pages.yml:13` says "custom
-  domains", which understates it. Making the repository public was this runbook's original
-  answer, and it is still one of three: decision **48 = B** (2026-09-17, the same comment
-  that answers 47) chose a self-hosted `hugmesh-x86` runner over going public and put the
-  free tier "later, when the repos go public", while `Deploy Pages` itself has been dead
-  on billing since 2026-08-27 (point 3 under "Where this stands"). The three shapes, one
-  of which the operator has to pick before A2:
-  1. **Make this repository public.** Pages and Actions both fall into the free tier.
-     Verify: `gh api repos/hugmesh/hugmesh.github.io --jq .visibility` → `public`. This is
-     what the rest of this runbook, `pages.yml:13` and `README.md` were written against.
-  2. **Keep it private and restore paid billing** — raise the spending limit and hold a
-     plan that includes Pages for private repositories. Nothing else in this file changes.
-  3. **Keep it private, register the `hugmesh-x86` runner, and host the site off GitHub
-     Pages.** That is a *different* runbook: `src/CNAME`, the CNAME assertion in
-     `scripts/spa-fallback.mjs:47-53`, the `pages.yml` probe and the entire Cloudflare
-     ordering below are all written against Pages, and steps B through G would need
-     rewriting rather than adjusting.
-  Registering a runner is operator-held and so is billing; no agent can do any of it.
+- **A1. Publication entitlement — DECIDED: decision 52 = B (operator, 2026-09-18).** On
+  the Free plan it is GitHub Pages *itself* — not merely the custom domain — that requires
+  a public repository; the pre-existing prose at `.github/workflows/pages.yml:13` says
+  "custom domains", which understates it. Three shapes were on the table (making the
+  repository public immediately was this runbook's original assumption; decision
+  **48 = B**, 2026-09-17, had separately chosen a self-hosted `hugmesh-x86` runner for CI
+  on other repos and put the free tier "later, when the repos go public"). The operator's
+  answer, verbatim: *"keep everything private for now until launch and do work locally but
+  hugmesh.github.io will be public before Oct 20th."* That is shape 2 below, plus a
+  deadline for shape 1 — **not** shape 3, which this runbook does not attempt:
+  1. **Now, and until launch: stay private, and restore paid billing** — raise the
+     spending limit and hold a plan that includes Pages for private repositories.
+     `Deploy Pages` has been dead on billing since 2026-08-27 (point 3 under "Where this
+     stands"); nothing below A1 is reachable until that is restored. Nothing else in this
+     file changes for this shape. Tracked as hugmesh.github.io#19.
+  2. **Before 2026-10-20: flip the repository to public.** Pages and Actions both fall
+     into the free tier at that point. Verify: `gh api repos/hugmesh/hugmesh.github.io
+     --jq .visibility` → `public`. This is what the rest of this runbook, `pages.yml:13`
+     and `README.md` are written against, and it is what "settled prerequisite" now
+     means — just not settled *yet*, and not before the precondition below. Tracked as
+     hugmesh.github.io#20.
+  3. **Before that flip, not after: remove the self-hosted `hugmesh-x86` runner from
+     reach of this repository, or restrict it to trusted events only.** A self-hosted
+     runner left reachable by a *public* repository's fork-PR workflows is GitHub's own
+     documented hazard — a bare `pull_request` trigger lets anyone who can open a PR run
+     code on it, and from there reach whatever the runner's network reaches (here, the
+     tailnet the private Maven registry sits on). This repository's own workflows
+     (`ci.yml`, `pages.yml`) run on `ubuntu-latest` today, not the self-hosted label, so
+     confirm that stays true and that the org-registered runner itself is gated to
+     `pull_request_target`/`workflow_run` with an explicit approval step before the flip.
+     Full checklist on hugmesh.github.io#20.
+  (Shape 3 from the original three — keep it private, register the runner, and host the
+  site off GitHub Pages entirely — was **not** picked; it would have been a different
+  runbook, since `src/CNAME`, the CNAME assertion in `scripts/spa-fallback.mjs:47-53`,
+  the `pages.yml` probe and the entire Cloudflare ordering below are all written against
+  Pages.)
+  Billing and the visibility flip are both operator-held; no agent can do either — see
+  hugmesh.github.io#18 for the full three-shape comparison this decision closes.
 - **A2. Settings → Pages → Source = "GitHub Actions".** The workflow deliberately does
   **not** call `actions/configure-pages` with `enablement: true`, because enabling
   publication silently is an operator decision (`pages.yml:103-107`, the comment above

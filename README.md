@@ -125,10 +125,13 @@ proxied only after GitHub has issued the certificates. `www` is a decided alias 
 site (decision 47); GitHub Pages issues the `www` → apex 301 itself off `src/CNAME`, so no
 Cloudflare redirect rule exists for it.
 
-Whether the repository goes **public** to get Pages on the Free plan is **not settled**:
-decision 48 chose a self-hosted runner and deferred the free tier, and `Deploy Pages` has
-been refused on billing since 2026-08-27, so nothing is published today regardless of DNS.
-The runbook's step A1 lists the three shapes that choice can take.
+Whether the repository goes **public** to get Pages on the Free plan is **decided**
+(decision 52 = B, 2026-09-18): stay private and restore paid Pages billing for now,
+then flip to public before **2026-10-20**, with the self-hosted `hugmesh-x86` runner
+(registered separately under decision 48) removed from this repository's reach or
+restricted to trusted events before that flip. `Deploy Pages` has been refused on
+billing since 2026-08-27 regardless, so nothing is published today either way. The
+runbook's step A1 has the full detail and the two tracking issues (#19, #20).
 
 `.github/workflows/pages.yml` deploys on every push to `main`.
 
