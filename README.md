@@ -125,15 +125,21 @@ proxied only after GitHub has issued the certificates. `www` is a decided alias 
 site (decision 47); GitHub Pages issues the `www` → apex 301 itself off `src/CNAME`, so no
 Cloudflare redirect rule exists for it.
 
-Whether the repository goes **public** to get Pages on the Free plan is **decided**
-(decision 52 = B, 2026-09-18): stay private and restore paid Pages billing for now,
-then flip to public before **2026-10-20**, with the self-hosted `hugmesh-x86` runner
-(registered separately under decision 48) removed from this repository's reach or
-restricted to trusted events before that flip. `Deploy Pages` has been refused on
-billing since 2026-08-27 regardless, so nothing is published today either way. The
-runbook's step A1 has the full detail and the two tracking issues (#19, #20).
+**Today none of that is planned: the repository stays private and the site does not
+deploy through GitHub Pages.** On the Free plan GitHub Pages needs a public repository,
+and a private one needs a paid plan. Decisions **115a = C** and **115b = D** (operator,
+2026-09-23) closed both routes — Pages billing is **not** restored, and the repository
+**stays private** with no public-flip date. They reverse decision 52 = B (2026-09-18),
+which had chosen to pay for Pages while private and flip public before 2026-10-20; that
+decision is kept in the runbook's step A1 as history, not as the plan. `Deploy Pages`
+has been refused on billing since 2026-08-27, so nothing is published. Build and preview
+locally instead (`npm run build`, then `node scripts/serve-dist.mjs`). The runbook's step
+A1 has the full record, including the self-hosted-runner precondition that still applies
+if a public flip is ever revisited; #19 and #20 record the two withdrawn halves.
 
-`.github/workflows/pages.yml` deploys on every push to `main`.
+`.github/workflows/pages.yml` is wired to deploy on every push to `main`, but today its
+jobs are refused on billing before they start, and with Pages not enabled its deploy step
+would probe and skip even if they ran.
 
 None of that can be done from a build box, and the details matter enough to get wrong
 once: **[`docs/go-live-cloudflare.md`](docs/go-live-cloudflare.md)** is the ordered
