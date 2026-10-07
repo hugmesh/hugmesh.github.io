@@ -9,12 +9,13 @@ installers.
 
 ## How content gets here
 
-Every `hugmesh-*` code repository is **private**; this one is public. So publication is
+Every `hugmesh-*` code repository is **private**, and so is this one (decisions 115a/115b).
+The site built from this repository is what is meant to be public, so publication is
 an **opt-in allowlist**, never a glob:
 
 ```
-code repos (private)          this repo (public)                the site
-─────────────────────         ──────────────────                ────────
+code repos (private)          this repo (private)               the site
+─────────────────────         ───────────────────               ────────
 docs/DEVOPS.md          ──►   content/developer-guide/….md  ──►  /developer-guide/…
    (source of truth)          (vendored, committed)              (rendered at build)
 ```

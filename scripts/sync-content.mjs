@@ -5,7 +5,7 @@
  * This is a MAINTAINER tool, not a build step. The site build (build-content.mjs)
  * reads only the committed `content/` tree, so a Pages build needs no access to
  * any other repository — which matters because every hugmesh-* code repo is
- * PRIVATE while this one is public.
+ * PRIVATE, and so is this one (decisions 115a/115b).
  *
  * Sources, in order of preference:
  *   1. a sibling checkout   ../<repo>/<path>          (default; --workspace to move it)
