@@ -9,7 +9,13 @@
 # publishes an image; here the "side effect" is that the documentation matches main,
 # which is the entire point. workflow_dispatch stays for manual re-deploys.
 #
-# PREREQUISITES on the repository, all one-time and all outside this file:
+# CURRENT STATE (decisions 115a = C and 115b = D, 2026-09-23): the repository stays
+# private and Pages is not enabled, so this workflow is a BUILD-ONLY gate. A green run
+# means "built and the Pages artifact verified"; the `deploy` job is SKIPPED by design
+# on every run, and a skipped deploy is not a deployed site. Nothing is published.
+#
+# PREREQUISITES to deploy, should the decision ever be revisited; all one-time and all
+# outside this file:
 #   1. the repository is public (Pages custom domains require it on this plan);
 #   2. Settings -> Pages -> Source = "GitHub Actions";
 #   3. custom domain hugmesh.net, with "Enforce HTTPS" once DNS resolves;
@@ -122,10 +128,10 @@ jobs:
             {
               echo '## Site built, not deployed'
               echo
-              echo 'GitHub Pages is not yet enabled on this repository, so the deploy step was skipped.'
+              echo 'GitHub Pages is not enabled on this repository, so the deploy job was skipped. This is the expected state while the repository stays private (decisions 115a = C and 115b = D): nothing is published.'
               echo 'The build itself passed and the artifact was verified.'
               echo
-              echo 'To publish, once:'
+              echo 'Only if that decision is revisited, to publish, once:'
               echo
               echo '1. Make the repository **public** (Pages custom domains require it on this plan).'
               echo '2. Settings → Pages → Source = **GitHub Actions**.'
@@ -138,7 +144,7 @@ jobs:
               echo
               echo 'The next push to `main` will then deploy.'
             } >> "$GITHUB_STEP_SUMMARY"
-            echo "::notice::Pages is not enabled on this repository — built and verified, deploy skipped."
+            echo "::notice::Pages is not enabled on this repository (expected while it stays private, decision 115) — built and verified, deploy skipped by design."
           fi
 
       - uses: actions/configure-pages@v5
