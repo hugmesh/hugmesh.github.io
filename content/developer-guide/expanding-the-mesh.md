@@ -24,8 +24,8 @@ Settle this first.
 | Effect right now | manifest edits sync on the next ArgoCD poll; a new `apps/` file needs a new image, a re-provision, or the opt-in recursing root | **nothing runs** until the Forgejo cutover |
 
 To run a service on a cluster today, **use Lane A**. Lane B is real and worth adopting;
-nine repos already have. But the live GitHub-rooted ArgoCD ignores it, and eight of the
-nine descriptors say so in their own headers.
+nine repos already have. But the live GitHub-rooted ArgoCD ignores it, and every
+adopter's descriptor says so in its own header.
 
 ## Lane A: add a service to the live cluster
 
@@ -46,8 +46,8 @@ registration. That holds only for images built after you added it, or after a
 re-provision. The script re-runs only with the KEYS USB inserted and `.provision-force` on
 it, or with `KEYS_FORCE=1`. It is idempotent.
 
-Each child Application carries its own `automated: {prune: true, selfHeal: true}`. A
-mistake in git reaches its workloads, and a manual change to them is reverted. A deleted
+Most child Applications carry their own `automated: {prune: true, selfHeal: true}`. A
+mistake in git reaches their workloads, and a manual change to them is reverted. A deleted
 Application *object* stays deleted until the next re-provision.
 
 The repo-recursing root (`specs/cluster/app-of-apps.yaml`, named `hugmesh-root` in
@@ -79,7 +79,7 @@ under the waved root.
 | `05`–`12` | identity, network policy, ingress (Casdoor, netpol) |
 | `13x` | ApplicationSets (service catalog, optional services, node storage) |
 | `14`–`17` | RBAC, admission policy (Kyverno), backing-service endpoints |
-| `20`–`24` | gateways |
+| `20`–`24` | gateways (plus headwind and the attestation server) |
 | `28`–`39` | backend data + BFFs |
 | `40`–`49` | frontends |
 | `50`–`56` | heavy tier and optional services |
@@ -107,10 +107,11 @@ Two sides, and both are required. The worked example is a BFF.
 
 ### 5. Give it an identity
 
-External Secrets Operator materialises secrets from Vault. A service that speaks mTLS
-in-cluster needs its `hugmesh-<service>-mtls` ExternalSecret. Those live in
-`specs/cluster/manifests/external-secrets/pki-externalsecrets.yaml` (listed in that
-directory's `kustomization.yaml`), not beside the service's own manifests.
+External Secrets Operator materialises secrets from Vault. A BFF or gateway that speaks
+mTLS in-cluster needs its `hugmesh-<service>-mtls` ExternalSecret in
+`specs/cluster/manifests/external-secrets/pki-externalsecrets.yaml`, not beside the
+service's own manifests. (Infrastructure such as Cassandra and coturn keeps its TLS
+ExternalSecret beside its manifests.)
 
 ### 6. If it has a UI
 
@@ -126,9 +127,7 @@ The catalog is an ApplicationSet (`hugmesh-catalog`,
 `specs/cluster/apps/13-service-catalog.yaml`, namespace `devops`). Its single generator is
 an `scmProvider` pointing at the **in-cluster Forgejo**. It scans the org for repositories
 matching `^hugmesh-` that contain a deploy descriptor and a `deploy/` directory, and
-generates one Application per match. It needs Forgejo seeded with the org's repos and a
-read token in the Secret `forgejo-scm-token` (namespace `devops`). Until then it matches
-nothing.
+generates one Application per match.
 
 ### The two filters, and why there are two
 
@@ -144,10 +143,6 @@ ArgoCD **ORs across `filters` entries and ANDs inside one**, and `pathsExist` is
 AND-list. So one entry cannot say "either descriptor name". It takes two entries, and the
 rebrand is why both names are accepted. A repo that carries both still yields one
 Application.
-
-`adopters.yaml` (swept 2026-08-20) still lists one adopter, `hugmesh-forum-bff-api`, on the
-legacy name. That repo renamed its file the same day, so the row is stale. Update it, then
-the legacy entry can go.
 
 ### The failure mode this protects against
 
@@ -219,8 +214,7 @@ On a real cluster, ArgoCD needs a repository credential for the private GitOps r
 Without it `bootstrap.sh` exits with:
 
 ```
-FATAL: ARGOCD_REPO_TOKEN not set; the private repo … needs an ArgoCD repository credential
-or every git-path Application … will fail to sync with 'authentication required: Repository not found'.
+FATAL: ARGOCD_REPO_TOKEN not set; the private repo https://github.com/hugmesh/hugmesh-generator.git needs an ArgoCD repository credential or every git-path Application (vault, casdoor, harbor-provision, forgejo, app-of-apps) will fail to sync with 'authentication required: Repository not found'.
 ```
 
 Applications that already exist show `ComparisonError: authentication required: Repository
@@ -239,9 +233,10 @@ provision. That is why an incomplete cluster can look like a successful run.
 ## Gotchas worth knowing before you need them
 
 - **Forking:** export `HUGMESH_GITOPS_REPO` and `HUGMESH_GITOPS_REV` before bootstrapping.
-  `bootstrap.sh` rewrites `repoURL` and `targetRevision` on every baked Application as it
-  applies it: 87 `repoURL` lines on `main`. The line in `specs/cluster/README.md` that says
-  to edit the per-app `repoURL`s by hand is stale.
+  On the default (baked) path, `bootstrap.sh` rewrites `repoURL` and `targetRevision` on
+  every Application it applies. Under `HUGMESH_GITOPS_ROOT_RECURSE=1` it rewrites only the
+  root, and the children come from the fork's git unchanged, so you must edit every per-app
+  `repoURL` yourself.
 - **Removing an app at build time:** the builders `rm -f` the application file from the
   baked tree, and `bootstrap.sh` never applies a file that is gone. That works only
   because the root is not in play. Under `HUGMESH_GITOPS_ROOT_RECURSE=1` the root
@@ -252,9 +247,8 @@ provision. That is why an incomplete cluster can look like a successful run.
   and `casdoor-domains`). Without them, selfHeal would re-apply git's `installed: "false"`
   over a runtime enable. With the baked set no root self-heals, so the entries do nothing.
 - **Eleven Applications have no automated sync** and read `OutOfSync` until somebody syncs
-  them: the egress and Tor network policies, Cassandra hardening, egress VPN, the egress
-  proxy, ClickHouse, Kafka, observability, media-poisoner, Velero and its config. Never
-  gate readiness on Application status. Read the workload's `availableReplicas`.
+  them. Never gate readiness on Application status. Read the workload's
+  `availableReplicas`.
 - **The waved root is not applied by default.** `bootstrap.sh` skips
   `00-app-of-apps-waved.yaml` by name, and `ENV=prod` builds delete it, along with
   `99-test-runner.yaml`, from the baked tree.

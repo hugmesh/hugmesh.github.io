@@ -22,10 +22,10 @@ local stack.
 The Studio is the front door: a wizard over the build scripts, plus a system tray
 controller for a local mesh.
 
-Two ways in:
+From a checkout, two ways:
 
 ```bash
-# From a checkout (Linux). The guided launcher offers a venv if you lack one.
+# Linux: the guided launcher offers a venv if you lack one.
 cd hugmesh-generator
 ./scripts/studio-launch.sh
 
@@ -45,12 +45,12 @@ overwrites a file it did not create) and writes `~/.hugmesh/studio/properties.js
 `studio/hugmesh-studio` skips it. See [first-run bootstrap](/tutorials/first-run-bootstrap).
 
 **Set your resource limits now**, before the first build: tray → **Resource limits**.
-The Studio caps a dockerized build by default at every CPU core but one, and at
-`max(2 GiB, min(total − 4 GiB, ¾ of total))` of memory. Set your own numbers if you
-plan to use the machine while it works. See
+The Studio already caps a dockerized build, at every CPU core but one. Set your own
+numbers if you plan to use the machine while it works. See
 [resource limits](/operations/resource-limits).
 
-**Done when:** the Studio opens and shows its mode picker (ten choices).
+**Done when:** the Studio opens on its Welcome screen, and **Start building** leads to the
+mode picker (ten choices).
 
 ---
 
@@ -64,17 +64,14 @@ make stack-up
 make stack-seed SEED_COMPLETE_REGISTRATION=1   # REQUIRED — without it, login does not work
 ```
 
-Then open **<http://localhost:8088>**. (`https://localhost:8488` uses a per-machine CA;
-import it or accept the browser warning.)
+Then open **<http://localhost:8088>**.
 
 Three things people get wrong:
 
 - **`stack-m2-bootstrap` is not optional on a cold build.** It clones four library repos
-  (`hugmesh-build-config`, `hugmesh-parent`, `hugmesh-commons`, `hugmesh-auth-core`) at
-  pinned SHAs, `mvn install`s them into a persistent cache (`~/.cache/hugmesh-stack-maven`)
-  and serves them from a local registry container. Without it, four Java services
-  (admin-bff, user-bff, mod-bff, federation-api) cannot resolve their dependencies at
-  image-build time.
+  at pinned SHAs, `mvn install`s them into a persistent cache and serves them from a
+  local registry container. Without it, four Java services cannot resolve their
+  dependencies at image-build time.
 - **`stack-up` alone does not make login work.** `stack-seed` creates the OAuth2 client
   and the org, roles and personas. Without it the stack looks up and rejects every login.
   Without `SEED_COMPLETE_REGISTRATION=1` you can sign in, but every service route
@@ -105,7 +102,9 @@ only**. ArgoCD cannot see an uncommitted edit, so commit and wait for the poll.
 > **Know what you are getting.** The kind cluster is a **slice**, not a small production
 > cluster. It deploys the native-login path (Cassandra, Vault, Casdoor, the gateway, the
 > admin and user BFFs, the host shell, a few UIs). Other routes answer 503. Specs
-> `01-frontpage` and `27-native-login` passed against it on 2026-08-06. But spec 27 only
+> `01-frontpage` and `27-native-login` passed against it on 2026-08-06, and the blockers
+> this page once named (the Cassandra keyspace bootstrap, the gateway probes) are fixed on
+> `main`. But spec 27 only
 > checks that `POST /bff/login` mints the session cookie. On a fresh cluster on
 > 2026-10-07, `GET /bff/session` answered 500: the BFFs fetch Casdoor's signing keys from
 > `id.hugmesh.net`, which does not resolve inside the cluster (issue 693; fix open as
@@ -114,8 +113,7 @@ only**. ArgoCD cannot see an uncommitted edit, so commit and wait for the poll.
 > [kind SSO findings](/troubleshooting/kind-sso-e2e-findings).
 
 **Done when:** `kubectl get applications -n devops` lists the Applications that
-`bootstrap-kind.sh` applied. `make kind-doctor` checks that the cluster can run the mesh
-(egress, images, pods, ArgoCD).
+`bootstrap-kind.sh` applied.
 
 ---
 
@@ -169,11 +167,8 @@ Defaults worth knowing before you build:
 The image contains **no keys**. Everything secret arrives from a FAT32 `KEYS` partition
 at first boot, which is what lets you publish the same image safely.
 
-Generate the keys with `scripts/gen-provision-keys.sh -r <role> -o keys-<role>`. Write
-each stick with `sudo scripts/make-keys-usb.sh /dev/sdY keys-<role>` (one stick per
-node). Flash the OS image with `scripts/flash-disk.sh` (or `make flash`).
-
-Two defaults of the key generator:
+`scripts/gen-provision-keys.sh` generates the keys; `scripts/make-keys-usb.sh` writes the
+stick (one per node). Two defaults of the key generator:
 
 - **No root password is generated**, and provisioning runs `passwd -l root`. Opt in
   with `--root-password`.
@@ -201,9 +196,8 @@ real browser before you commit.
 ## 8. Set up your domain and go live
 
 Domain, identity provider, then the Go-Live wizard. A mesh can serve locally, or be
-exposed over a Tor `.onion`, a Dynamic-DNS host (DuckDNS or Cloudflare), a Cloudflare
-tunnel, Tailscale Funnel or a router port-forward. Each is opt-in; none is required.
-See the [go-live wizard](/operations/go-live-wizard) and
+exposed over a Tor `.onion`, a Dynamic-DNS host, or a tunnel. Each is opt-in; none is
+required. See the [go-live wizard](/operations/go-live-wizard) and
 [Tor hidden service](/operations/tor-hidden-service).
 
 **Done when:** your login page answers on your own domain.
@@ -214,7 +208,9 @@ See the [go-live wizard](/operations/go-live-wizard) and
 
 Games, video (`tube`) and live streaming (`owncast`) are **off by default**. The fediverse
 server (`akkoma`), Matrix (`tuwunel`) and the forum (`phpbb`) are **on by default** and
-can be excluded. See [optional services](/operations/optional-services). Adding a *new*
+can be excluded. The Studio asks for a selection per domain, but it only records it: the
+cluster does not yet enforce a per-domain choice (issue 496). See
+[optional services](/operations/optional-services). Adding a *new*
 service is a different job: the
 [Developer Guide](/developer-guide/expanding-the-mesh) covers it.
 

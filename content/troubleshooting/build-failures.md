@@ -28,7 +28,7 @@ GiB of swap that was already full. From the operator's chair the desktop simply 
 environment of the Studio, which builds the `docker run` command:
 
 ```bash
-HUGMESH_BUILD_MEMORY=16g HUGMESH_CPUS=6 ./hugmesh-studio
+HUGMESH_BUILD_MEMORY=16g HUGMESH_CPUS=6 ./scripts/studio-launch.sh
 ```
 
 The builder scripts and `make build-all` do not read these variables. Only the Studio adds
@@ -49,7 +49,7 @@ nothing explains it.
 detects this by reading the filesystem *type* from `/proc/mounts`, not by matching the
 path. A bind mount or a symlink into `/mnt/c` looks like a Linux path and is just as slow.
 
-### Logs are enormous
+### Logs are enormous and every merge crawls
 
 ```
 [WARNING] _do_sendfile failed unexpectedly
@@ -58,7 +58,8 @@ OSError: [Errno 22] Invalid argument   (portage/util/file_copy.py:89)
 
 Repeated; one recorded log has it **150,692 times**. Your work directory is on eCryptfs
 (`/home/.Private`), which cannot take `sendfile(2)` writes. This is noise, not a failure:
-portage falls back to `shutil` and every copy completes.
+portage falls back to `shutil` and every copy completes. Rpi5 logs from the same sessions
+showed none.
 
 **Fix:** none needed. The builder patches portage's `file_copy.py` to silence the warning
 (`scripts/patch-portage-file-copy.py`). To remove the cause, move the work directory off
@@ -281,10 +282,6 @@ never mentions the checkbox responsible.
 WSL2 disables nested virtualisation by default outside Windows 11, so `/dev/kvm` is absent
 and QEMU silently falls back to TCG. Again, this reads as a hang.
 
-**Fix:** in `%UserProfile%\.wslconfig` set `[wsl2]` `nestedVirtualization=true`, run
-`wsl --shutdown` from PowerShell, and reopen the distro. WSL1 cannot run KVM at all;
-convert the distro with `wsl --set-version <distro> 2`.
-
 ### `Checking simple C program: not found`, ~40 minutes in
 
 `qemu-aarch64` binfmt is not usable in the build container. Waf-family packages (tdb,
@@ -312,9 +309,8 @@ Two concurrent builds sharing a binpkg pool overwrite each other's package insta
 target pools do not use `binpkg-multi-instance`.
 
 There is one pool per board, held under an exclusive `flock` on `<pool>.writer.lock`. A
-second concurrent build of the same board is refused with `another build is already writing
-the shared binpkg pool`. Wait for the other build, or pass `--no-shared-assets` for a
-private pool. The build scratch directory is locked the same way.
+second concurrent build of the same board is refused. Wait for the other build, or pass
+`--no-shared-assets` for a private pool. The build scratch directory is locked the same way.
 
 ## When none of this matches
 
@@ -323,5 +319,4 @@ private pool. The build scratch directory is locked the same way.
 2. **Check the session directory** under `out/sessions/`. Each build keeps its own log and
    artifact set.
 3. **Run the preflight gates directly.** `make matrix-check` validates the whole build
-   matrix through `--print-plan` without starting a build. It takes minutes, not hours
-   (one run here: 2 min 48 s, 1297 checks passed).
+   matrix through `--print-plan` without starting a build. It takes minutes, not hours.
