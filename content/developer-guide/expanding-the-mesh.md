@@ -5,9 +5,12 @@ slug: "expanding-the-mesh"
 summary: "How a new service reaches a running HugMesh cluster: the two GitOps lanes, the app-of-apps layout, the service-catalog ApplicationSet, and the five things that must move together."
 ---
 
-Everything in a HugMesh cluster is synced by ArgoCD from git. Adding a service means
-adding files that ArgoCD already watches — there is no imperative step, and nothing is
-`kubectl apply`-ed by hand.
+ArgoCD syncs a HugMesh cluster from git, in two layers. The **Application set**
+(`specs/cluster/apps/*.yaml`) is applied once, file by file, by `bootstrap.sh` from the
+tree baked into the image. The **content** of each Application (`specs/cluster/manifests/<dir>/`)
+is fetched from git by ArgoCD on every sync. Adding a service means adding files to both;
+nothing is `kubectl apply`-ed by hand after bootstrap. The
+[GitOps payload page](/operations/gitops-payload) has the full account.
 
 ## There are two lanes, and picking the wrong one is the easiest mistake
 
@@ -18,11 +21,11 @@ This is the thing to get straight before anything else.
 | Status | **live today** | **scaffold**, not cut over |
 | Where files go | `hugmesh-generator` | the service's **own** repo |
 | What you add | `specs/cluster/manifests/<svc>/` + `specs/cluster/apps/NN-<svc>.yaml` | `hugmesh-deploy.yaml` + `deploy/` |
-| Effect right now | ArgoCD picks it up on the next sync | **nothing runs** until the Forgejo cutover |
+| Effect right now | manifest edits sync on the next ArgoCD poll; a new `apps/` file needs a new image, a re-provision, or the opt-in recursing root | **nothing runs** until the Forgejo cutover |
 
 If you want a service running on a cluster today, **use Lane A**. Lane B is real and
 worth adopting — nine repos already have — but the live GitHub-rooted ArgoCD ignores
-it, and every adopter's descriptor says so in its own header.
+it, and eight of the nine descriptors say so in their own headers.
 
 ## Lane A: add a service to the live cluster
 
@@ -37,21 +40,36 @@ specs/cluster/manifests/<service>/
 
 ### 2. Add an Application
 
-`specs/cluster/apps/NN-<service>.yaml`. The root Application
-(`specs/cluster/app-of-apps.yaml`, named `hugmesh-root` in namespace `devops`)
-recurses `specs/cluster/apps/`, so a file dropped there **is** the registration.
+`specs/cluster/apps/NN-<service>.yaml`. On a device, `bootstrap.sh` applies every file in
+the **baked** `apps/` tree with `kubectl apply`, so a file there **is** the registration —
+but only for images built after you added it, or after a re-provision (the script re-runs
+only with the KEYS USB inserted and `.provision-force` on it, or `KEYS_FORCE=1`). It is
+idempotent.
 
-Its sync policy is `automated: {prune: true, selfHeal: true}`, so a mistake in git
-propagates and a manual change to the cluster is reverted.
+Each child Application carries its own `automated: {prune: true, selfHeal: true}`, so a
+mistake in git propagates to its workloads and a manual change to them is reverted. A
+deleted Application *object* stays deleted until the next re-provision.
+
+The repo-recursing root (`specs/cluster/app-of-apps.yaml`, named `hugmesh-root` in
+namespace `devops`) is **opt-in** (`HUGMESH_GITOPS_ROOT_RECURSE=1`). It reads `apps/` from
+GitHub, so it ignores every build-time prune, and a file dropped into `apps/` is picked up
+at once. Use it for a dev cluster that tracks a branch, never for a gated image.
+
+On the kind lane, `bootstrap-kind.sh` applies a curated list (`SSO_APPS`). Add your file
+there, or the kind cluster never sees it (`lint:kind-profile-app-closure` guards the list).
 
 ### 3. Understand the numbering — it is not what it looks like
 
-The two-digit prefix is a **human ordering convention for reading the directory**.
-ArgoCD orders by the `argocd.argoproj.io/sync-wave` annotation, and only under the
-*waved* root. Under the default recursing root, **every child syncs concurrently**.
+The two-digit prefix is a **human ordering convention for reading the directory**. It is
+also the order `bootstrap.sh` applies the files in, but ArgoCD does not wait between them.
+ArgoCD orders by the `argocd.argoproj.io/sync-wave` annotation, and only among children of
+one parent: the alternative *waved* root (`apps/00-app-of-apps-waved.yaml`, which you point
+a bootstrap at deliberately). With the baked set, or the plain recursing root, **every
+child syncs concurrently** and the set converges in a few reconcile loops. Every hook Job is
+written to retry.
 
-So the prefix tells a reader where your service belongs; the annotation is what
-actually sequences it.
+So the prefix tells a reader where your service belongs; the annotation sequences it only
+under the waved root.
 
 | Band | What lives there |
 |---|---|
@@ -59,7 +77,7 @@ actually sequences it.
 | `02`–`04` | secrets, forge, registry (Vault, ESO, GitLab, Harbor) |
 | `05`–`12` | identity, network policy, ingress (Casdoor, netpol) |
 | `13x` | ApplicationSets (service catalog, optional services, node storage) |
-| `14`–`16` | RBAC and admission policy (Kyverno) |
+| `14`–`17` | RBAC, admission policy (Kyverno), backing-service endpoints |
 | `20`–`24` | gateways |
 | `28`–`39` | backend data + BFFs |
 | `40`–`49` | frontends |
@@ -75,48 +93,60 @@ owns a database.
 
 Two sides, and both are required. Using a BFF as the worked example:
 
-1. **The gateway route.** Add the route id, uri and path to the right gateway
-   application's Helm values. Order matters — **first match wins**.
+1. **The gateway route.** Add the route id, uri and path to the `routes:` list in the right
+   gateway Application's Helm values (`specs/cluster/apps/20-gateway-{fe,be,pki}.yaml`,
+   or `22-gateway-superadmin.yaml`). Order matters — **first match wins**.
 2. **The access rows.** Add `(gateway, url_pattern, role, allow)` rows to the
    route-access schema. **Longest pattern wins**, so a `/**` floor governs every
    sub-path unless a longer row overrides it.
 3. **The reserved prefix.** Add your new first path segment to
-   `specs/cluster/reserved-prefixes.yaml`, or the `lint:reserved-prefixes` job fails
-   the build.
+   `specs/cluster/reserved-prefixes.yaml`, then run `scripts/sync-reserved-configmap.sh`
+   to regenerate the ConfigMap that mirrors it. Otherwise the `lint:reserved-prefixes` job
+   (`scripts/validate-reserved-prefixes.sh`) fails the build.
 
 ### 5. Give it an identity
 
 Secrets are materialised by External Secrets Operator from Vault. A service that
-speaks mTLS in-cluster needs its `<name>-mtls` ESO Secret declared alongside its
-manifests.
+speaks mTLS in-cluster needs its `hugmesh-<service>-mtls` ExternalSecret. Those live in
+`specs/cluster/manifests/external-secrets/pki-externalsecrets.yaml` (listed in that
+directory's `kustomization.yaml`), not beside the service's own manifests.
 
 ### 6. If it has a UI
 
 A frontend is a native-federation **remote**: its own repo, its own nginx, registered
-in the federation module registry so the host shell can load it at runtime. It does
-not need a host redeploy — the manifest is read from the database at boot, unioned
-over the build-time static floor.
+in the federation module registry so the host shell can load it at runtime. The host
+reads the manifest from the database at boot and unions it over the build-time static
+floor, so the database can add a remote's entry URL without a host redeploy. The full
+registration touches eight places; see the
+[federation walkthrough](/architecture/federation-walkthrough).
 
 ## Lane B: the service catalog
 
-The catalog is an ApplicationSet (`hugmesh-catalog`, namespace `devops`) whose single
-generator is an `scmProvider` pointing at the **in-cluster Forgejo**. It scans the org
-for repositories matching `^hugmesh-` that contain a deploy descriptor and a `deploy/`
-directory, and generates one Application per match.
+The catalog is an ApplicationSet (`hugmesh-catalog`, `specs/cluster/apps/13-service-catalog.yaml`,
+namespace `devops`) whose single generator is an `scmProvider` pointing at the
+**in-cluster Forgejo**. It scans the org for repositories matching `^hugmesh-` that contain
+a deploy descriptor and a `deploy/` directory, and generates one Application per match. It
+needs Forgejo seeded with the org's repos and a read token in the Secret
+`forgejo-scm-token` (namespace `devops`); until then it matches nothing.
 
 ### The two filters, and why there are two
 
 ```yaml
 filters:
   - repositoryMatch: "^hugmesh-"
-    pathsExist: ["snapdragon-deploy.yaml", "deploy"]
-  - repositoryMatch: "^hugmesh-"
     pathsExist: ["hugmesh-deploy.yaml", "deploy"]
+  - repositoryMatch: "^hugmesh-"          # LEGACY_COMPAT, pre-rebrand name
+    pathsExist: ["snapdragon-deploy.yaml", "deploy"]
 ```
 
 ArgoCD **ORs across `filters` entries and ANDs inside one**, and `pathsExist` is
 itself an AND-list. So a single entry cannot express "either descriptor name" — it
-takes two entries, and the rebrand is why both names are accepted.
+takes two entries, and the rebrand is why both names are accepted. A repo that carries
+both still yields one Application.
+
+`adopters.yaml` (swept 2026-08-20) lists eight adopters on `hugmesh-deploy.yaml` and one,
+`hugmesh-forum-bff-api`, on the legacy name. That repo renamed its file the same day, so the
+registry row is stale and the legacy entry can go once it is updated.
 
 ### The failure mode this protects against
 
@@ -125,7 +155,7 @@ Application, emits no event, produces no degraded app and writes no log line. A 
 that quietly stops being discoverable is *silent*.
 
 That silence is the entire reason `specs/cluster/catalog/adopters.yaml` and
-`scripts/validate-catalog-discovery.sh` exist. The validator runs in CI as
+`scripts/validate-catalog-discovery.sh` exist. The validator runs in GitLab CI as
 `lint:catalog-descriptor-discovery` and fails the pipeline if a registered adopter
 ships a descriptor no generator matches.
 
@@ -159,9 +189,11 @@ separately enforced by a stage of the gate:
 
 1. the descriptor filename in the service's repo;
 2. the `descriptor:` value in `adopters.yaml`;
-3. a filter entry in **both** the ApplicationSet and its Handlebars template;
-4. an entry in the render recipe's rename denylist;
-5. a behavioural case in the templating rename test.
+3. a filter entry in **both** the ApplicationSet (`apps/13-service-catalog.yaml`) and its
+   Handlebars twin (`templates/apps/13d-brand-repos.yaml.hbs`);
+4. an entry in the render recipe's rename denylist (`RENAME_CONTRACT_DENYLIST` in
+   `scripts/tooling/render-recipe.js`);
+5. a behavioural case in `tests/domain-registry/test-templating-rename-pr.sh`.
 
 ## Running a cluster locally
 
@@ -183,38 +215,50 @@ An uncommitted edit is invisible to ArgoCD. Commit, then wait for the poll.
 
 ### The missing-credential signature
 
-On a real cluster, ArgoCD needs a repository credential. Without it you get:
+On a real cluster, ArgoCD needs a repository credential for the private GitOps repo.
+Without it `bootstrap.sh` exits with:
 
 ```
-ComparisonError: authentication required: Repository not found
-FATAL: vault-0 never reached Running (phase='not created')
+FATAL: ARGOCD_REPO_TOKEN not set; the private repo … needs an ArgoCD repository credential
+or every git-path Application … will fail to sync with 'authentication required: Repository not found'.
 ```
 
+On a cluster that already has the Applications, the symptom is
+`ComparisonError: authentication required: Repository not found` on each of them. On the
+kind lane the bring-up ends with `FATAL: vault-0 never reached Running (phase='not created')`.
 `vault-0` never being created is the tell — it is downstream of the Application that
 could not sync, so the *first* error you see is not the cause.
 
-**Fix:** write the token to `KEYS/gitops/repo-token`. Set `ARGOCD_REPO_PUBLIC=1` only
-for a genuinely public fork.
+**Fix:** write a read-only token to `KEYS/gitops/repo-token`; `keys-provision` exports it
+as `ARGOCD_REPO_TOKEN`. Set `ARGOCD_REPO_PUBLIC=1` only for a genuinely public fork.
 
-Note the profile asymmetry: the **sso** profile fails closed, while **core** warns and
-continues. And `provision.sh` calls `bootstrap.sh` with `|| warn`, so a missing token
-produces a warning, not a failed provision — which is why an incomplete cluster can
-look like a successful run.
+Note the kind asymmetry: with no way to fetch the repo, `KIND_PROFILE=sso` exits 1, while
+`core` warns and continues. And `provision.sh` calls `bootstrap.sh` with `|| warn`, so a
+missing token produces a warning, not a failed provision — which is why an incomplete
+cluster can look like a successful run.
 
 ## Gotchas worth knowing before you need them
 
-- **Forking:** `bootstrap.sh` only rewrites the **root** Application's `repoURL`. A
-  fork needs all 91 per-app `repoURL`s edited.
-- **Removing an app at build time:** `rm -f` on an application file only affects the
-  bootstrap seed. The live root re-syncs it from git. Runtime add/remove is the
-  `installed` flag on the optional-services ApplicationSet, not file deletion.
-- **`selfHeal` and inert flags:** the root declares `RespectIgnoreDifferences=true`
-  and two `ignoreDifferences` entries on ApplicationSet list elements. Without them,
-  selfHeal would re-apply git's `installed: "false"` over a runtime enable.
-- **Eleven Applications are MANUAL by design** and are `OutOfSync` permanently. Never
+- **Forking:** export `HUGMESH_GITOPS_REPO` and `HUGMESH_GITOPS_REV` before bootstrapping.
+  `bootstrap.sh` rewrites `repoURL` and `targetRevision` on
+  every baked Application as it applies it: 87 `repoURL` lines on `main`. The
+  `specs/cluster/README.md` line that says to edit the per-app `repoURL`s by hand is stale.
+- **Removing an app at build time:** the builders `rm -f` the application file from the
+  baked tree, and `bootstrap.sh` never applies a file that is gone. That works only
+  because the root is not in play: under `HUGMESH_GITOPS_ROOT_RECURSE=1` the root re-syncs
+  the file from git. Runtime add/remove is the `installed` flag on the optional-services
+  ApplicationSet, not file deletion.
+- **`selfHeal` and inert flags:** the recursing root declares `RespectIgnoreDifferences=true`
+  and two `ignoreDifferences` entries on ApplicationSet list elements (`optional-services`
+  and `casdoor-domains`). Without them, selfHeal would re-apply git's `installed: "false"`
+  over a runtime enable. With the baked set no root self-heals, so the entries do nothing.
+- **Eleven Applications have no automated sync** and read `OutOfSync` until somebody syncs
+  them (the egress and Tor network policies, Cassandra hardening, egress VPN, the egress
+  proxy, ClickHouse, Kafka, observability, media-poisoner, Velero and its config). Never
   gate readiness on Application status — read the workload's `availableReplicas`.
-- **The waved root is not excluded** by the default root, and is only pruned in
-  `ENV=prod`.
+- **The waved root is not applied by default.** `bootstrap.sh` skips
+  `00-app-of-apps-waved.yaml` by name, and `ENV=prod` builds delete it, along with
+  `99-test-runner.yaml`, from the baked tree.
 
 ## Where to read further
 
