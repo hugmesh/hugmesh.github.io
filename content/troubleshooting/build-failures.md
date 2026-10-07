@@ -25,13 +25,15 @@ A dockerized **fleet** build compiled llvm's 32-bit multilib pass at `-j8` insid
 IDE, whose 4 GiB of swap was already full. From the operator's side the desktop simply
 died.
 
-**Fix:** cap the builder. Studio → tray → **Resource limits**, or:
+**Fix:** cap the builder. Studio → tray → **Resource limits**, or set the variables in the
+environment of the Studio, which builds the `docker run` command:
 
 ```bash
-HUGMESH_BUILD_MEMORY=16g HUGMESH_CPUS=6 ./build-x86-host-stage4.sh …
+HUGMESH_BUILD_MEMORY=16g HUGMESH_CPUS=6 ./hugmesh-studio
 ```
 
-A capped container OOMs — an honest build failure — instead of taking the host with
+The builder scripts and `make build-all` do not read these variables; only the Studio
+adds `--memory`, `--memory-swap` and `--cpus` to the container. A capped container OOMs — an honest build failure — instead of taking the host with
 it. `--memory-swap` is pinned equal to `--memory` so a runaway compile cannot thrash
 the host's swap, which was the incident's signature.
 
@@ -49,7 +51,7 @@ Studio detects this by reading the filesystem *type* out of `/proc/mounts` rathe
 pattern-matching the path — a bind mount or a symlink into `/mnt/c` looks like a Linux
 path and is just as slow.
 
-### Logs are enormous and every merge crawls
+### Logs are enormous
 
 ```
 [WARNING] _do_sendfile failed unexpectedly
@@ -57,19 +59,22 @@ OSError: [Errno 22] Invalid argument   (portage/util/file_copy.py:89)
 ```
 
 Repeated — in one recorded log, **150,692 times**. Your work directory is on eCryptfs
-(`/home/.Private`).
+(`/home/.Private`), which cannot take `sendfile(2)` writes. It is noise, not a failure:
+portage falls back to `shutil` and every copy completes. Rpi5 logs from the same sessions
+showed none.
 
-**Fix:** the builder detects `ecryptfs` from `df -T` and works around it. If you are
-driving the scripts directly, put the work directory on a filesystem that is not
-encrypted per-file.
+**Fix:** none needed. The builder patches portage's `file_copy.py` to silence the warning
+(`scripts/patch-portage-file-copy.py`). To avoid the cause, put the work directory on a
+filesystem that is not encrypted per-file.
 
 ### `File name too long` during a Go build
 
 kubelet, runc, cni-plugins and containerd have deeply vendored cache paths. eCryptfs
 caps filenames at roughly **143 characters**.
 
-**Fix:** same as above — the builder binds the chroot's `/var/tmp` elsewhere when it
-detects eCryptfs.
+**Fix:** the x86 builder detects eCryptfs from `df -T` and binds the chroot's
+`/var/tmp/portage` onto a host xfs scratch directory. If you drive the scripts directly,
+keep the work directory off eCryptfs.
 
 ## The build died with a resolution wall
 
@@ -85,13 +90,17 @@ A **global USE mask** in `make.conf.tmpl` made a requested atom unresolvable. Th
 recorded case was `firewalld` on rpi5, needing `glib[introspection]` against a global
 `USE=-introspection`.
 
-**Fix:** add a *scoped* override — `dev-libs/glib introspection` in the platform's
-`package.use` — rather than dropping the global mask. A regression gate catches this
+**Fix:** add a *scoped* override — here `dev-libs/glib introspection` in the platform's
+`package.use` — rather than dropping the global mask. For this recorded case the override
+was tried and retired: glib-2.88.2's introspection bootstrap dies in `src_configure` on a
+cross build, so `specs-rpi5` now leaves `net-firewall/firewalld` out on purpose (a
+`DELIBERATELY EXCLUDED` block in `packages.list`; `nftables` carries the firewall story).
+The gate `tests/requested-atoms-resolvable.sh` (run by `make matrix-check`) catches this
 class before the build starts:
 
 ```
-FAIL [rpi5] requested atom net-firewall/firewalld is UNRESOLVABLE:
-global USE=-introspection (make.conf.tmpl) with no scoped package.use override
+FAIL [rpi5] requested atom net-firewall/firewalld is UNRESOLVABLE: global USE=-introspection
+(make.conf.tmpl) with no scoped package.use 'dev-libs/glib introspection' override — chain: …
 ```
 
 ### `Multiple package instances within a single package slot … slot conflict`
@@ -101,8 +110,11 @@ global USE=-introspection (make.conf.tmpl) with no scoped package.use override
 into the dependency graph, resulting in a slot conflict: dev-python/requests:0
 ```
 
-`PYTHON_TARGETS` REPLACE-vs-ADD. The seed's portage was frozen on the seed's targets,
-so a partial retarget pulled two instances of the same slot.
+`PYTHON_TARGETS` REPLACE-vs-ADD. `PYTHON_TARGETS` assigned in `make.conf` replaces the
+profile default; the same value in `package.use` adds to it. A frozen `python3_12` literal
+in `make.conf.tmpl` forced the payload onto an interpreter the seed did not have, while the
+seed's own `sys-apps/portage` kept demanding `python3_13`/`python3_14` from the same
+`dev-python/*` slots: two instances of one slot.
 
 ### `The following USE changes are necessary to proceed: … python_targets_python3_12`
 
@@ -110,9 +122,12 @@ The mirror image of the above: the seed shipped portage built with the *other*
 Python target. Pinning to a single version flips the other flag off on rebuilds and
 wedges the tree.
 
-**Fix for both:** see the slot-conflict analysis in the generator's
-`docs/PYTHON-TARGETS-SEED-DRIFT.md` — the working posture is to retarget *additively*
-and to update portage with `--newuse` rather than excluding it.
+**Fix for both:** `PYTHON_TARGETS` must be a superset of the targets the seed's installed
+packages were built with, derived from the seed at build time and never frozen as a
+literal. All ten builders now do this (`scripts/_python-targets-lib.sh`). If you see these
+walls on a tree with a `PYTHON_TARGETS="python3_NN"` literal in `make.conf.tmpl`, that
+literal is the cause. The root-cause analysis is in the generator's
+[`docs/PYTHON-TARGETS-SEED-DRIFT.md`](/troubleshooting/python-targets-seed-drift).
 
 ### `masked by: ~amd64 keyword` on a cross build, but only the host half
 
@@ -121,7 +136,9 @@ The cross-emerge resolves **BDEPENDs against the container's own amd64
 `specs-*/portage/` covers the sysroot side and does nothing for the host side.
 
 **Fix:** pre-seed the *host* `package.accept_keywords` / `package.use` for the
-build-time dependency. This is the single most common cross-build wall.
+build-time dependency. This is the single most common cross-build wall. The rpi5 builder
+does it for the known case (`dev-python/vcs-versioning`); a new one needs the same
+pre-seed.
 
 ### `configure: error: C compiler cannot create executables`
 
@@ -129,19 +146,21 @@ Something tried to cross-*rebuild the toolchain itself*. Target gcc/glibc/binuti
 cannot be built this way, because the build has to run freshly-built target binaries
 on the x86 host.
 
-**Fix:** the payload emerge always carries `--exclude sys-devel/gcc` and friends. If
-you are invoking emerge by hand, keep those exclusions.
+**Fix:** the payload emerge carries `--exclude sys-devel/gcc` (with `gcc-config`, `glibc`
+and `binutils`) unless you set `REBUILD_TOOLCHAIN=true`, which usually fails. If you are
+invoking emerge by hand, keep those exclusions.
 
 ### `<tool> not found in PATH` in the first minute
 
-No cross toolchain. ARM targets (`rpi5`, `frite`, `jetson*`) need
+No cross toolchain. ARM targets (`rpi5`, `frite`, `jetson`, `orangepi*`) need
 `aarch64-unknown-linux-gnu-gcc`.
 
 ```bash
 crossdev --stable --target aarch64-unknown-linux-gnu
 ```
 
-Or use a builder image built with `CROSSDEV=1`.
+Or use a builder image built with `CROSSDEV=1`, which `make docker-image` does by
+default (`CROSSDEV=0` makes an x86-only image).
 
 ## The build "succeeded" but the image is wrong
 
@@ -164,8 +183,10 @@ A worse recorded instance lost **20 core packages** (`sys-libs/pam`, `sys-apps/d
 `x11-libs/gtk+`, `sys-auth/polkit`, `elogind`, …) and still emitted PROD artifacts
 with exit 0.
 
-**Fix:** the payload-verification gate now fails the build on a dropped *requested*
-atom. If you are on an older tree, grep the build log for `skipped` and `dropped`
+**Fix:** the requested-atom completeness gate now fails the build on a dropped *requested*
+atom (`ALLOW_MISSING_PACKAGES=false`; `--allow-missing-packages` accepts a degraded image
+on purpose). On x86 an emerge failure-notice gate also fails the build when a *dependency*
+was dropped. If you are on an older tree, grep the build log for `skipped` and `dropped`
 before trusting an artifact.
 
 ### The `.img` has a partition table and empty partitions
@@ -177,16 +198,20 @@ nothing else.
 inside `docker run --privileged`** — the kernel scans the table, but with no udev
 nothing creates the device nodes, so every write went nowhere.
 
-**Fix:** the scripts now create the child nodes explicitly rather than relying on
-`-fP`. If you see this, you are on a tree that predates that fix.
+**Fix:** the scripts no longer rely on `-fP`. The x86 builder maps each partition with its
+own offset loop device (`losetup --offset … --sizelimit …`) after pre-creating a pool of
+`/dev/loopN` nodes; the rpi5 builder creates the `loopXpN` nodes with `mknod`. If you see
+this, you are on a tree that predates that fix.
 
 ### `No space left on device` mid-`tar`, after hours of emerging
 
 The payload exceeded the fixed `ROOT_MiB` ext4 root. Usable space is about
 `ROOT_MiB × 93/100` once ext4 metadata and the 5% reserve are counted.
 
-**Fix:** a `du -sxBM` preflight now sizes the payload *before* populating the image.
-Raise `--root-size`, or let the floor calculation pick it.
+**Fix:** a `du -sxBM` preflight now sizes the payload *before* populating the image. The
+x86 builder then grows the root to fit (payload plus about 15%, rounded up to a GiB) and
+warns. The rpi5 builder stops and prints the `--img-size` (in MiB) to use. There is no
+`--root-size` flag; the Studio's root-size floor feeds `--img-size`.
 
 ### The board boots into an illegal instruction
 
@@ -198,7 +223,9 @@ Not a build failure — a runtime one, and the cause is upstream.
 binary package built for one board is happily reused on another and executes an
 instruction that board does not have.
 
-**Fix:** binpkg pools are keyed per board. Never share a pool across boards by hand.
+**Fix:** binpkg pools are keyed per board (`BUILD_SUBDIR`), and a fingerprint guard
+(`scripts/_binpkg-pool-lib.sh`) stamps each pool with CHOST, CFLAGS, CXXFLAGS and profile
+and refuses `--usepkg` reuse when they differ. Never point two boards at one pool by hand.
 
 ### A fix landed, and the build still fails the same way
 
@@ -206,9 +233,10 @@ A binary package built **before** the fix, served from a stale pool, re-breaks t
 merge. One recorded build lost 143 packages to exactly this after the gettext fix had
 already landed.
 
-There is no automatic invalidation for this case.
+There is no automatic invalidation for this case (no `eclean` on a pin change).
 
-**Fix:** delete the pool and rebuild.
+**Fix:** delete the pool (`rm -rf <pkgdir>`) and rebuild, or change the pool fingerprint's
+`salt` so the guard forces a rebuild (`docs/SHARED-BINPKG.md`, invalidation rule 2).
 
 ## File collisions
 
@@ -225,7 +253,12 @@ The **target-side** collision — a separate, independent instance of the same d
 One proof build **lost 143 package merges**; the log showed 4,582 literal `.mo`
 install lines across 34 victim packages.
 
-**Both sides need masking.** Fixing one leaves the other. And there is a third piece:
+The cause is `gettext-0.23.2` miscomputing `$(DOMAIN)`: every autotools-NLS package
+installs a file literally named `/usr/share/locale/<lang>/LC_MESSAGES/.mo`, two packages
+claim one path, and collision-protect refuses the whole merge.
+
+**Both sides need masking.** Fixing one leaves the other. Both are in every builder now,
+and `studio/tests/test_builder_mo_collision.py` pins them. And there is a third piece:
 the stage3 seed already ships `gettext-0.23.2`, and `package.mask` only blocks
 *upgrades* — so the 0.23 po infrastructure is present before any consumer runs
 `eautoreconf`, and an early downgrade step is required as well.
@@ -240,7 +273,7 @@ it on the stream — operators reasonably blame their own configuration.
 The build driver now appends an explicit note when the exit code is 137, the backend
 is docker, a memory cap was in force, and it was not a user-initiated stop.
 
-**Fix:** raise the cap, or lower `--jobs`. See [the resource-limits
+**Fix:** raise the cap, or lower `-j`/`--jobs`. See [the resource-limits
 guide](/operations/resource-limits) for how the caps are derived.
 
 ### `docker info` fails, and the message says nothing about the cause
@@ -256,13 +289,26 @@ error that never mentions the checkbox responsible.
 WSL2 disables nested virtualisation by default outside Windows 11, so `/dev/kvm` is
 absent and QEMU silently falls back to TCG. Again, this reads as a hang.
 
+**Fix:** in `%UserProfile%\.wslconfig` set `[wsl2]` `nestedVirtualization=true`, run
+`wsl --shutdown` from PowerShell, and reopen the distro. WSL1 cannot run KVM at all;
+convert the distro with `wsl --set-version <distro> 2`.
+
 ### `Checking simple C program: not found`, ~40 minutes in
 
-`qemu-aarch64` binfmt is not registered, so waf-family packages (tdb, talloc, samba,
-cifs-utils) cannot run their configure probes. They are silently dropped from the
-payload and surface only as a payload-incomplete assertion hours later.
+`qemu-aarch64` binfmt is not usable in the build container, so waf-family packages (tdb,
+talloc, samba, cifs-utils) cannot run their configure probes. On older trees they were
+silently dropped from the payload and surfaced only as a payload-incomplete assertion
+hours later. The ARM builders now check at the start and refuse when the resolved package
+set contains one of those packages:
 
-**Fix:** register the binfmt handler before an ARM build:
+```
+… build by EXECUTING cross-compiled test binaries (waf configure …) but qemu-aarch64 is
+unusable in THIS container …
+```
+
+**Fix:** use a builder image that ships a static `qemu-aarch64` (`make docker-image`) and
+run it in a `--privileged` container; the builder then registers the handler itself.
+On a host where that is not possible, registering it outside the container may work:
 
 ```bash
 docker run --privileged --rm tonistiigi/binfmt --install arm64
@@ -270,11 +316,13 @@ docker run --privileged --rm tonistiigi/binfmt --install arm64
 
 ## Two builds at once
 
-Sharing a binpkg pool between concurrent builds causes silent package-instance
-overwrites — the target pools do not use `binpkg-multi-instance`.
+Sharing a binpkg pool between concurrent builds causes package-instance overwrites — the
+target pools do not use `binpkg-multi-instance`.
 
-Each worklist entry gets its own `BUILD_SUBDIR` for exactly this reason. If you drive
-the scripts by hand, give concurrent builds separate pools.
+There is one pool per board, held under an exclusive `flock` on `<pool>.writer.lock`. A
+second concurrent build of the same board is refused with `another build is already writing
+the shared binpkg pool`. Wait for the other build, or pass `--no-shared-assets` for a
+private pool. The build scratch directory is locked the same way.
 
 ## When none of this matches
 
@@ -282,5 +330,6 @@ the scripts by hand, give concurrent builds separate pools.
    an artifact. The silent-loss family is the one that wastes the most time.
 2. **Check the session directory** under `out/sessions/` — each build keeps its own
    log and artifact set.
-3. **Run the preflight gates directly**: `make matrix-check` runs the resolution and
-   uniformity checks without starting a build, in seconds rather than hours.
+3. **Run the preflight gates directly**: `make matrix-check` validates the whole build
+   matrix through `--print-plan` without starting a build. It takes minutes, not hours
+   (one run here: 2 min 48 s, 1297 checks passed).
