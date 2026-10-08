@@ -88,8 +88,10 @@ python3 -m venv .venv &amp;&amp; . .venv/bin/activate
 pip install -r requirements.txt
 ./hugmesh-studio            # Windows: hugmesh-studio.bat</code></pre>
     <p class="field-help">
-      The installers exist so the app is available to people who do not want a Python
-      environment — they package the same code.
+      The installers exist for people who do not want a Python environment. They
+      package the same code. They do not package a <code>hugmesh-generator</code>
+      checkout: start an installed Studio with <code>--generator-dir &lt;path&gt;</code>.
+      Building images needs Docker, or a Gentoo host for a native build.
     </p>
   </section>
 </main>

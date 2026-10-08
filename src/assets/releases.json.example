@@ -21,7 +21,7 @@
       "url": "https://github.com/hugmesh/hugmesh-generator/releases/download/studio-v1.0.0/hugmesh-studio-1.0.0-x86_64.flatpak",
       "size": "112 MB",
       "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
-      "notes": "Runs on any distribution with Flatpak and the GNOME runtime. Install with: flatpak install --user ./hugmesh-studio-1.0.0-x86_64.flatpak"
+      "notes": "Runs on any distribution with Flatpak and the KDE 6.8 runtime. Install with: flatpak install --user ./hugmesh-studio-1.0.0-x86_64.flatpak"
     }
   ]
 }

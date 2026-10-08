@@ -3,12 +3,12 @@
        The first screen answers three questions in order: what is this, does it
        run on my machine, how do I get it. -->
   <section class="hero">
-    <p class="eyebrow"><span class="dot" aria-hidden="true"></span>Open source · Self-hosted · MIT licensed</p>
+    <p class="eyebrow"><span class="dot" aria-hidden="true"></span>Self-hosted · MIT licensed</p>
     <h1>Your own corner of the internet.</h1>
     <p class="lede">
-      HugMesh builds you a private world — chat, fediverse, wiki, forum, video and
-      games — on your hardware, your domain, your identity provider. Bring six
-      friends. Or six hundred.
+      HugMesh builds you a private world: chat, fediverse, wiki, forum, video and
+      games. It runs on your hardware, under your domain, with your own identity
+      provider.
     </p>
     <div class="cta-row">
       <a class="btn btn-primary" routerLink="/tutorials">
@@ -39,8 +39,8 @@
     <div class="services-head">
       <h2 id="services-title">Your Services, Your Hardware, Your Cloud, Your people.</h2>
       <p class="section-lede">
-        Every service federates and shares one identity. Switch off the ones your
-        people do not want.
+        The services share one identity. Chat, fediverse and forum are on by default.
+        Video, games and the character tools are opt-in.
       </p>
     </div>
     <ul class="service-grid">
@@ -63,8 +63,8 @@
       }
     </ul>
     <p class="service-note">
-      Every screenshot is real software running. Some on the mesh, some staged
-      locally on fixture data.
+      Every screenshot is real software. Some come from a running mesh, some from the
+      real interface on fixture data.
     </p>
   </section>
 
@@ -75,22 +75,21 @@
       <article>
         <span class="kicker">Your metal</span>
         <p>
-          Four Raspberry Pis and an x86 host. Or one box under a desk. The Studio
+          Three Raspberry Pis and an x86 host. Or one box under a desk. The Studio
           writes the images and the keys; the cluster brings itself up.
         </p>
       </article>
       <article>
         <span class="kicker">Your identity</span>
         <p>
-          One identity provider you run. One session across every service. No third
-          party learns who your people are.
+          One identity provider, and you run it. One session across every service.
+          Sign-in happens on your cluster.
         </p>
       </article>
       <article>
         <span class="kicker">Your exit</span>
         <p>
-          MIT licensed, built from source you can read. Nothing here is an account
-          someone can lock you out of.
+          MIT licensed. Nothing here is an account someone can lock you out of.
         </p>
       </article>
     </div>
@@ -132,8 +131,8 @@
         <p class="stat"><span class="stat-n">{{ totalDiagrams() }}</span><span class="stat-l">architecture diagrams</span></p>
       }
       <p class="strip-note">
-        Written beside the code and published from it. The page you read is the code
-        that shipped.
+        Written beside the code and copied from it. Each page names its source. Pages
+        that describe a plan say so.
       </p>
       <a class="btn btn-ghost" routerLink="/overview">Read the docs</a>
     </section>
@@ -225,9 +224,9 @@
     <h2 id="platform-title">A generator-first platform, not a SaaS you rent</h2>
     <p class="section-lede">
       The <code>hugmesh-generator</code> repository builds hardened OS images for every
-      cluster role and provisions everything from a single FAT32 <code>KEYS</code> USB
-      partition at first boot. Once the cluster is up you manage it through role-gated
-      UIs and BFF APIs — no direct cluster access required after day one.
+      cluster role. Each node provisions itself at first boot from a FAT32
+      <code>KEYS</code> USB partition. Once the cluster is up, you manage it through
+      role-gated UIs and BFF APIs.
     </p>
     <div class="arch-grid">
       <article>
@@ -241,9 +240,10 @@
       <article>
         <h3>Backend</h3>
         <p>
-          Spring WebFlux BFFs, one per surface, each scoped to exactly what its role
-          needs. A single Spring Cloud Gateway validates every request and enforces a
-          data-driven, per-brand route-access policy before anything reaches a service.
+          Spring WebFlux BFFs, one per surface, each scoped to what its role needs.
+          Spring Cloud Gateways, one image deployed per role and namespace, validate
+          every request and enforce a data-driven, per-brand route-access policy before
+          anything reaches a service.
         </p>
       </article>
       <article>
@@ -257,9 +257,10 @@
       <article>
         <h3>Multi-tenant by design</h3>
         <p>
-          One deployment, many brands. Each tenant gets its own namespace, mTLS
-          boundary, identity issuer and role hierarchy — provisioned at runtime through
-          the superadmin Service Catalog, no redeploy required.
+          One fleet, many brands. Each domain gets its own namespace, mTLS boundary,
+          identity organisation and role hierarchy. A superadmin Service Catalog, reachable
+          only over the private mesh, curates the services. Its build step ships switched
+          off.
         </p>
       </article>
     </div>
