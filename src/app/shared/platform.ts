@@ -61,7 +61,8 @@ export const PLATFORM_OFFERS: Readonly<Record<PlatformId, PlatformOffer>> = {
     verify: 'sha256sum hugmesh-studio-<version>-x86_64.flatpak',
     note:
       'Any distribution with Flatpak and the KDE 6.8 runtime. Wayland and X11 both ' +
-      'work. It installs for your user, so it needs no root.',
+      'work. It installs for your user, so it needs no root. It still needs a ' +
+      'hugmesh-generator checkout: start it with --generator-dir <path>.',
   },
   windows: {
     id: 'windows',
@@ -73,8 +74,9 @@ export const PLATFORM_OFFERS: Readonly<Record<PlatformId, PlatformOffer>> = {
     install: ['msiexec /i hugmesh-studio-<version>-x64.msi'],
     verify: 'Get-FileHash .\\hugmesh-studio-<version>-x64.msi -Algorithm SHA256',
     note:
-      'A per-user install on 64-bit Windows 10 or later. It asks for no ' +
-      'administrator rights and writes nothing outside your profile.',
+      'A per-user install on 64-bit Windows 10 or later, with no administrator ' +
+      'rights. The MSI is not code-signed, so SmartScreen warns the first time you ' +
+      'run it. It still needs a hugmesh-generator checkout.',
   },
   macos: {
     id: 'macos',

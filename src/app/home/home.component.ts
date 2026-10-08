@@ -56,7 +56,7 @@ export class HomeComponent {
     {
       name: 'Chat',
       icon: 'M20 12.4c0 3.9-3.6 7-8 7a9 9 0 0 1-2.6-.4L5 20.5l1.2-3.4A6.6 6.6 0 0 1 4 12.4c0-3.9 3.6-7 8-7s8 3.1 8 7Z',
-      blurb: 'Matrix, end-to-end encrypted, federating with the wider network.',
+      blurb: 'Matrix, federating with the wider network.',
       accent: '#ffc8dd',
       route: '/architecture',
       shot: 'assets/img/captures/card-chat.jpg',
@@ -92,7 +92,7 @@ export class HomeComponent {
     {
       name: 'Video',
       icon: 'M4 7.5A1.5 1.5 0 0 1 5.5 6h9A1.5 1.5 0 0 1 16 7.5v9A1.5 1.5 0 0 1 14.5 18h-9A1.5 1.5 0 0 1 4 16.5v-9ZM16 10.5l4-2.5v8l-4-2.5',
-      blurb: 'Upload, transcode and stream — plus live broadcast when you want it, as yourself or as your own 2D avatar.',
+      blurb: 'Live broadcast through Owncast, as yourself or as your own 2D avatar. A personal video archive is under construction.',
       accent: '#ffd6a5',
       route: '/architecture',
       shot: 'assets/img/captures/card-video.jpg',
@@ -115,7 +115,7 @@ export class HomeComponent {
   readonly repos = [
     { name: 'hugmesh-generator', blurb: 'OS image builds, GitOps manifests, first-boot provisioning' },
     { name: 'hugmesh-gateway', blurb: 'Spring Cloud Gateway — JWT validation, route-access enforcement' },
-    { name: 'hugmesh-commons', blurb: 'Shared auth/tenancy library consumed by every BFF' },
+    { name: 'hugmesh-commons', blurb: 'Shared auth/tenancy library used by the BFFs and the gateway' },
     { name: 'hugmesh-admin-bff-api', blurb: 'Admin control plane — allowlists, sessions, service catalog' },
     { name: 'hugmesh-user-bff-api', blurb: 'Owner-scoped user profile, preferences, federation cards' },
     { name: 'hugmesh-matrix-ui', blurb: 'Matrix chat remote' },

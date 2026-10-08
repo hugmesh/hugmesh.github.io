@@ -3,9 +3,9 @@
 Source for **[hugmesh.net](https://hugmesh.net)** — the HugMesh documentation site.
 
 An Angular 22 single-page application whose pages are generated from the Markdown that
-lives beside the code it documents, in the HugMesh repositories. 274 pages across 11
-sections, plus a client-side search index and a Downloads page for the Image Studio
-installers.
+lives beside the code it documents, in the HugMesh repositories. It has 280 pages across
+11 sections (277 vendored from those repositories, 3 written here), a client-side search
+index, and a Downloads page for the Image Studio installers.
 
 ## How content gets here
 
@@ -79,7 +79,7 @@ integrity check would quietly stop covering everything else.
 ```bash
 npm ci
 npm start                 # ng serve on :4200
-npm test                  # 69 unit specs, headless Chrome
+npm test                  # 86 unit specs, headless Chrome
 npm run build             # production build into dist/browser
 node scripts/serve-dist.mjs   # preview the BUILT site on :8899
 ```

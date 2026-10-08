@@ -68,8 +68,8 @@ Then open **<http://localhost:8088>**.
 
 Three things people get wrong:
 
-- **`stack-m2-bootstrap` is not optional on a cold build.** It clones four library repos
-  at pinned SHAs, `mvn install`s them into a persistent cache and serves them from a
+- **`stack-m2-bootstrap` is not optional on a cold build.** It clones four org-private
+  library repos at pinned SHAs, `mvn install`s them into a persistent cache and serves them from a
   local registry container. Without it, four Java services cannot resolve their
   dependencies at image-build time.
 - **`stack-up` alone does not make login work.** `stack-seed` creates the OAuth2 client
