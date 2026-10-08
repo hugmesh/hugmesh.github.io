@@ -1,7 +1,8 @@
 /**
  * Loader + validator for docs.manifest.json — the site's PUBLICATION ALLOWLIST.
  *
- * Every hugmesh-* code repo is PRIVATE; this Pages repo is public. So the
+ * Every hugmesh-* code repo is PRIVATE; this Pages repo is private too (decisions
+ * 115a/115b); the SITE is what is public. So the
  * manifest is opt-in by construction: a document reaches the website because
  * somebody listed it here, never because a glob happened to match it. There is
  * no "publish everything under docs/" mode, and adding one would turn every
