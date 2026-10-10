@@ -2,11 +2,6 @@
 
 Source for **[hugmesh.net](https://hugmesh.net)** — the HugMesh documentation site.
 
-An Angular 22 single-page application whose pages are generated from the Markdown that
-lives beside the code it documents, in the HugMesh repositories. It has 280 pages across
-11 sections (277 vendored from those repositories, 3 written here), a client-side search
-index, and a Downloads page for the Image Studio installers.
-
 ## How content gets here
 
 Every `hugmesh-*` code repository is **private**, and so is this one (decisions 115a/115b).
@@ -116,45 +111,3 @@ starting with an underscore — which is how Angular names some chunks) and veri
 | `src/app/content/` | the document renderer, section index and content service |
 | `src/app/layout/` | header, section rail, footer |
 | `src/app/search/` | the client-side search page and its scorer |
-
-## Going live
-
-Publication needs Settings → Pages → Source = **GitHub Actions**, the custom domain set to
-`hugmesh.net`, Enforce HTTPS enabled once DNS resolves, and Cloudflare `CNAME`s
-`hugmesh.net` → `hugmesh.github.io` and `www` → the same — created **DNS only**, and
-proxied only after GitHub has issued the certificates. `www` is a decided alias of this
-site (decision 47); GitHub Pages issues the `www` → apex 301 itself off `src/CNAME`, so no
-Cloudflare redirect rule exists for it.
-
-**Today none of that is planned: the repository stays private and the site does not
-deploy through GitHub Pages.** On the Free plan GitHub Pages needs a public repository,
-and a private one needs a paid plan. Decisions **115a = C** and **115b = D** (operator,
-2026-09-23) closed both routes — Pages billing is **not** restored, and the repository
-**stays private** with no public-flip date. They reverse decision 52 = B (2026-09-18),
-which had chosen to pay for Pages while private and flip public before 2026-10-20; that
-decision is kept in the runbook's step A1 as history, not as the plan. `Deploy Pages`
-has been refused on billing since 2026-08-27, so nothing is published. Build and preview
-locally instead (`npm run build`, then `node scripts/serve-dist.mjs`). The runbook's step
-A1 has the full record, including the self-hosted-runner precondition that still applies
-if a public flip is ever revisited; #19 and #20 record the two withdrawn halves.
-
-`.github/workflows/pages.yml` is wired to deploy on every push to `main`, but today its
-jobs are refused on billing before they start, and with Pages not enabled its deploy step
-would probe and skip even if they ran.
-
-None of that can be done from a build box, and the details matter enough to get wrong
-once: **[`docs/go-live-cloudflare.md`](docs/go-live-cloudflare.md)** is the ordered
-runbook — the exact DNS records, why the Cloudflare proxy has to stay **off** until
-GitHub has issued the certificate, the two cache rules the unhashed `assets/content/`
-payload needs, the Cloudflare features that break an Angular SPA, and the `curl`
-transcript that closes hugmesh.github.io#15. It also records that `www.hugmesh.net`
-serves a live Cloudflare **error 1016** today, that decision 47 notes the `www` record
-alone does not end it, and that the deploy pipeline is currently dead.
-
-## A note on links
-
-While the code repositories are private, the build does **not** generate `github.com`
-links — neither for a page's own provenance nor for a cross-reference to an
-unpublished document. Such a link would 404 for every visitor, so the text is kept and
-the link is dropped. Set `meta.sourcesArePublic` to `true` in `docs.manifest.json` once
-the repositories are public and both become links again, with no other change.
