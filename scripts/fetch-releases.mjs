@@ -69,7 +69,7 @@ const COSIGN_SIGN_PREDICATE = 'https://sigstore.dev/cosign/sign/v1';
 /** Not "not published": something is broken and the deploy must not go ahead. */
 export class FetchFailure extends Error {}
 
-const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
+const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /** The identity a keyless signature from that workflow, on a release tag, carries. */
 export function signingIdentity(repo, workflow, tagPrefix) {

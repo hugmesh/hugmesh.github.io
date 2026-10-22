@@ -62,7 +62,7 @@
       "url": "https://github.com/hugmesh/hugmesh-generator/releases/download/studio-v0.3.0-beta.2/SHA256SUMS.sigstore.json"
     },
     "identity": {
-      "regexp": "^https://github\\.com/hugmesh\\/hugmesh-generator/\\.github/workflows/studio-release\\.yml@refs/tags/studio-v",
+      "regexp": "^https://github\\.com/hugmesh/hugmesh-generator/\\.github/workflows/studio-release\\.yml@refs/tags/studio-v",
       "issuer": "https://token.actions.githubusercontent.com"
     },
     "authenticode": false
@@ -75,7 +75,7 @@
       "repo": "hugmesh/hugmesh-generator",
       "image": "ghcr.io/hugmesh/hugmesh-mesh-node",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-generator/\\.github/workflows/mesh-node-release\\.yml@refs/tags/mesh-node-v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-generator/\\.github/workflows/mesh-node-release\\.yml@refs/tags/mesh-node-v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": "0.1.0-beta.1",
@@ -92,7 +92,7 @@
       "repo": "hugmesh/hugmesh-gateway",
       "image": "ghcr.io/hugmesh/hugmesh-gateway",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-gateway/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-gateway/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -109,7 +109,7 @@
       "repo": "hugmesh/hugmesh-be-gateway",
       "image": "ghcr.io/hugmesh/hugmesh-be-gateway",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-be-gateway/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-be-gateway/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -126,7 +126,7 @@
       "repo": "hugmesh/hugmesh-fe-gateway",
       "image": "ghcr.io/hugmesh/hugmesh-fe-gateway",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-fe-gateway/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-fe-gateway/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -143,7 +143,7 @@
       "repo": "hugmesh/hugmesh-pki-gateway",
       "image": "ghcr.io/hugmesh/hugmesh-pki-gateway",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-pki-gateway/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-pki-gateway/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -160,7 +160,7 @@
       "repo": "hugmesh/hugmesh-admin-bff-api",
       "image": "ghcr.io/hugmesh/hugmesh-admin-bff-api",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-admin-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-admin-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -177,7 +177,7 @@
       "repo": "hugmesh/hugmesh-user-bff-api",
       "image": "ghcr.io/hugmesh/hugmesh-user-bff-api",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-user-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-user-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -194,7 +194,7 @@
       "repo": "hugmesh/hugmesh-federation-api",
       "image": "ghcr.io/hugmesh/hugmesh-federation-api",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-federation-api/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-federation-api/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -211,7 +211,7 @@
       "repo": "hugmesh/hugmesh-mesh-bff-api",
       "image": "ghcr.io/hugmesh/hugmesh-mesh-bff-api",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-mesh-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-mesh-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -228,7 +228,7 @@
       "repo": "hugmesh/hugmesh-mod-bff-api",
       "image": "ghcr.io/hugmesh/hugmesh-mod-bff-api",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-mod-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-mod-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -245,7 +245,7 @@
       "repo": "hugmesh/hugmesh-forum-bff-api",
       "image": "ghcr.io/hugmesh/hugmesh-forum-bff-api",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-forum-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-forum-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -262,7 +262,7 @@
       "repo": "hugmesh/hugmesh-wiki-bff-api",
       "image": "ghcr.io/hugmesh/hugmesh-wiki-bff-api",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-wiki-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-wiki-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -279,7 +279,7 @@
       "repo": "hugmesh/hugmesh-tube-bff-api",
       "image": "ghcr.io/hugmesh/hugmesh-tube-bff-api",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-tube-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-tube-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -296,7 +296,7 @@
       "repo": "hugmesh/hugmesh-owncast-bff-api",
       "image": "ghcr.io/hugmesh/hugmesh-owncast-bff-api",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-owncast-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-owncast-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -313,7 +313,7 @@
       "repo": "hugmesh/hugmesh-character-forge-bff-api",
       "image": "ghcr.io/hugmesh/hugmesh-character-forge-bff-api",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-character-forge-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-character-forge-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -330,7 +330,7 @@
       "repo": "hugmesh/hugmesh-actions",
       "image": "ghcr.io/hugmesh/hugmesh-actions",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-actions/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-actions/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -347,7 +347,7 @@
       "repo": "hugmesh/hugmesh-forum-api",
       "image": "ghcr.io/hugmesh/hugmesh-forum-api",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-forum-api/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-forum-api/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -364,7 +364,7 @@
       "repo": "hugmesh/hugmesh-remote-fragment",
       "image": "ghcr.io/hugmesh/hugmesh-remote-fragment",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-remote-fragment/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-remote-fragment/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -381,7 +381,7 @@
       "repo": "hugmesh/hugmesh-remote-fragment",
       "image": "ghcr.io/hugmesh/hugmesh-remote-fragment/nginx",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-remote-fragment/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-remote-fragment/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -398,7 +398,7 @@
       "repo": "hugmesh/hugmesh-host-shell",
       "image": "ghcr.io/hugmesh/hugmesh-host-shell",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-host-shell/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-host-shell/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -415,7 +415,7 @@
       "repo": "hugmesh/hugmesh-login-ui",
       "image": "ghcr.io/hugmesh/hugmesh-login-ui",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-login-ui/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-login-ui/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -432,7 +432,7 @@
       "repo": "hugmesh/hugmesh-admin-ui",
       "image": "ghcr.io/hugmesh/hugmesh-admin-ui",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-admin-ui/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-admin-ui/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": "0.3.0-beta.10",
@@ -449,7 +449,7 @@
       "repo": "hugmesh/hugmesh-user-ui",
       "image": "ghcr.io/hugmesh/hugmesh-user-ui",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-user-ui/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-user-ui/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -466,7 +466,7 @@
       "repo": "hugmesh/hugmesh-user-mesh-ui",
       "image": "ghcr.io/hugmesh/hugmesh-user-mesh-ui",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-user-mesh-ui/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-user-mesh-ui/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -483,7 +483,7 @@
       "repo": "hugmesh/hugmesh-matrix-ui",
       "image": "ghcr.io/hugmesh/hugmesh-matrix-ui",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-matrix-ui/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-matrix-ui/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -500,7 +500,7 @@
       "repo": "hugmesh/hugmesh-mastodon-ui",
       "image": "ghcr.io/hugmesh/hugmesh-mastodon-ui",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-mastodon-ui/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-mastodon-ui/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -517,7 +517,7 @@
       "repo": "hugmesh/hugmesh-forum-ui",
       "image": "ghcr.io/hugmesh/hugmesh-forum-ui",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-forum-ui/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-forum-ui/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -534,7 +534,7 @@
       "repo": "hugmesh/hugmesh-wiki-ui",
       "image": "ghcr.io/hugmesh/hugmesh-wiki-ui",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-wiki-ui/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-wiki-ui/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -551,7 +551,7 @@
       "repo": "hugmesh/hugmesh-tube-ui",
       "image": "ghcr.io/hugmesh/hugmesh-tube-ui",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-tube-ui/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-tube-ui/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -568,7 +568,7 @@
       "repo": "hugmesh/hugmesh-owncast-ui",
       "image": "ghcr.io/hugmesh/hugmesh-owncast-ui",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-owncast-ui/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-owncast-ui/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -585,7 +585,7 @@
       "repo": "hugmesh/hugmesh-mod-ui",
       "image": "ghcr.io/hugmesh/hugmesh-mod-ui",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-mod-ui/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-mod-ui/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -602,7 +602,7 @@
       "repo": "hugmesh/hugmesh-superadmin-service-catalog-ui",
       "image": "ghcr.io/hugmesh/hugmesh-superadmin-service-catalog-ui",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-superadmin-service-catalog-ui/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-superadmin-service-catalog-ui/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -619,7 +619,7 @@
       "repo": "hugmesh/hugmesh-character-studio-ui",
       "image": "ghcr.io/hugmesh/hugmesh-character-studio-ui",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-character-studio-ui/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-character-studio-ui/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -636,7 +636,7 @@
       "repo": "hugmesh/hugmesh-api-docs",
       "image": "ghcr.io/hugmesh/hugmesh-api-docs",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-api-docs/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-api-docs/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -653,7 +653,7 @@
       "repo": "hugmesh/hugmesh-games",
       "image": "ghcr.io/hugmesh/hugmesh-games/backend",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-games/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-games/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -670,7 +670,7 @@
       "repo": "hugmesh/hugmesh-games",
       "image": "ghcr.io/hugmesh/hugmesh-games/frontend",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-games/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-games/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -687,7 +687,7 @@
       "repo": "hugmesh/hugmesh-games",
       "image": "ghcr.io/hugmesh/hugmesh-games/rpg-builder",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-games/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-games/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -704,7 +704,7 @@
       "repo": "hugmesh/hugmesh-games",
       "image": "ghcr.io/hugmesh/hugmesh-games/vn-builder",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-games/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-games/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,
@@ -721,7 +721,7 @@
       "repo": "hugmesh/hugmesh-games",
       "image": "ghcr.io/hugmesh/hugmesh-games/wasm-fragment",
       "identity": {
-        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-games/\\.github/workflows/release\\.yml@refs/tags/v",
+        "regexp": "^https://github\\.com/hugmesh/hugmesh-games/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
       "version": null,

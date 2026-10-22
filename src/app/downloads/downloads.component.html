@@ -176,7 +176,10 @@
                   <div class="head">
                     <h4>{{ img.label }}</h4>
                     @if (img.version) {
-                      <span class="badge" [class.beta]="img.prerelease">{{ img.prerelease ? 'Beta' : 'Release' }} {{ img.version }}</span>
+                      <span class="badges">
+                        @if (img.prerelease) { <span class="badge beta">Beta</span> }
+                        <span class="badge version" data-testid="image-version">{{ img.version }}</span>
+                      </span>
                     }
                   </div>
                   <p class="ref"><code>{{ img.image }}</code></p>
@@ -194,8 +197,13 @@
                       </button>
                     </div>
                     <p class="digest">Digest <code [title]="img.digest">{{ shortDigest(img.digest) }}</code></p>
-                    <pre class="code-block" data-lang="verify"><code>{{ cosignImage(img) }}
-{{ attestImage(img) }}</code></pre>
+                    <div class="cmd">
+                      <pre class="code-block" data-lang="verify"><code>{{ verifyImage(img) }}</code></pre>
+                      <button type="button" (click)="copy(verifyImage(img))">
+                        {{ copied() === verifyImage(img) ? 'Copied' : 'Copy' }}
+                        <span class="sr">verify commands for {{ img.image }}</span>
+                      </button>
+                    </div>
                   }
                 </li>
               }

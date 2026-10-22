@@ -155,6 +155,10 @@ export class DownloadsComponent {
     return `gh attestation verify oci://${i.image}@${i.digest} --repo ${i.repo}`;
   }
 
+  verifyImage(i: ImageEntry): string {
+    return `${this.cosignImage(i)}\n${this.attestImage(i)}`;
+  }
+
   /** Checksums first, then (when the release has a bundle) the signature on the checksum list. */
   sumsScript(s: StudioRelease): string {
     const lines = ['sha256sum --ignore-missing -c SHA256SUMS'];

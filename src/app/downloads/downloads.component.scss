@@ -298,6 +298,12 @@
     background: rgba(t.$black, 0.5);
   }
 
+  // A published image carries two long commands: give it the whole row so they
+  // can be read without scrolling inside the block on a desktop.
+  li:not(.unpublished) {
+    grid-column: 1 / -1;
+  }
+
   .status {
     margin: 0.35rem 0 0;
     font-size: 0.85rem;
@@ -309,8 +315,25 @@
 
   .code-block {
     margin: 0.5rem 0 0;
+    // Room above the first line for the PULL / VERIFY label, which otherwise
+    // sits on top of the end of the command.
+    padding-top: 1.6rem;
     font-size: 0.78rem;
   }
+}
+
+.badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+// A version is copied by hand into commands: it must show exactly as tagged,
+// never upper-cased like the BETA label next to it.
+.badge.version {
+  font-family: t.$font-mono;
+  font-weight: 600;
+  text-transform: none;
 }
 
 .ref {

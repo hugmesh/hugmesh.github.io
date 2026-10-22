@@ -89,7 +89,9 @@ describe('DownloadsComponent', () => {
       expect(t).toContain('cosign verify ghcr.io/hugmesh/hugmesh-admin-ui@sha256:dddd');
       expect(t).toContain('--certificate-identity-regexp');
       expect(t).toContain('gh attestation verify oci://ghcr.io/hugmesh/hugmesh-admin-ui@sha256:');
-      expect(t).toContain('Beta 0.3.0-beta.10');
+      expect(t).toContain('Beta');
+      expect(text(card.querySelector('[data-testid="image-version"]'))).toBe('0.3.0-beta.10');
+      expect(getComputedStyle(card.querySelector('[data-testid="image-version"]')!).textTransform).toBe('none');
       expect(t).toContain('Signed with cosign; build provenance attested.');
     });
 
