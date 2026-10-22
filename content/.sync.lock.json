@@ -1704,6 +1704,13 @@
       "sha256": "0d311c8311fa566b1e6bed594368c43adcc67d165a9a1619b6340e8029a5b434"
     },
     {
+      "path": "content/security/host-shell-security.md",
+      "sourceRepo": "hugmesh-host-shell",
+      "sourcePath": "SECURITY.md",
+      "sourceRef": "hugmesh/hugmesh-host-shell@HEAD",
+      "sha256": "381371368f6619a4e3f5280511c95ec803773e7089695c8302f2c8593fdfb14f"
+    },
+    {
       "path": "content/security/mfa-rollout.md",
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "docs/MFA-ROLLOUT.md",

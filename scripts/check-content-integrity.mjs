@@ -30,6 +30,9 @@
  *   - a lock that covers zero documents           -> fail
  *
  * A gate that can report "nothing to check" and still exit 0 is not a gate.
+ * The single deliberate exception is check 5 when its private denylist file is
+ * absent (see loadDenylist): it then prints a loud WARNING, because the file can
+ * never exist on a public runner.
  *
  * PROVENANCE IS PART OF INTEGRITY. A sha256 alone only answers "is this file the
  * bytes we synced?" — it says nothing about WHERE those bytes came from. Repointing
@@ -41,6 +44,7 @@
  */
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
+import { homedir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadManifest } from './lib/manifest.mjs';
@@ -51,12 +55,51 @@ const CONTENT = path.join(ROOT, 'content');
 
 const sha256 = (text) => createHash('sha256').update(text, 'utf8').digest('hex');
 
-/** sha256 of single lower-case words that must never be published on this site
- *  (see check 5). Hashes, not words, so the denylist itself publishes nothing. */
-const PRIVATE_TOKEN_HASHES = new Set([
-  '3594ced783cbd69607a03834bee7bd633ae6b349d4ad49d6923c30e2735f9e2b',
-  '3bc4e09a4b7467e70d7bb2bdd4a04baffe429f44490f88a1088476325481a2e3',
-]);
+/**
+ * Check 5 reads its denylist from a file OUTSIDE this repository, never from the tree.
+ * An earlier version kept sha256 hashes of the words here; an unsalted hash of a
+ * dictionary word is reversed in under a second from a word list, so that published
+ * the very words it was meant to keep out. Any committed form of a short word (hash,
+ * salted hash, encoding) has the same flaw, so the words live only on the machines
+ * that run a re-sync.
+ *
+ * File: $HUGMESH_PRIVATE_DENYLIST_FILE, else ~/.config/hugmesh/private-denylist.txt.
+ * One word or phrase per line, matched case-insensitively anywhere in the text (so
+ * glued or CamelCase forms are caught too). Blank lines and lines starting with # are
+ * ignored.
+ *
+ * THE ONE DELIBERATE SKIP in this script: when no file exists at the default path,
+ * check 5 prints a WARNING and is skipped, because a public CI runner and a stranger's
+ * clone can never have the file, and failing there would only break every build. If
+ * the variable is set but names a missing or empty file, that is a misconfiguration
+ * and FAILS. Failure messages name the denylist line number, never the word, so a CI
+ * log does not publish it either.
+ */
+const DENYLIST_ENV = 'HUGMESH_PRIVATE_DENYLIST_FILE';
+const DEFAULT_DENYLIST = path.join(homedir(), '.config', 'hugmesh', 'private-denylist.txt');
+
+async function loadDenylist() {
+  const explicit = process.env[DENYLIST_ENV];
+  const file = explicit || DEFAULT_DENYLIST;
+  let raw;
+  try {
+    raw = await readFile(file, 'utf8');
+  } catch (err) {
+    if (err.code !== 'ENOENT' || explicit) {
+      return { error: `${DENYLIST_ENV}=${file}: cannot read the private denylist (${err.code ?? err.message})` };
+    }
+    return { skipped: file };
+  }
+  const entries = [];
+  raw.split(/\r?\n/).forEach((line, i) => {
+    const word = line.trim().toLowerCase();
+    if (word && !word.startsWith('#')) entries.push({ word, line: i + 1 });
+  });
+  if (!entries.length) {
+    return { error: `${file}: the private denylist has no entries; a check with nothing to look for is not a check` };
+  }
+  return { entries };
+}
 
 /** Every .md under content/, as repo-relative POSIX paths. */
 async function walk(dir) {
@@ -165,17 +208,22 @@ async function main() {
   // 5. Nothing published may carry a word on the private denylist. This site is
   // public and vendors text from many repositories, so a re-sync can bring back a
   // name that must not be published (a private deployment name, a personal
-  // address). The words are stored only as sha256 hashes of single lower-case
-  // tokens, so this file does not publish the very words it keeps out.
-  for (const rel of [...onDisk, 'docs.manifest.json']) {
-    const text = (await readFile(path.join(ROOT, rel), 'utf8')).toLowerCase();
-    for (const token of new Set(text.split(/[^a-z0-9]+/))) {
-      if (token && PRIVATE_TOKEN_HASHES.has(sha256(token))) {
-        failures.push(
-          `${rel}: contains a word on the private denylist (sha256 ${sha256(token).slice(0, 12)}…).\n` +
-            '    Remove it at the SOURCE repository and re-sync, or withhold the document\n' +
-            '    from docs.manifest.json. Never hand-edit a vendored file.',
-        );
+  // address). The words come from a local file, never from this repository: see
+  // loadDenylist() above for why, and for the one case where this check is skipped.
+  const denylist = await loadDenylist();
+  if (denylist.error) {
+    failures.push(denylist.error);
+  } else if (denylist.entries) {
+    for (const rel of [...onDisk, 'docs.manifest.json']) {
+      const text = (await readFile(path.join(ROOT, rel), 'utf8')).toLowerCase();
+      for (const { word, line } of denylist.entries) {
+        if (text.includes(word)) {
+          failures.push(
+            `${rel}: contains private denylist entry on line ${line} of the denylist file.\n` +
+              '    Remove it at the SOURCE repository and re-sync, or withhold the document\n' +
+              '    from docs.manifest.json. Never hand-edit a vendored file.',
+          );
+        }
       }
     }
   }
@@ -191,9 +239,17 @@ async function main() {
   const age = lock.syncedAt
     ? Math.floor((Date.now() - Date.parse(lock.syncedAt)) / 86_400_000)
     : null;
+  if (denylist.skipped) {
+    console.warn(
+      `WARNING: check 5 (private denylist) SKIPPED: no file at ${denylist.skipped} and ${DENYLIST_ENV} is unset.\n` +
+        '         Pages were NOT checked for private words on this machine. Create that file\n' +
+        '         before any refresh:content (see docs/withheld-before-going-public.md).',
+    );
+  }
   console.log(
     `content integrity OK — ${vendored.size} vendored + ${authored.size} authored documents verified` +
-      (age === null ? '' : `; last full sync ${age} day(s) ago`),
+      (age === null ? '' : `; last full sync ${age} day(s) ago`) +
+      (denylist.entries ? `; private denylist: ${denylist.entries.length} entr${denylist.entries.length === 1 ? 'y' : 'ies'} checked` : ''),
   );
 }
 

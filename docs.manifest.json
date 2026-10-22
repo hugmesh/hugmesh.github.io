@@ -1002,6 +1002,15 @@
     },
     {
       "section": "security",
+      "slug": "host-shell-security",
+      "title": "Security Policy",
+      "summary": "Vulnerability policy for the host shell, noting it exposes no feature surface of its own since authorization is enforced at the gateway and role BFFs.",
+      "repo": "hugmesh-host-shell",
+      "path": "SECURITY.md",
+      "order": 1
+    },
+    {
+      "section": "security",
       "slug": "user-bff-security",
       "title": "Security \u2014 hugmesh-user-bff-api",
       "summary": "The defence layers on the user BFF including owner-equals-subject enforcement scoping every owner-keyed resource.",
