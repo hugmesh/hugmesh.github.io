@@ -161,8 +161,10 @@ export class DownloadsComponent {
 
   /** Checksums first, then (when the release has a bundle) the signature on the checksum list. */
   sumsScript(s: StudioRelease): string {
-    const lines = ['sha256sum --ignore-missing -c SHA256SUMS'];
-    if (s.checksumsSignature) {
+    const lines: string[] = [];
+    if (s.checksums) lines.push('sha256sum --ignore-missing -c SHA256SUMS');
+    else lines.push('# This release has no SHA256SUMS: compare each file with the SHA-256 shown above.');
+    if (s.checksums && s.checksumsSignature) {
       lines.push(
         [
           'cosign verify-blob SHA256SUMS',
