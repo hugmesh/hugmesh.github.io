@@ -21,7 +21,15 @@ concurrency:
 
 jobs:
   build-and-test:
-    runs-on: ${{ fromJSON(vars.RUNS_ON || '"ubuntu-latest"') }}
+    # Pull requests ALWAYS run on a GitHub-hosted runner. Once this repository is
+    # public, a pull request can come from anyone's fork, and `npm ci` / `npm test`
+    # run that branch's code, so it must never be routed to a self-hosted runner.
+    # Only pushes to main (code already reviewed and merged) may follow RUNS_ON.
+    # This file is read from the pull request's own branch, so a hostile fork can
+    # still rewrite this line: the real guard is the org runner group refusing
+    # public repositories, plus fork pull-request approval. This line only stops
+    # OUR configuration from sending outside code to the self-hosted runner.
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || fromJSON(vars.RUNS_ON || '"ubuntu-latest"') }}
     timeout-minutes: 20
 
     steps:

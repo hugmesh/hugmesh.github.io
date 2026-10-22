@@ -51,6 +51,13 @@ const CONTENT = path.join(ROOT, 'content');
 
 const sha256 = (text) => createHash('sha256').update(text, 'utf8').digest('hex');
 
+/** sha256 of single lower-case words that must never be published on this site
+ *  (see check 5). Hashes, not words, so the denylist itself publishes nothing. */
+const PRIVATE_TOKEN_HASHES = new Set([
+  '3594ced783cbd69607a03834bee7bd633ae6b349d4ad49d6923c30e2735f9e2b',
+  '3bc4e09a4b7467e70d7bb2bdd4a04baffe429f44490f88a1088476325481a2e3',
+]);
+
 /** Every .md under content/, as repo-relative POSIX paths. */
 async function walk(dir) {
   const out = [];
@@ -152,6 +159,24 @@ async function main() {
   for (const rel of authored) {
     if (!onDisk.has(rel)) {
       failures.push(`${rel}: declared authored:"site" in the manifest, but the file is missing`);
+    }
+  }
+
+  // 5. Nothing published may carry a word on the private denylist. This site is
+  // public and vendors text from many repositories, so a re-sync can bring back a
+  // name that must not be published (a private deployment name, a personal
+  // address). The words are stored only as sha256 hashes of single lower-case
+  // tokens, so this file does not publish the very words it keeps out.
+  for (const rel of [...onDisk, 'docs.manifest.json']) {
+    const text = (await readFile(path.join(ROOT, rel), 'utf8')).toLowerCase();
+    for (const token of new Set(text.split(/[^a-z0-9]+/))) {
+      if (token && PRIVATE_TOKEN_HASHES.has(sha256(token))) {
+        failures.push(
+          `${rel}: contains a word on the private denylist (sha256 ${sha256(token).slice(0, 12)}…).\n` +
+            '    Remove it at the SOURCE repository and re-sync, or withhold the document\n' +
+            '    from docs.manifest.json. Never hand-edit a vendored file.',
+        );
+      }
     }
   }
 
