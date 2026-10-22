@@ -31,13 +31,6 @@
       "sha256": "36708854fde82c12951d4154d349060697c0ef57753eee2cfe99b69a1d47e90c"
     },
     {
-      "path": "content/architecture/federation-walkthrough.md",
-      "sourceRepo": "hugmesh-generator",
-      "sourcePath": "docs/FEDERATION-EXAMPLES.md",
-      "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "c762cb27d094592edcd907dc729c4ddfd27ae012ecde5eca58a9a72c24a477be"
-    },
-    {
       "path": "content/architecture/frontend-gateway.md",
       "sourceRepo": "hugmesh-fe-gateway",
       "sourcePath": "README.md",
@@ -71,13 +64,6 @@
       "sourcePath": "README.md",
       "sourceRef": "hugmesh/hugmesh-host-shell@HEAD",
       "sha256": "08fa823defb47689217b4dc2079294e1e61d4a087a37b6b314feb1289f10b06f"
-    },
-    {
-      "path": "content/architecture/mesh-repo-templating.md",
-      "sourceRepo": "hugmesh-generator",
-      "sourcePath": "docs/MESH-TEMPLATING.md",
-      "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "1692695900de717662e958cc78d537df834008736df5d38af1c9f6d7768b92cf"
     },
     {
       "path": "content/architecture/pki-gateway.md",
@@ -801,13 +787,6 @@
       "sha256": "71de2d2fd20bf9bf23e53bbdce861be6df11c5c952dcc0b492501872defd3b39"
     },
     {
-      "path": "content/games/add-a-game.md",
-      "sourceRepo": "hugmesh-games",
-      "sourcePath": "docs/wiki/howto/add-game.md",
-      "sourceRef": "hugmesh/hugmesh-games@HEAD",
-      "sha256": "32ec4dc903ea96ece4a856bf7b4806079bde6d7b4a78b296e4edfd712dfed1f0"
-    },
-    {
       "path": "content/games/add-a-role.md",
       "sourceRepo": "hugmesh-games",
       "sourcePath": "docs/wiki/howto/add-role-and-grant.md",
@@ -878,13 +857,6 @@
       "sha256": "1cd773c058e024d23a75772d9f5e419134cada921a3bb920e1abddb28cd3d1e9"
     },
     {
-      "path": "content/games/extending.md",
-      "sourceRepo": "hugmesh-games",
-      "sourcePath": "docs/wiki/architecture/07-extending.md",
-      "sourceRef": "hugmesh/hugmesh-games@HEAD",
-      "sha256": "7dfd8329453f11b52d1a5e15d2a92eeace85358b2038dd9f859ea9899e5fa3a1"
-    },
-    {
       "path": "content/games/fullstack-developer.md",
       "sourceRepo": "hugmesh-games",
       "sourcePath": "docs/wiki/guides/fullstack-developer.md",
@@ -897,20 +869,6 @@
       "sourcePath": "docs/game-ports-backlog.md",
       "sourceRef": "hugmesh/hugmesh-games@HEAD",
       "sha256": "d935d95b868233294e2e760cb8d97f85f725c06f2d8d3dcfccdefb2d9926bc76"
-    },
-    {
-      "path": "content/games/godot-developer-guide.md",
-      "sourceRepo": "hugmesh-games",
-      "sourcePath": "docs/GODOT_DEVELOPER_GUIDE.md",
-      "sourceRef": "hugmesh/hugmesh-games@HEAD",
-      "sha256": "ab66f3da437859dbe5307148ba3cf76ff655e4210dc1c68bdb4ffbda82e28698"
-    },
-    {
-      "path": "content/games/godot-developer.md",
-      "sourceRepo": "hugmesh-games",
-      "sourcePath": "docs/wiki/guides/godot-developer.md",
-      "sourceRef": "hugmesh/hugmesh-games@HEAD",
-      "sha256": "761238e81d13f4d78c9c7a2e99c6a6436a0e7c9b41db258e5d1b255debc68a72"
     },
     {
       "path": "content/games/godot-export-tools.md",
@@ -1137,13 +1095,6 @@
       "sha256": "99d69fb2d4fdd81b52299a35cd93870cf2ff695185cae1b6d8e071b8024d5f26"
     },
     {
-      "path": "content/operations/devops-namespace.md",
-      "sourceRepo": "hugmesh-generator",
-      "sourcePath": "docs/DEVOPS.md",
-      "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "90bf71a48aef6703db76144375e5005927d7e33ec7275d77c74e2574952daf6b"
-    },
-    {
       "path": "content/operations/docker-mesh-node.md",
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "clients/docker-mesh-node/README.md",
@@ -1249,13 +1200,6 @@
       "sha256": "c3073b4ea065daaf301a7f4794d7aa1fec04932699f51a118e8d9d2cd7abd724"
     },
     {
-      "path": "content/operations/meshtastic-bridge.md",
-      "sourceRepo": "hugmesh-generator",
-      "sourcePath": "docs/MESHTASTIC-BRIDGE.md",
-      "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "37642cbd2f52f478bac73198119a14c43ef70b8dbed5c905ea273deb6217d4c6"
-    },
-    {
       "path": "content/operations/node-storage.md",
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "docs/NODE-STORAGE.md",
@@ -1296,13 +1240,6 @@
       "sourcePath": "docs/TOR-HIDDEN-SERVICE.md",
       "sourceRef": "hugmesh/hugmesh-generator@HEAD",
       "sha256": "dbc0437848f3b1f0b47de02a6e02015a76e21380a79c646fd8c3587cfbe191d9"
-    },
-    {
-      "path": "content/operations/xr-chat.md",
-      "sourceRepo": "hugmesh-generator",
-      "sourcePath": "docs/XR-CHAT.md",
-      "sourceRef": "hugmesh/hugmesh-generator@HEAD",
-      "sha256": "72e644f757b1992c2520cc07a603e46f7838e6b1b576cef40d9ce58b3cb56eff"
     },
     {
       "path": "content/overview/what-is-hugmesh.md",
@@ -1771,7 +1708,7 @@
       "sourceRepo": "hugmesh-host-shell",
       "sourcePath": "SECURITY.md",
       "sourceRef": "hugmesh/hugmesh-host-shell@HEAD",
-      "sha256": "0712316b125073836ec836a7f04ca1206fef43d3a4b62262cb0dbbd8ea6532f8"
+      "sha256": "381371368f6619a4e3f5280511c95ec803773e7089695c8302f2c8593fdfb14f"
     },
     {
       "path": "content/security/mfa-rollout.md",

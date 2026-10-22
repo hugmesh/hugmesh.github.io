@@ -119,7 +119,8 @@ A frontend is a native-federation **remote**: its own repo, its own nginx, regis
 the federation module registry so the host shell can load it at runtime. The host reads
 the manifest from the database at boot and unions it over the build-time static floor, so
 the database can add a remote's entry URL without a host redeploy. The full registration
-touches eight places; see the [federation walkthrough](/architecture/federation-walkthrough).
+touches eight places; the federation walkthrough (`docs/FEDERATION-EXAMPLES.md` in
+hugmesh-generator) lists each one.
 
 ## Lane B: the service catalog
 
@@ -136,7 +137,7 @@ filters:
   - repositoryMatch: "^hugmesh-"
     pathsExist: ["hugmesh-deploy.yaml", "deploy"]
   - repositoryMatch: "^hugmesh-"          # LEGACY_COMPAT, pre-rebrand name
-    pathsExist: ["snapdragon-deploy.yaml", "deploy"]
+    pathsExist: ["<legacy-name>-deploy.yaml", "deploy"]
 ```
 
 ArgoCD **ORs across `filters` entries and ANDs inside one**, and `pathsExist` is itself an
@@ -255,8 +256,8 @@ provision. That is why an incomplete cluster can look like a successful run.
 
 ## Where to read further
 
-- [DevOps platform](/operations/devops-namespace) — ArgoCD, GitLab, the binhost and
-  the runner, and how CI delivers ISOs.
+- The DevOps platform guide (`docs/DEVOPS.md` in hugmesh-generator) — ArgoCD, GitLab,
+  the binhost and the runner, and how CI delivers ISOs.
 - [Cluster architecture](/architecture/cluster-architecture) — the gateway, identity
   and multi-tenancy model your service sits inside.
 - [Optional services](/operations/optional-services) — the `installed`-flag lane for
