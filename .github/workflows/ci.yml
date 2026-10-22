@@ -21,7 +21,12 @@ concurrency:
 
 jobs:
   build-and-test:
-    runs-on: ${{ fromJSON(vars.RUNS_ON || '"ubuntu-latest"') }}
+    # Hosted runner, written literally, on purpose. This job runs on pull_request, and
+    # on a public repository a fork's pull request runs the fork's copy of this file,
+    # so a pull-request job must never be steered at a self-hosted runner (and must
+    # never read the RUNS_ON / RUNS_ON_PUBLISH variables). Nothing here publishes, so
+    # the push-to-main run needs no local runner either.
+    runs-on: ubuntu-latest
     timeout-minutes: 20
 
     steps:
