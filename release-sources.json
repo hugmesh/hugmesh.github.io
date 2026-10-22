@@ -1,0 +1,361 @@
+{
+  "$comment": "What the Downloads page lists, and where each item is released. NO VERSION NUMBERS BELONG HERE: scripts/fetch-releases.mjs reads them from the published releases and the registry at build time. Edit this file only when a product, image name, release workflow file or tag prefix changes.",
+  "studio": {
+    "repo": "hugmesh/hugmesh-generator",
+    "workflow": "studio-release.yml",
+    "tagPrefix": "studio-v"
+  },
+  "images": [
+    {
+      "id": "mesh-node",
+      "label": "Mesh node (join a mesh from any Docker host)",
+      "group": "node",
+      "repo": "hugmesh/hugmesh-generator",
+      "image": "ghcr.io/hugmesh/hugmesh-mesh-node",
+      "workflow": "mesh-node-release.yml",
+      "tagPrefix": "mesh-node-v"
+    },
+    {
+      "id": "gateway",
+      "label": "Gateway (base image)",
+      "group": "gateway",
+      "repo": "hugmesh/hugmesh-gateway",
+      "image": "ghcr.io/hugmesh/hugmesh-gateway",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "be-gateway",
+      "label": "Back-end gateway",
+      "group": "gateway",
+      "repo": "hugmesh/hugmesh-be-gateway",
+      "image": "ghcr.io/hugmesh/hugmesh-be-gateway",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "fe-gateway",
+      "label": "Front-end gateway",
+      "group": "gateway",
+      "repo": "hugmesh/hugmesh-fe-gateway",
+      "image": "ghcr.io/hugmesh/hugmesh-fe-gateway",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "pki-gateway",
+      "label": "PKI gateway",
+      "group": "gateway",
+      "repo": "hugmesh/hugmesh-pki-gateway",
+      "image": "ghcr.io/hugmesh/hugmesh-pki-gateway",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "admin-bff-api",
+      "label": "Admin API",
+      "group": "service",
+      "repo": "hugmesh/hugmesh-admin-bff-api",
+      "image": "ghcr.io/hugmesh/hugmesh-admin-bff-api",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "user-bff-api",
+      "label": "User API",
+      "group": "service",
+      "repo": "hugmesh/hugmesh-user-bff-api",
+      "image": "ghcr.io/hugmesh/hugmesh-user-bff-api",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "federation-api",
+      "label": "Federation API",
+      "group": "service",
+      "repo": "hugmesh/hugmesh-federation-api",
+      "image": "ghcr.io/hugmesh/hugmesh-federation-api",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "mesh-bff-api",
+      "label": "Mesh API",
+      "group": "service",
+      "repo": "hugmesh/hugmesh-mesh-bff-api",
+      "image": "ghcr.io/hugmesh/hugmesh-mesh-bff-api",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "mod-bff-api",
+      "label": "Moderation API",
+      "group": "service",
+      "repo": "hugmesh/hugmesh-mod-bff-api",
+      "image": "ghcr.io/hugmesh/hugmesh-mod-bff-api",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "forum-bff-api",
+      "label": "Forum API",
+      "group": "service",
+      "repo": "hugmesh/hugmesh-forum-bff-api",
+      "image": "ghcr.io/hugmesh/hugmesh-forum-bff-api",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "wiki-bff-api",
+      "label": "Wiki API",
+      "group": "service",
+      "repo": "hugmesh/hugmesh-wiki-bff-api",
+      "image": "ghcr.io/hugmesh/hugmesh-wiki-bff-api",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "tube-bff-api",
+      "label": "Video API",
+      "group": "service",
+      "repo": "hugmesh/hugmesh-tube-bff-api",
+      "image": "ghcr.io/hugmesh/hugmesh-tube-bff-api",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "owncast-bff-api",
+      "label": "Live-stream API",
+      "group": "service",
+      "repo": "hugmesh/hugmesh-owncast-bff-api",
+      "image": "ghcr.io/hugmesh/hugmesh-owncast-bff-api",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "character-forge-bff-api",
+      "label": "Character Forge API",
+      "group": "service",
+      "repo": "hugmesh/hugmesh-character-forge-bff-api",
+      "image": "ghcr.io/hugmesh/hugmesh-character-forge-bff-api",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "actions",
+      "label": "Actions service",
+      "group": "service",
+      "repo": "hugmesh/hugmesh-actions",
+      "image": "ghcr.io/hugmesh/hugmesh-actions",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "forum-api",
+      "label": "Forum (phpBB with the HugMesh extension)",
+      "group": "service",
+      "repo": "hugmesh/hugmesh-forum-api",
+      "image": "ghcr.io/hugmesh/hugmesh-forum-api",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "remote-fragment",
+      "label": "Remote fragment sync",
+      "group": "service",
+      "repo": "hugmesh/hugmesh-remote-fragment",
+      "image": "ghcr.io/hugmesh/hugmesh-remote-fragment",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "remote-fragment-nginx",
+      "label": "Remote fragment web server",
+      "group": "service",
+      "repo": "hugmesh/hugmesh-remote-fragment",
+      "image": "ghcr.io/hugmesh/hugmesh-remote-fragment/nginx",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "host-shell",
+      "label": "Host shell (the web app frame)",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-host-shell",
+      "image": "ghcr.io/hugmesh/hugmesh-host-shell",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "login-ui",
+      "label": "Sign-in",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-login-ui",
+      "image": "ghcr.io/hugmesh/hugmesh-login-ui",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "admin-ui",
+      "label": "Admin console",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-admin-ui",
+      "image": "ghcr.io/hugmesh/hugmesh-admin-ui",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "user-ui",
+      "label": "User settings",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-user-ui",
+      "image": "ghcr.io/hugmesh/hugmesh-user-ui",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "user-mesh-ui",
+      "label": "My mesh",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-user-mesh-ui",
+      "image": "ghcr.io/hugmesh/hugmesh-user-mesh-ui",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "matrix-ui",
+      "label": "Chat",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-matrix-ui",
+      "image": "ghcr.io/hugmesh/hugmesh-matrix-ui",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "mastodon-ui",
+      "label": "Fediverse",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-mastodon-ui",
+      "image": "ghcr.io/hugmesh/hugmesh-mastodon-ui",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "forum-ui",
+      "label": "Forum",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-forum-ui",
+      "image": "ghcr.io/hugmesh/hugmesh-forum-ui",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "wiki-ui",
+      "label": "Wiki",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-wiki-ui",
+      "image": "ghcr.io/hugmesh/hugmesh-wiki-ui",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "tube-ui",
+      "label": "Video",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-tube-ui",
+      "image": "ghcr.io/hugmesh/hugmesh-tube-ui",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "owncast-ui",
+      "label": "Live streams",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-owncast-ui",
+      "image": "ghcr.io/hugmesh/hugmesh-owncast-ui",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "mod-ui",
+      "label": "Moderation",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-mod-ui",
+      "image": "ghcr.io/hugmesh/hugmesh-mod-ui",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "superadmin-service-catalog-ui",
+      "label": "Service catalog",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-superadmin-service-catalog-ui",
+      "image": "ghcr.io/hugmesh/hugmesh-superadmin-service-catalog-ui",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "character-studio-ui",
+      "label": "Character studio",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-character-studio-ui",
+      "image": "ghcr.io/hugmesh/hugmesh-character-studio-ui",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "api-docs",
+      "label": "API documentation",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-api-docs",
+      "image": "ghcr.io/hugmesh/hugmesh-api-docs",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "games-backend",
+      "label": "Games back end",
+      "group": "games",
+      "repo": "hugmesh/hugmesh-games",
+      "image": "ghcr.io/hugmesh/hugmesh-games/backend",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "games-frontend",
+      "label": "Games front end",
+      "group": "games",
+      "repo": "hugmesh/hugmesh-games",
+      "image": "ghcr.io/hugmesh/hugmesh-games/frontend",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "games-rpg-builder",
+      "label": "RPG builder",
+      "group": "games",
+      "repo": "hugmesh/hugmesh-games",
+      "image": "ghcr.io/hugmesh/hugmesh-games/rpg-builder",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "games-vn-builder",
+      "label": "Visual-novel builder",
+      "group": "games",
+      "repo": "hugmesh/hugmesh-games",
+      "image": "ghcr.io/hugmesh/hugmesh-games/vn-builder",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "games-wasm-fragment",
+      "label": "Games WebAssembly fragment",
+      "group": "games",
+      "repo": "hugmesh/hugmesh-games",
+      "image": "ghcr.io/hugmesh/hugmesh-games/wasm-fragment",
+      "workflow": "release.yml",
+      "tagPrefix": "v"
+    }
+  ]
+}

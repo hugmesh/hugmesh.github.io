@@ -75,8 +75,9 @@ export const PLATFORM_OFFERS: Readonly<Record<PlatformId, PlatformOffer>> = {
     verify: 'Get-FileHash .\\hugmesh-studio-<version>-x64.msi -Algorithm SHA256',
     note:
       'A per-user install on 64-bit Windows 10 or later, with no administrator ' +
-      'rights. The MSI is not code-signed, so SmartScreen warns the first time you ' +
-      'run it. It still needs a hugmesh-generator checkout.',
+      'rights. Until the MSI is Authenticode-signed, SmartScreen warns the first ' +
+      'time you run it; the Downloads page says which builds are. It still needs a ' +
+      'hugmesh-generator checkout.',
   },
   macos: {
     id: 'macos',
