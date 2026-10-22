@@ -14,12 +14,13 @@
     "build": "ng build --configuration production",
     "postbuild": "node scripts/spa-fallback.mjs",
     "watch": "ng build --watch --configuration development",
-    "pretest": "npm run check:integrity && npm run build:content && npm run test:releases",
+    "pretest": "npm run check:integrity && npm run build:content && npm run test:releases && npm run test:workflows",
     "test": "ng test --watch=false",
     "coverage": "ng test --watch=false --code-coverage --browsers=ChromeHeadlessCI",
     "check:integrity": "node scripts/check-content-integrity.mjs",
     "fetch:releases": "node scripts/fetch-releases.mjs",
-    "test:releases": "node --test scripts/fetch-releases.test.mjs"
+    "test:releases": "node --test scripts/fetch-releases.test.mjs",
+    "test:workflows": "node --test scripts/pages-workflow.test.mjs"
   },
   "dependencies": {
     "@angular/common": "^22.1.2",

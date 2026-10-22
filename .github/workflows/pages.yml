@@ -55,10 +55,18 @@ on:
   schedule:
     - cron: '17 * * * *'
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+# LEAST PRIVILEGE, per job. Nothing at workflow level, so a job that forgets its own
+# block gets no token scopes at all rather than inheriting write ones.
+#   build:  contents: read (checkout) and pages: read (the probe step, the hourly
+#           "changed" step and configure-pages only GET /repos/{repo}/pages;
+#           configure-pages writes only with `enablement: true`, which is not set).
+#           It runs npm ci, the release fetch and ng build hourly and on every
+#           dispatch, so it must never hold a write scope or an OIDC token.
+#   deploy: pages: write and id-token: write, nothing else; it runs no repository code.
+# Uploading the Pages artifact and deploy-pages' artifact lookup use the Actions
+# runtime token, not GITHUB_TOKEN, so neither job needs `actions: read`.
+# scripts/pages-workflow.test.mjs (part of `npm test`) fails if any of this regresses.
+permissions: {}
 
 concurrency:
   group: pages
@@ -70,6 +78,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
+      pages: read
     outputs:
       pages_ready: ${{ steps.probe.outputs.ready }}
       release_data_changed: ${{ steps.changed.outputs.changed }}
@@ -231,6 +242,9 @@ jobs:
     if: needs.build.outputs.pages_ready == 'true' && needs.build.outputs.release_data_changed != 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
