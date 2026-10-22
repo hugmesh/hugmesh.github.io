@@ -1,0 +1,735 @@
+{
+  "schema": 2,
+  "generated": "2026-10-22T08:00:00.000Z",
+  "studioRepo": "hugmesh/hugmesh-generator",
+  "studio": {
+    "repo": "hugmesh/hugmesh-generator",
+    "tag": "studio-v0.3.0-beta.2",
+    "version": "0.3.0-beta.2",
+    "prerelease": true,
+    "published": "2026-10-22",
+    "notesUrl": "https://github.com/hugmesh/hugmesh-generator/releases/tag/studio-v0.3.0-beta.2",
+    "installers": [
+      {
+        "platform": "windows",
+        "kind": "msi",
+        "label": "Windows installer (MSI, 64-bit)",
+        "file": "hugmesh-studio-0.3.0-beta.2-x64.msi",
+        "url": "https://github.com/hugmesh/hugmesh-generator/releases/download/studio-v0.3.0-beta.2/hugmesh-studio-0.3.0-beta.2-x64.msi",
+        "size": "44 MB",
+        "bytes": 43912345,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "attested": true,
+        "sbom": {
+          "file": "hugmesh-studio-0.3.0-beta.2-windows-x64.spdx.json",
+          "url": "https://github.com/hugmesh/hugmesh-generator/releases/download/studio-v0.3.0-beta.2/hugmesh-studio-0.3.0-beta.2-windows-x64.spdx.json"
+        }
+      },
+      {
+        "platform": "linux",
+        "kind": "flatpak",
+        "label": "Linux Flatpak bundle (x86_64)",
+        "file": "hugmesh-studio-0.3.0-beta.2-x86_64.flatpak",
+        "url": "https://github.com/hugmesh/hugmesh-generator/releases/download/studio-v0.3.0-beta.2/hugmesh-studio-0.3.0-beta.2-x86_64.flatpak",
+        "size": "172 MB",
+        "bytes": 171700000,
+        "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "attested": true,
+        "sbom": null
+      },
+      {
+        "platform": "linux",
+        "kind": "tarball",
+        "label": "Linux portable archive (tar.gz, x86_64)",
+        "file": "hugmesh-studio-0.3.0-beta.2-linux-x86_64.tar.gz",
+        "url": "https://github.com/hugmesh/hugmesh-generator/releases/download/studio-v0.3.0-beta.2/hugmesh-studio-0.3.0-beta.2-linux-x86_64.tar.gz",
+        "size": "96 MB",
+        "bytes": 96400000,
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "attested": false,
+        "sbom": {
+          "file": "hugmesh-studio-0.3.0-beta.2-linux-x86_64.spdx.json",
+          "url": "https://github.com/hugmesh/hugmesh-generator/releases/download/studio-v0.3.0-beta.2/hugmesh-studio-0.3.0-beta.2-linux-x86_64.spdx.json"
+        }
+      }
+    ],
+    "checksums": {
+      "file": "SHA256SUMS",
+      "url": "https://github.com/hugmesh/hugmesh-generator/releases/download/studio-v0.3.0-beta.2/SHA256SUMS"
+    },
+    "checksumsSignature": {
+      "file": "SHA256SUMS.sigstore.json",
+      "url": "https://github.com/hugmesh/hugmesh-generator/releases/download/studio-v0.3.0-beta.2/SHA256SUMS.sigstore.json"
+    },
+    "identity": {
+      "regexp": "^https://github\\.com/hugmesh\\/hugmesh-generator/\\.github/workflows/studio-release\\.yml@refs/tags/studio-v",
+      "issuer": "https://token.actions.githubusercontent.com"
+    },
+    "authenticode": false
+  },
+  "images": [
+    {
+      "id": "mesh-node",
+      "label": "Mesh node (join a mesh from any Docker host)",
+      "group": "node",
+      "repo": "hugmesh/hugmesh-generator",
+      "image": "ghcr.io/hugmesh/hugmesh-mesh-node",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-generator/\\.github/workflows/mesh-node-release\\.yml@refs/tags/mesh-node-v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": "0.1.0-beta.1",
+      "prerelease": true,
+      "digest": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "signed": true,
+      "attested": true,
+      "notesUrl": null
+    },
+    {
+      "id": "gateway",
+      "label": "Gateway (base image)",
+      "group": "gateway",
+      "repo": "hugmesh/hugmesh-gateway",
+      "image": "ghcr.io/hugmesh/hugmesh-gateway",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-gateway/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "be-gateway",
+      "label": "Back-end gateway",
+      "group": "gateway",
+      "repo": "hugmesh/hugmesh-be-gateway",
+      "image": "ghcr.io/hugmesh/hugmesh-be-gateway",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-be-gateway/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "fe-gateway",
+      "label": "Front-end gateway",
+      "group": "gateway",
+      "repo": "hugmesh/hugmesh-fe-gateway",
+      "image": "ghcr.io/hugmesh/hugmesh-fe-gateway",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-fe-gateway/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "pki-gateway",
+      "label": "PKI gateway",
+      "group": "gateway",
+      "repo": "hugmesh/hugmesh-pki-gateway",
+      "image": "ghcr.io/hugmesh/hugmesh-pki-gateway",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-pki-gateway/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "admin-bff-api",
+      "label": "Admin API",
+      "group": "service",
+      "repo": "hugmesh/hugmesh-admin-bff-api",
+      "image": "ghcr.io/hugmesh/hugmesh-admin-bff-api",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-admin-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "user-bff-api",
+      "label": "User API",
+      "group": "service",
+      "repo": "hugmesh/hugmesh-user-bff-api",
+      "image": "ghcr.io/hugmesh/hugmesh-user-bff-api",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-user-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "federation-api",
+      "label": "Federation API",
+      "group": "service",
+      "repo": "hugmesh/hugmesh-federation-api",
+      "image": "ghcr.io/hugmesh/hugmesh-federation-api",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-federation-api/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "mesh-bff-api",
+      "label": "Mesh API",
+      "group": "service",
+      "repo": "hugmesh/hugmesh-mesh-bff-api",
+      "image": "ghcr.io/hugmesh/hugmesh-mesh-bff-api",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-mesh-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "mod-bff-api",
+      "label": "Moderation API",
+      "group": "service",
+      "repo": "hugmesh/hugmesh-mod-bff-api",
+      "image": "ghcr.io/hugmesh/hugmesh-mod-bff-api",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-mod-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "forum-bff-api",
+      "label": "Forum API",
+      "group": "service",
+      "repo": "hugmesh/hugmesh-forum-bff-api",
+      "image": "ghcr.io/hugmesh/hugmesh-forum-bff-api",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-forum-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "wiki-bff-api",
+      "label": "Wiki API",
+      "group": "service",
+      "repo": "hugmesh/hugmesh-wiki-bff-api",
+      "image": "ghcr.io/hugmesh/hugmesh-wiki-bff-api",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-wiki-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "tube-bff-api",
+      "label": "Video API",
+      "group": "service",
+      "repo": "hugmesh/hugmesh-tube-bff-api",
+      "image": "ghcr.io/hugmesh/hugmesh-tube-bff-api",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-tube-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "owncast-bff-api",
+      "label": "Live-stream API",
+      "group": "service",
+      "repo": "hugmesh/hugmesh-owncast-bff-api",
+      "image": "ghcr.io/hugmesh/hugmesh-owncast-bff-api",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-owncast-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "character-forge-bff-api",
+      "label": "Character Forge API",
+      "group": "service",
+      "repo": "hugmesh/hugmesh-character-forge-bff-api",
+      "image": "ghcr.io/hugmesh/hugmesh-character-forge-bff-api",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-character-forge-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "actions",
+      "label": "Actions service",
+      "group": "service",
+      "repo": "hugmesh/hugmesh-actions",
+      "image": "ghcr.io/hugmesh/hugmesh-actions",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-actions/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "forum-api",
+      "label": "Forum (phpBB with the HugMesh extension)",
+      "group": "service",
+      "repo": "hugmesh/hugmesh-forum-api",
+      "image": "ghcr.io/hugmesh/hugmesh-forum-api",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-forum-api/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "remote-fragment",
+      "label": "Remote fragment sync",
+      "group": "service",
+      "repo": "hugmesh/hugmesh-remote-fragment",
+      "image": "ghcr.io/hugmesh/hugmesh-remote-fragment",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-remote-fragment/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "remote-fragment-nginx",
+      "label": "Remote fragment web server",
+      "group": "service",
+      "repo": "hugmesh/hugmesh-remote-fragment",
+      "image": "ghcr.io/hugmesh/hugmesh-remote-fragment/nginx",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-remote-fragment/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "host-shell",
+      "label": "Host shell (the web app frame)",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-host-shell",
+      "image": "ghcr.io/hugmesh/hugmesh-host-shell",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-host-shell/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "login-ui",
+      "label": "Sign-in",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-login-ui",
+      "image": "ghcr.io/hugmesh/hugmesh-login-ui",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-login-ui/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "admin-ui",
+      "label": "Admin console",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-admin-ui",
+      "image": "ghcr.io/hugmesh/hugmesh-admin-ui",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-admin-ui/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": "0.3.0-beta.10",
+      "prerelease": true,
+      "digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "signed": true,
+      "attested": true,
+      "notesUrl": "https://github.com/hugmesh/hugmesh-admin-ui/releases/tag/v0.3.0-beta.10"
+    },
+    {
+      "id": "user-ui",
+      "label": "User settings",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-user-ui",
+      "image": "ghcr.io/hugmesh/hugmesh-user-ui",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-user-ui/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "user-mesh-ui",
+      "label": "My mesh",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-user-mesh-ui",
+      "image": "ghcr.io/hugmesh/hugmesh-user-mesh-ui",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-user-mesh-ui/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "matrix-ui",
+      "label": "Chat",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-matrix-ui",
+      "image": "ghcr.io/hugmesh/hugmesh-matrix-ui",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-matrix-ui/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "mastodon-ui",
+      "label": "Fediverse",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-mastodon-ui",
+      "image": "ghcr.io/hugmesh/hugmesh-mastodon-ui",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-mastodon-ui/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "forum-ui",
+      "label": "Forum",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-forum-ui",
+      "image": "ghcr.io/hugmesh/hugmesh-forum-ui",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-forum-ui/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "wiki-ui",
+      "label": "Wiki",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-wiki-ui",
+      "image": "ghcr.io/hugmesh/hugmesh-wiki-ui",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-wiki-ui/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "tube-ui",
+      "label": "Video",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-tube-ui",
+      "image": "ghcr.io/hugmesh/hugmesh-tube-ui",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-tube-ui/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "owncast-ui",
+      "label": "Live streams",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-owncast-ui",
+      "image": "ghcr.io/hugmesh/hugmesh-owncast-ui",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-owncast-ui/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "mod-ui",
+      "label": "Moderation",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-mod-ui",
+      "image": "ghcr.io/hugmesh/hugmesh-mod-ui",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-mod-ui/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "superadmin-service-catalog-ui",
+      "label": "Service catalog",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-superadmin-service-catalog-ui",
+      "image": "ghcr.io/hugmesh/hugmesh-superadmin-service-catalog-ui",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-superadmin-service-catalog-ui/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "character-studio-ui",
+      "label": "Character studio",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-character-studio-ui",
+      "image": "ghcr.io/hugmesh/hugmesh-character-studio-ui",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-character-studio-ui/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "api-docs",
+      "label": "API documentation",
+      "group": "ui",
+      "repo": "hugmesh/hugmesh-api-docs",
+      "image": "ghcr.io/hugmesh/hugmesh-api-docs",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-api-docs/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "games-backend",
+      "label": "Games back end",
+      "group": "games",
+      "repo": "hugmesh/hugmesh-games",
+      "image": "ghcr.io/hugmesh/hugmesh-games/backend",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-games/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "games-frontend",
+      "label": "Games front end",
+      "group": "games",
+      "repo": "hugmesh/hugmesh-games",
+      "image": "ghcr.io/hugmesh/hugmesh-games/frontend",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-games/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "games-rpg-builder",
+      "label": "RPG builder",
+      "group": "games",
+      "repo": "hugmesh/hugmesh-games",
+      "image": "ghcr.io/hugmesh/hugmesh-games/rpg-builder",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-games/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "games-vn-builder",
+      "label": "Visual-novel builder",
+      "group": "games",
+      "repo": "hugmesh/hugmesh-games",
+      "image": "ghcr.io/hugmesh/hugmesh-games/vn-builder",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-games/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    },
+    {
+      "id": "games-wasm-fragment",
+      "label": "Games WebAssembly fragment",
+      "group": "games",
+      "repo": "hugmesh/hugmesh-games",
+      "image": "ghcr.io/hugmesh/hugmesh-games/wasm-fragment",
+      "identity": {
+        "regexp": "^https://github\\.com/hugmesh\\/hugmesh-games/\\.github/workflows/release\\.yml@refs/tags/v",
+        "issuer": "https://token.actions.githubusercontent.com"
+      },
+      "version": null,
+      "prerelease": false,
+      "digest": null,
+      "signed": false,
+      "attested": false,
+      "notesUrl": null
+    }
+  ]
+}
