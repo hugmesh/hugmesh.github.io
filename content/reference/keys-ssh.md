@@ -5,7 +5,7 @@ slug: "keys-ssh"
 summary: "The operator SSH-over-Tailscale keypair and why the private half stays in keys-out and off the image."
 source_repo: "hugmesh-generator"
 source_path: "keys-template/ssh/README.md"
-source_ref: "hugmesh/hugmesh-generator@HEAD"
+source_ref: "1fa39582"
 ---
 
 `scripts/gen-provision-keys.sh` fills this folder with the operator's
@@ -57,6 +57,11 @@ them the BFF can dial this device over the tailnet and drive an operator console
   dial user `bff-dial`; set it with `--dial-user`). It is baked into the dial
   user's `authorized_keys` through the per-user convention above, so the BFF can
   authenticate. **PUBLIC** key only, safe to bake and bundle.
+- **`ssh/dial_user`** — the dial user's name (non-secret), so a `--dial-user`
+  override reaches the node. `provision.sh` (`provision_dial_user`) creates that
+  account when the key above is staged: unprivileged, no supplementary groups, no
+  sudoers entry, no password. Which commands the dial user may run through sudo is
+  an open operator decision (hugmesh-generator#367), so none are granted yet.
 
 The matching **DIAL PRIVATE key** is **NOT** written here. It goes to
 `keys-out/vault-seed/device/<id>/ssh/dial_private_key`, a sibling of this

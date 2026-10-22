@@ -5,7 +5,7 @@ slug: "service-catalog-ui"
 summary: "The superadmin Service Catalog console turning the admin-BFF catalog data layer into an operable surface."
 source_repo: "hugmesh-superadmin-service-catalog-ui"
 source_path: "README.md"
-source_ref: "hugmesh/hugmesh-superadmin-service-catalog-ui@HEAD"
+source_ref: "0f2c2d5"
 ---
 
 The **Superadmin Service Catalog console** is an Angular **native-federation remote**. The
@@ -389,6 +389,24 @@ npm run gen:spec   # copies ../hugmesh-admin-bff-api/src/main/resources/openapi/
 npm run gen        # just run ng-openapi-gen against the already-present openapi.json
 ```
 
+`npm run verify:spec` (`scripts/assert-spec-pin.mjs`) guards the copy. It compares `openapi.json`
+byte for byte with the BFF's committed spec, found at `$ADMIN_BFF_SPEC` or in the sibling
+`../hugmesh-admin-bff-api` checkout, and prints which operations and schemas differ. It runs inside
+`npm test`, and `HUGMESH_SCHEMA_MIRROR_REQUIRED=1` (set in CI, which clones the BFF's `main`) turns an
+unreadable BFF spec into a failure instead of a skip. Without that flag an unreadable spec prints
+`NOT VERIFIED` and exits 0, so the check did not run. Because CI compares against the BFF's `main`, a
+BFF change to the spec turns this repo's CI red until `npm run gen:spec` is run here and the result
+is committed.
+
+`npm run verify:client` (`scripts/assert-generated-client.mjs`) guards that the committed client
+really is the generator's output for `openapi.json`. It runs `ng-openapi-gen` into an empty
+temporary directory and compares that tree byte for byte with `src/app/api/`, so it fails on a
+committed file the generator no longer emits, a generated file that was never committed, and a
+hand-edited file. It runs inside `npm test`, right after `verify:spec`. A plain `npm run gen` cannot
+show an orphan: `ng-openapi-gen` only prunes stale files inside directories it still emits, so a
+whole directory it dropped (this left nine `fn/mfa-*` files behind) survives a regeneration with a
+clean `git status`.
+
 `service-catalog.service.ts` is a thin **delegating** wrapper over the generated, typed clients
 (`ServiceCurationControllerService` / `AppProfileControllerService` /
 `ServiceDeploymentControllerService` / `AdminServiceStoreControllerService`, plus the builder and
@@ -456,8 +474,7 @@ The bff `@PreAuthorize` stays authoritative; this UI's gating is defence in dept
   Spring Cloud Gateway 5.0 (`spring.cloud.gateway.server.webflux.routes`). The admin-bff is built
   against **hugmesh-parent 2.8.0**, which manages **hugmesh-commons 2.1.0**. CI is **GitLab**
   (`.gitlab-ci.yml`: `test`, `headers`, `build:image`). The only GitHub Actions workflow is
-  `.github/workflows/release.yml`. It is manual (`workflow_dispatch`), not wired to push or tags,
-  and pushes the image to GHCR. **Angular 22** (`@angular/core` 22.0.2, `@angular/cli` 22.0.4,
+  `.github/workflows/release.yml`, which publishes the image to GHCR (see "Releases"). **Angular 22** (`@angular/core` 22.0.2, `@angular/cli` 22.0.4,
   native-federation 22.0.1, ng-openapi-gen 1.0.5, per `package-lock.json`).
 - **Internal-only surface.** The remote is served on 8080 behind the gateway superadmin gate and the
   tailnet-only superadmin surface. `nginx.conf` ships these headers:
@@ -495,6 +512,42 @@ The bff `@PreAuthorize` stays authoritative; this UI's gating is defence in dept
     runs it too. `npm run verify:page` runs headless Chrome over the real conf; the CI `headers` job
     runs it, and `build:image` needs that job, so a red one blocks the push instead of only
     reddening the pipeline.
+
+## Releases
+
+The package version is `package.json` `"version"` (`package-lock.json` must match). It is
+**`0.2.0-beta.1`**: built and tested, with no recorded live check yet. Raise the MINOR to `0.3.0`
+once a live check is recorded, and raise the beta number for each new beta of the same base.
+
+`.github/workflows/release.yml` pushes `ghcr.io/hugmesh/hugmesh-superadmin-service-catalog-ui`:
+
+| Event | Image tags | GitHub Release |
+|---|---|---|
+| push to `main` | `:main`, `:sha-<12 hex>` | none |
+| push of tag `v<version>` (on a commit on `main`) | `:<version>`, `:beta`, `:sha-<12 hex>` | prerelease, not latest |
+| `workflow_dispatch` on `main` | as a push to `main` | none |
+| `workflow_dispatch` on a `v*` tag | re-runs that release; an existing image or release is left alone | as the tag push |
+| anything else | refused | none |
+
+- `:latest` is never pushed, and a published version tag is never overwritten.
+- No image is pushed unless the `test` and `headers` jobs pass. They are the same gates GitLab
+  puts in front of `build:image`. `test` reads the two mirror files from
+  `hugmesh-admin-bff-api` `main`. While that repo is private, the job token cannot read it, so
+  the job needs the optional secret `ADMIN_BFF_READ_TOKEN` (read-only Contents on that repo) or
+  it fails and nothing is published.
+- Jobs run on the self-hosted runner only when the repo variable `RUNS_ON_PUBLISH` is set and the
+  run is on `main` or a `v*` tag. Otherwise they run on hosted `ubuntu-latest`. The workflow has
+  no pull-request trigger.
+
+To publish a beta, after the version change is merged:
+
+```
+git tag -a v0.2.0-beta.1 <merge commit> -m 'superadmin-service-catalog-ui 0.2.0-beta.1'
+git push origin v0.2.0-beta.1
+```
+
+The tag push runs the release. To re-run it by hand:
+`gh workflow run release.yml -R hugmesh/hugmesh-superadmin-service-catalog-ui --ref v0.2.0-beta.1`
 
 ## Roadmap
 

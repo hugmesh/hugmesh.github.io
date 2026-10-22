@@ -1,11 +1,11 @@
 ---
-title: "{{BRAND_TITLE}} — {{REPO_NAME}} (remote-fragment placeholder"
+title: "{{BRAND_TITLE}} — {{REPO_NAME}} (remote-fragment placeholder)"
 section: "developer-guide"
 slug: "scaffold-remote-fragment"
 summary: "The deliberate placeholder for the remote-fragment archetype, which ships no runnable skeleton by design."
 source_repo: "hugmesh-admin-bff-api"
 source_path: "src/main/resources/scaffold/remote-fragment/README.md"
-source_ref: "de0c704"
+source_ref: "59a498d"
 ---
 
 The Tier-2 base (`hugmesh-remote-fragment`) was NOT pullable, so the
@@ -31,5 +31,6 @@ secret-scan from reading the long `VAR=/deep/path` run as an opaque token.)
 The overlay applies exactly one anchored edit (the CI include org/group ->
 `{{GENERATOR_ORG_GROUP}}`); everything else — sync loop, nginx serving, deploy/
 (base-owned), the `${ENV}`-driven manifest/Casdoor seams — rides through
-unchanged. See docs/FEDERATION-EXAMPLES.md, "remote-fragment runtime bundles",
-for how the fragment serves remotes this mesh does not build.
+unchanged. See docs/FEDERATION-EXAMPLES.md in hugmesh-generator, section 1 ("The example
+trio (+ remote-fragment)"), for how the fragment serves remotes this mesh does not
+build.

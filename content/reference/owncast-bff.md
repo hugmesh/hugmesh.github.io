@@ -5,7 +5,7 @@ slug: "owncast-bff"
 summary: "The BFF governing who may broadcast on the self-hosted Owncast live-video server as an optional platform service."
 source_repo: "hugmesh-owncast-bff-api"
 source_path: "README.md"
-source_ref: "hugmesh/hugmesh-owncast-bff-api@HEAD"
+source_ref: "5957dfb"
 ---
 
 Backend-for-frontend that governs **who is allowed to broadcast** on
@@ -425,17 +425,6 @@ cross-repo pieces are not on `main` in this repo:
 - 🔭 **Generator/devops** — per-domain SUPERADMIN service-enable. The GPU
   node-affinity / x86-and-GPU-pinned constraint and the default-off switch already
   ship in the generator; only the per-domain enable is open.
-- ✅ **Cross-repo `hugmesh-mod-bff-api` `ModActionType owncast.*` wiring** —
-  shipped in mod-bff (its changelog `010` and `/bff/mod/owncast/**` surface). A
-  moderator who drives hide/kill/restore through the central mod surface hits this
-  BFF's `/bff/owncast/mod` effector endpoints (`kill` posts to `/ban`; the
-  caller's bearer is forwarded) and gets an `owncast.hide`/`owncast.kill`/`owncast.restore`
-  row in the central `mod_action` ledger. This repo needed no code change, because
-  the effector surface already existed. Scope note: an action taken directly at
-  this BFF's `/bff/owncast/mod` (for example, from `hugmesh-owncast-ui` today)
-  journals into the local `owncast_moderation_audit` only. The central row is
-  written only when the action is driven through mod-bff (the moderation UI's
-  central surface).
 
 Items move from 🔭 planned → 🚧 in progress (open branch/PR) → ✅ shipped. This
 section is trimmed as each lands on `main`.

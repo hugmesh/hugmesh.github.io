@@ -5,7 +5,7 @@ slug: "mastodon-ui"
 summary: "The Mastodon and Akkoma fediverse micro-frontend remote for the host shell."
 source_repo: "hugmesh-mastodon-ui"
 source_path: "README.md"
-source_ref: "hugmesh/hugmesh-mastodon-ui@HEAD"
+source_ref: "1ee2f8d"
 ---
 
 This repo is the **Mastodon UI**, an Angular micro-frontend
@@ -517,12 +517,17 @@ The unfinished or deliberately stubbed pieces, checked against the current code:
   instead of `'ok'` (the BFF then answers `202` pending-reconcile). The UI shows
   what the BFF reports and does not assume success (`ModBlockResult` and
   `block()` in `src/app/mod-bff.service.ts`).
-- **The server-wide block has a step-up (MFA) gate this remote does not handle.**
-  mod-bff-api guards `POST /bff/mod/block` with `ModStepUpGate`; a refusal is a
-  `403` with an `X-Mod-StepUp` header. The gate ships dark
-  (`app.mfa.enforce-sensitive-writes`, default `false`). Nothing in `src/app`
-  reads the header or starts a step-up challenge, so once the gate is armed the
-  menu shows its generic failure message.
+- **Step-up (MFA) is handled for the server-wide block only, and is unproven live.**
+  mod-bff-api guards `POST /bff/mod/block` with a step-up gate (shipped dark:
+  `app.mfa.enforce-sensitive-writes`, default `false`); a refusal is a `403`
+  carrying the `X-Step-Up-Required` header. `ModBffService.block()` turns that
+  into a typed `StepUpRequired`, and the role-actions menu renders the login
+  remote's `./mfa-step-up` challenge in place (`StepUpChallengeService`) and
+  retries the block once after it is satisfied. A dismissed, unavailable or
+  unloadable challenge reports the block as **not applied**. The other gated
+  mod calls (ban, lift, domain-lock) are not wired in this remote. No live mesh
+  has armed the gate (`hugmesh-generator#506`), so the karma specs and the
+  `@step-up` offline feature use a stubbed header and a stubbed remote.
 - **User self-block's external push can also be `'stubbed'` or `'n/a'`.**
   `UserBffService`'s `BlockAck.external` is a free-form status string
   (`'live' | 'stubbed' | 'n/a'`), not always `'live'`
@@ -606,10 +611,9 @@ The unfinished or deliberately stubbed pieces, checked against the current code:
   in-cluster GitLab). `.gitlab-ci.yml` builds and pushes the nginx image to the
   in-cluster registry and `include`s the centralized generator pentest templates.
   The image runs in `hugmesh-frontend` behind the fe-gateway, deployed by ArgoCD
-  GitOps. GitHub has one workflow, `.github/workflows/release.yml` ("Release"):
-  manual only (`workflow_dispatch`, optional `tag` input, default the short commit
-  SHA). It builds the image and pushes `ghcr.io/hugmesh/hugmesh-mastodon-ui:<tag>`
-  and `:latest`. No push or tag trigger runs it.
+  GitOps. GitHub has one workflow, `.github/workflows/release.yml` ("Release"),
+  which publishes the image to `ghcr.io/hugmesh/hugmesh-mastodon-ui` (see
+  [Releases](#releases)).
 
 ## Roadmap
 
@@ -620,11 +624,11 @@ on a new BFF endpoint or homeserver capability, not on this repo:
 - **SSO end-to-end live + e2e:** flip the e2e harness green against a live
   Casdoor→user-bff→gateway path once the opaque-`bff_` session is wired through
   the gateway for the social routes.
-- **MFA (WebAuthn + TOTP + recovery):** surface step-up challenges where a
-  privileged Mastodon action requires one. Per-role defaults are enforced
-  upstream (login remote / user-bff), not here. The first case is the
-  server-wide block: mod-bff-api already has the (dark) `ModStepUpGate` on it,
-  see [Known Gaps](#known-gaps--todo).
+- **MFA (WebAuthn + TOTP + recovery):** *partly shipped.* The server-wide block
+  renders the login remote's step-up challenge in place and retries once (see
+  [Known Gaps](#known-gaps--todo)); other privileged actions and a live proof
+  (`hugmesh-generator#506`) are open. Per-role defaults are enforced upstream
+  (login remote / user-bff), not here.
 - ✅ **Durable preferences + org default — SHIPPED.** Both sync to real
   `admin-bff-api` endpoints; the versioned localStorage key is now an
   apply-immediately cache and offline fallback under them, not the only store.
@@ -688,10 +692,45 @@ The `Dockerfile` builds the remote and serves `dist/mastodon/browser` through
 nginx **with CORS** (the host fetches `remoteEntry.json` cross-origin) and a
 baseline set of **HTTP security headers** (see below). `/healthz` returns `200`.
 `.gitlab-ci.yml` builds and pushes the image to the in-cluster GitLab registry
-(the GitHub repo is pull-mirrored into in-cluster GitLab); the manual GitHub
-`Release` workflow pushes it to GHCR instead (see
-[Current State](#current-state)). The image runs in the `hugmesh-frontend`
-namespace behind the fe-gateway at `/social/mastodon`.
+(the GitHub repo is pull-mirrored into in-cluster GitLab); the GitHub
+`Release` workflow pushes it to GHCR instead (see [Releases](#releases)). The
+image runs in the `hugmesh-frontend` namespace behind the fe-gateway at
+`/social/mastodon`.
+
+### Releases
+
+The version is `package.json` `version` (`package-lock.json` must carry the
+same string), in the form `MAJOR.MINOR.PATCH-beta.N`. It is `0.2.0-beta.1` now:
+built and tested, with no recorded live check yet.
+
+`.github/workflows/release.yml` runs the unit suite, then builds and pushes the
+image:
+
+| Trigger | Image tags | GitHub Release |
+|---|---|---|
+| push to `main` | `:main`, `:sha-<12 hex>` | none |
+| push of tag `v<version>` | `:<version>`, `:beta`, `:sha-<12 hex>` | prerelease, never marked latest |
+| manual run on `main` | same as a push to `main` | none |
+| manual run on a `v*` tag | re-runs that release; an existing image tag or release is left as it is | created only if missing |
+
+Any other branch or tag is refused. A tag must be exactly `v` plus the
+`package.json` version and must point at a commit on `main`. A published
+version tag is never overwritten, and `:latest` is never pushed. The workflow
+has no pull-request trigger.
+
+Jobs run on hosted `ubuntu-latest` unless the repo variable `RUNS_ON_PUBLISH`
+is set (a JSON array such as `["self-hosted","Linux","X64"]`); then runs on
+`main` and `v*` tags use that runner instead. Deleting the variable sends every
+job back to hosted runners.
+
+To publish a beta, tag a commit on `main` and push the tag:
+
+```bash
+git tag -a v0.2.0-beta.1 <commit on main> -m 'mastodon-ui 0.2.0-beta.1'
+git push origin v0.2.0-beta.1
+# re-run later by hand:
+gh workflow run release.yml -R hugmesh/hugmesh-mastodon-ui --ref v0.2.0-beta.1
+```
 
 The `Dockerfile` builds with `--base-href=/social/mastodon/`. Without it Angular
 emits root-relative asset URLs. A direct load of `/social/mastodon/` then fetches

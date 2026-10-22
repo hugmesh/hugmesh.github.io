@@ -5,27 +5,24 @@ slug: "owncast-ui-e2e"
 summary: "The Gherkin-driven Playwright harness for the owncast-ui federated remote."
 source_repo: "hugmesh-owncast-ui"
 source_path: "e2e/README.md"
-source_ref: "hugmesh/hugmesh-owncast-ui@HEAD"
+source_ref: "27d94c0"
 ---
 
-Gherkin-driven end-to-end harness for the owncast-ui federated remote, copied
-from the proven `hugmesh.games/e2e` pattern (`@playwright/test` +
-`playwright-bdd`, single-worker serial, `screenshot:'on'`/`video:'on'`, HTML
-reporter, the per-step PNG `AfterStep` hook in
-`features/support/fixtures.ts`). Mirrors the merged wave-2b PRs admin-ui#39,
-superadmin-appstore-ui#2 and login-ui#19.
+Gherkin-driven end-to-end harness for the owncast-ui federated remote. It
+follows the `hugmesh.games/e2e` pattern: `@playwright/test` + `playwright-bdd`,
+one worker, serial, `screenshot:'on'` and `video:'on'`, an HTML reporter, and a
+per-step PNG `AfterStep` hook in `features/support/fixtures.ts`.
 
 The owncast-ui is the UI half of the **optional Owncast streaming service**, so
-this suite leads with the per-role broadcast-governance surface: a user controls
-their **own** stream visibility, an admin/superadmin gates whether a stream may
-broadcast, a mod moderates, and every part the role can't use is hidden or
-forbidden.
+the suite starts with who may broadcast. A user controls their **own** stream
+visibility. An admin or superadmin gates whether a stream may broadcast. A mod
+moderates. Every part a role cannot use is hidden or forbidden.
 
 | Class | Feature file | What it asserts |
 | --- | --- | --- |
 | USER-SITUATIONAL | `features/stream/my-stream.feature` | a streamer controls their own stream (ALLOW); the public-visibility option is **disabled + the broadcast-gate helptext** until an admin grants broadcast; no-role → in-remote forbidden (DENY) |
 | USER-SITUATIONAL | `features/stream/superadmin-exemption.feature` | the UI fail-closed-disables public even for a superadmin, and the **Try going public probe succeeds grant-free** (the bff's documented SUPERADMIN guard exemption) |
-| USER-SITUATIONAL | `features/gating/role-aware-nav.feature` | each role sees only the nav items it can use; a user with no owncast role sees an **empty menubar** (greyed-out / no access) |
+| USER-SITUATIONAL | `features/gating/role-aware-nav.feature` | each role sees only the nav items it can use; a user with no owncast role sees **no nav at all** (the menubar is not rendered; greyed-out / no access) |
 | MULTIUSER | `features/grants/broadcast-grants.feature` | admin sees the grant action form; the active-grants + history panels are **superadmin-only**; mod/streamer → forbidden (DENY) |
 | MULTIUSER | `features/grants/grant-to-public-lifecycle.feature` | **the core journey**: streamer creates their stream (victim-creates-first), is denied live, admin grants, the streamer's next try-public **succeeds mid-session** and the UI leaves the fail-closed state |
 | MULTIUSER | `features/grants/revocation-mid-session.feature` | removing the grant flips the streamer back to fail-closed on the next attempt; **ban beats a still-active grant** from the victim's perspective |
@@ -36,41 +33,43 @@ forbidden.
 | CROSS-USER | `features/gating/cross-user-isolation.feature` | with **real authenticated sessions** the owncast-bff returns exactly 403 (not an anonymous 401) to a streamer self-grant, a mod manage-write, a streamer mod-read, a no-role streamer-read and a plain-admin superadmin read — against the real openapi.json paths with well-formed bodies; the superadmin 200 is the ALLOW counterexample; anonymous → 401/403 |
 | A11Y | `features/a11y/accessibility.feature` | skip-link → focus `#owncast-main`, `role="menubar"` named nav, roving tabindex + Arrow-key nav, each view region named, forbidden screen `role="alert"` |
 
-**Session honesty split** (enforced across the suite): `signs in with a real
-Casdoor session` (full login, HttpOnly `bff_` cookie, isolated context per
-user) for every scenario that performs a real write or asserts a real bff
-response; `has a seeded session` (localStorage only, **no** bff cookie — every
-/bff fetch would be anonymous) ONLY for pure client-side behaviour: guard
-redirects, role-aware nav, a11y contracts, and form validation that never fires
-a request. Live scenarios pin their own starting state (idempotent revokes +
-own-visibility reset) instead of assuming a virgin database, and every notice
-or error is asserted by exact text.
+**Session honesty split** (held across the suite). `signs in with a real Casdoor
+session` (full login, HttpOnly `bff_` cookie, isolated context per user) is for
+every scenario that does a real write or asserts a real BFF response. `has a
+seeded session` (localStorage only, **no** BFF cookie, so every /bff fetch would
+be anonymous) is for pure client-side behaviour only: guard redirects, role-aware
+nav, a11y contracts, and form validation that never sends a request. Live
+scenarios set their own starting state (idempotent revokes and an own-visibility
+reset) instead of assuming an empty database, and every notice or error is
+asserted by exact text.
 
 The owncast role model mirrors `hugmesh-owncast-bff-api` SecurityConfig:
 `STREAM = ROLE_OWNCAST`, `MANAGE = ADMIN|SUPERADMIN`, `MANAGE-ALL = SUPERADMIN`
-(the list-active + history reads), `MODERATE = MOD|ADMIN|SUPERADMIN`. A denied
-child-route activation routes to the **in-remote** `/owncast/forbidden` screen
-(NOT `/login`, NOT `/forbidden`) — the host already authgated the user into the
-`/owncast` mount, so a denial here is a within-service privilege boundary.
+(the list-active and history reads), `MODERATE = MOD|ADMIN|SUPERADMIN`. A denied
+child route goes to the **in-remote** `/owncast/forbidden` screen (NOT `/login`,
+NOT `/forbidden`). The host already let the user into the `/owncast` mount, so a
+denial here is a privilege boundary inside the service.
 
 ## Ships dark (wave 2b)
 
-Every scenario that needs a live stack (host shell serving the remote +
-owncast-bff + Casdoor seed) is tagged **`@cluster`** at the feature level. The
-default config filters them out (`tags: 'not @cluster'`), so the default run
-needs **no cluster** and the GitLab `e2e:bdd` job is `allow_failure: true`.
+Every scenario that needs a live stack (host shell serving the remote,
+owncast-bff and a Casdoor seed) is tagged **`@cluster`** at the feature level.
+The default config filters them out (`tags: 'not @cluster'`), so the default run
+needs **no cluster**, and the GitLab `e2e:bdd` job is `allow_failure: true`.
 
-`@cluster` is used deliberately instead of playwright-bdd's reserved `@skip`:
-`@skip` drops a scenario from generation entirely (`bddgen` emits 0 specs for
-it), so a `@skip`-tagged suite cannot be *discovered*. `@cluster` is a plain
-filter tag — the no-filter validation below generates and lists all 42
-scenarios, proving the Gherkin compiles, while the default config keeps them
-dark.
+The tag is `@cluster` and not playwright-bdd's reserved `@skip` on purpose.
+`@skip` drops a scenario from generation (`bddgen` emits 0 specs for it), so a
+`@skip` suite cannot be *discovered*. `@cluster` is a plain filter tag: the
+no-filter validation below generates and lists all 42 scenarios, which proves the
+Gherkin compiles, while the default config keeps them dark.
 
-This harness is PURE TEST CODE in a NEW `e2e/` dir — it does not touch the karma
+The harness is pure test code in its own `e2e/` dir. It does not touch the Karma
 unit build or any app code.
 
 ## Offline validation (no cluster)
+
+With the default config, `npx playwright test --list` prints `Error: No tests
+found` and exits 1. That is the dark state, not a failure.
 
 ```sh
 npm install
@@ -94,14 +93,15 @@ rm pw-validate.config.ts
 
 ## Running against a live stack (later wave)
 
-Drop the `@cluster` tag from a feature (or run with an override config that
-omits the `not @cluster` filter), export `E2E_BASE_URL`, then `npm run bdd`.
+Drop the `@cluster` tag from a feature (or run an override config without the
+`not @cluster` filter), export `E2E_BASE_URL` (default
+`https://host.docker.internal:8443`), then run `npm run bdd`.
 
-Per-user `E2E_<ROLE>_PASSWORD` / shared `E2E_PASSWORD` env vars are optional
-overrides, not requirements: `tests/helpers/roles.ts` (`passwordFor()`) falls
-back to the run-state `.e2e-credentials` file written by hugmesh-generator's
-`make stack-seed` (`$E2E_CREDENTIALS_FILE`, or a `.e2e-credentials` found by
-walking up from cwd). There is no built-in literal password — if nothing
-resolves, the suite throws naming `make stack-seed` rather than silently
-authenticating with a guessable default. The offline validation above is
-unaffected: passwords resolve at login time, not at `bddgen` / `--list` time.
+The per-user `E2E_<ROLE>_PASSWORD` and shared `E2E_PASSWORD` env vars are
+optional overrides. `tests/helpers/roles.ts` (`passwordFor()`) falls back to the
+run-state `.e2e-credentials` file that hugmesh-generator's `make stack-seed`
+writes (`$E2E_CREDENTIALS_FILE`, or a `.e2e-credentials` found by walking up
+from cwd). There is no built-in literal password. If nothing resolves, the suite
+throws, naming `make stack-seed`, rather than log in with a guessable default.
+The offline validation above is unaffected: passwords resolve at login time, not
+at `bddgen` or `--list` time.
