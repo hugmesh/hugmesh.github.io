@@ -5,7 +5,7 @@ slug: "overview"
 summary: "The Game Studio front door: a self-hosted multi-game portal with RPG and visual-novel makers, a 19-title catalog, an Angular shell and a Spring Boot gaming BFF."
 source_repo: "hugmesh-games"
 source_path: "README.md"
-source_ref: "f3c3208"
+source_ref: "443605d"
 ---
 
 A self-hosted multi-game studio and portal. Authors build RPG and visual-novel titles with the built-in makers. Players get a 20-title catalog through an **Angular** shell with live SSE multiplayer sessions. The **HugMesh Gaming BFF** (Spring Boot) handles game state, controls, and role management. **Casdoor** (OAuth2/OIDC) handles authentication, and its admin UI is never exposed to the network.
@@ -1749,6 +1749,31 @@ overlay). Pin the player password with `E2E_PLAYER_PASS=...` (otherwise a genera
 ```bash
 make clean
 ```
+
+### Versions and releases
+
+All five images (`backend`, `frontend`, `rpg-builder`, `vn-builder`, `wasm-fragment`) carry one
+version, kept in the top-level [`VERSION`](VERSION) file. The current version is `0.2.0-beta.1`:
+built and tested, not yet in the default mesh. The same string is written into the three poms,
+the three Java Dockerfiles' jar names, `frontend/package.json` and its lock, and the Makefile's
+`BACKEND_JAR`. `make check-version` fails if any of them disagree.
+
+[`.github/workflows/release.yml`](.github/workflows/release.yml) runs the same four test legs as
+the GitLab test stage, then builds and pushes `ghcr.io/hugmesh/hugmesh-games/<component>`:
+
+| Trigger | Image tags | GitHub Release |
+|---|---|---|
+| push to `main`, or a manual run on `main` | `:main`, `:sha-<12>` | none |
+| push of tag `v<VERSION>`, or a manual run on that tag | `:<VERSION>`, `:beta`, `:sha-<12>` | prerelease, never marked latest |
+
+A beta is never tagged `latest`, and a published `<VERSION>` tag is never overwritten: the run
+fails if it already exists. To cut the next beta, raise `N` in `-beta.N` in every file above
+(`make check-version` green), merge, then tag that commit on `main` with `v<VERSION>`.
+
+The jobs run on hosted `ubuntu-latest` unless the repo variable `RUNS_ON_PUBLISH` holds a runner
+label array (for example `["self-hosted","Linux","X64"]`) and the run is on `main` or a `v*` tag.
+Deleting the variable sends every job back to hosted runners. The workflow has no pull-request
+trigger.
 
 ---
 

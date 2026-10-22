@@ -183,15 +183,6 @@
     },
     {
       "section": "architecture",
-      "slug": "federation-walkthrough",
-      "title": "Federation examples \u2014 the module-federation walkthrough",
-      "summary": "End-to-end tour of native-federation using the four runnable archetype example codebases, covering the runtime mount side.",
-      "repo": "hugmesh-generator",
-      "path": "docs/FEDERATION-EXAMPLES.md",
-      "order": 6
-    },
-    {
-      "section": "architecture",
       "slug": "platform-topology",
       "title": "Platform Topology \u2014 where this host sits",
       "summary": "Where the host shell sits in the multi-tier topology: gateway in front, Casdoor as issuer, Cassandra for revocation and URL-registry cache.",
@@ -279,15 +270,6 @@
       "repo": "hugmesh-generator",
       "path": "docs/ARCHITECTURE.md",
       "order": 16
-    },
-    {
-      "section": "architecture",
-      "slug": "mesh-repo-templating",
-      "title": "Mesh repo-templating \u2014 current state (Phases 1\u20137)",
-      "summary": "The Handlebars render engine and guardrails for multi-tenant mesh repo-templating through Phase 7 including cross-mesh decentralization.",
-      "repo": "hugmesh-generator",
-      "path": "docs/MESH-TEMPLATING.md",
-      "order": 17
     },
     {
       "section": "architecture",
@@ -381,15 +363,6 @@
     },
     {
       "section": "operations",
-      "slug": "devops-namespace",
-      "title": "DevOps platform (devops namespace, x86_64 host)",
-      "summary": "The devops namespace pinned to the x86_64 host running GitOps, CI, forge and binhost tooling, reachable only over the VPN.",
-      "repo": "hugmesh-generator",
-      "path": "docs/DEVOPS.md",
-      "order": 9
-    },
-    {
-      "section": "operations",
       "slug": "superadmin-mesh-access",
       "title": "Superadmin mesh client \u2014 join & SSH reach (v1)",
       "summary": "Operator runbook for a superadmin joining the tailnet mesh and reaching nodes over SSH using the seeded bootstrap identity.",
@@ -414,24 +387,6 @@
       "repo": "hugmesh-generator",
       "path": "docs/EMERGE-PLAN-PREVIEW.md",
       "order": 12
-    },
-    {
-      "section": "operations",
-      "slug": "meshtastic-bridge",
-      "title": "Meshtastic LoRa mesh \u2194 Matrix bridge (meshbridge)",
-      "summary": "Bridging Meshtastic LoRa radio traffic into Matrix rooms over USB-serial, TCP or MQTT as a default-off runtime service.",
-      "repo": "hugmesh-generator",
-      "path": "docs/MESHTASTIC-BRIDGE.md",
-      "order": 13
-    },
-    {
-      "section": "operations",
-      "slug": "xr-chat",
-      "title": "XR chat",
-      "summary": "The default-off XR chat room and Character Forge 3D slug covering WebXR/Quest and desktop face-tracking architecture and the coturn dependency.",
-      "repo": "hugmesh-generator",
-      "path": "docs/XR-CHAT.md",
-      "order": 14
     },
     {
       "section": "operations",
@@ -1317,15 +1272,6 @@
     },
     {
       "section": "games",
-      "slug": "godot-developer-guide",
-      "title": "Godot Developer Guide",
-      "summary": "How work inside a game directory compiles into the shapes the rest of the stack expects: slugs, export paths, asset registrations, scene DTOs and manifests.",
-      "repo": "hugmesh-games",
-      "path": "docs/GODOT_DEVELOPER_GUIDE.md",
-      "order": 13
-    },
-    {
-      "section": "games",
       "slug": "overview",
       "title": "HugMesh Game Studio",
       "summary": "The Game Studio front door: a self-hosted multi-game portal with RPG and visual-novel makers, a 19-title catalog, an Angular shell and a Spring Boot gaming BFF.",
@@ -1342,16 +1288,6 @@
       "repo": "hugmesh-games",
       "path": "docs/wiki/architecture/01-overview.md",
       "order": 15
-    },
-    {
-      "section": "games",
-      "slug": "extending",
-      "title": "07 \u2014 Extending the portal",
-      "summary": "Quick index of common extension tasks and the canonical contract the how-to recipes follow.",
-      "group": "architecture",
-      "repo": "hugmesh-games",
-      "path": "docs/wiki/architecture/07-extending.md",
-      "order": 16
     },
     {
       "section": "games",
@@ -1755,16 +1691,6 @@
     },
     {
       "section": "games",
-      "slug": "godot-developer",
-      "title": "Godot developer guide",
-      "summary": "A step-by-step Godot 4 walkthrough from creating a game directory to seeing a row on the home page.",
-      "group": "guides",
-      "repo": "hugmesh-games",
-      "path": "docs/wiki/guides/godot-developer.md",
-      "order": 57
-    },
-    {
-      "section": "games",
       "slug": "maintainer-runbook",
       "title": "Maintainer runbook",
       "summary": "The detect, triage and mitigate incident-response runbook for whoever owns the live stack on call.",
@@ -1862,16 +1788,6 @@
       "repo": "hugmesh-games",
       "path": "docs/wiki/howto/run-multi-user-e2e.md",
       "order": 67
-    },
-    {
-      "section": "games",
-      "slug": "add-a-game",
-      "title": "How to add a new game",
-      "summary": "Two paths for adding a game depending on whether it ships in-repo or is hot-uploaded at runtime.",
-      "group": "howto",
-      "repo": "hugmesh-games",
-      "path": "docs/wiki/howto/add-game.md",
-      "order": 68
     },
     {
       "section": "games",

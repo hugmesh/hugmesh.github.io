@@ -48,7 +48,12 @@
 }
 
 .platform {
-  margin-top: 2.5rem;
+  margin-top: 1.75rem;
+
+  h3 {
+    margin: 0;
+    font-size: 1.15rem;
+  }
 
   ul {
     margin: 1rem 0 0;
@@ -75,7 +80,7 @@
   justify-content: space-between;
   gap: 0.75rem;
 
-  h3 {
+  h4 {
     margin: 0;
     font-size: 1.05rem;
   }
@@ -189,4 +194,199 @@
     letter-spacing: 0.04em;
     text-transform: uppercase;
   }
+}
+
+// ── Product sections (Studio, images) ──────────────────────────────────────
+
+.product {
+  margin-top: 2.75rem;
+}
+
+.product-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+
+  h2 {
+    margin: 0;
+  }
+}
+
+// Pastel on the page background, never colour alone: the word says it too.
+.badge {
+  display: inline-block;
+  padding: 0.1rem 0.55rem;
+  border: 1px solid var(--hug-border);
+  border-radius: 999px;
+  color: var(--hug-text);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+
+  &.beta {
+    border-color: t.$pastel-peach;
+    color: t.$pastel-peach;
+    text-transform: uppercase;
+  }
+}
+
+.status {
+  max-width: 70ch;
+  margin: 0.6rem 0;
+  color: var(--hug-text);
+  font-size: 0.92rem;
+
+  code {
+    font-family: t.$font-mono;
+  }
+}
+
+.muted {
+  color: var(--hug-text-muted);
+}
+
+.sums {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+}
+
+.verify h3 {
+  font-size: 1.15rem;
+}
+
+.verify .code-block + .code-block,
+.verify .code-block + p {
+  margin-top: 0.75rem;
+}
+
+.image-group {
+  margin-top: 1.75rem;
+
+  h3 {
+    margin: 0;
+    font-size: 1.15rem;
+  }
+
+  .field-help {
+    margin: 0.2rem 0 0;
+    color: var(--hug-text-muted);
+    font-size: 0.88rem;
+  }
+}
+
+.images {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 24rem), 1fr));
+  gap: 0.75rem;
+  margin: 0.9rem 0 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    min-width: 0;
+    padding: 0.85rem 1rem;
+    background: rgba(t.$black, 0.72);
+    border: 1px solid var(--hug-border);
+    border-radius: t.$radius-card;
+  }
+
+  li.unpublished {
+    background: rgba(t.$black, 0.5);
+  }
+
+  // A published image carries two long commands: give it the whole row so they
+  // can be read without scrolling inside the block on a desktop.
+  li:not(.unpublished) {
+    grid-column: 1 / -1;
+  }
+
+  .status {
+    margin: 0.35rem 0 0;
+    font-size: 0.85rem;
+  }
+
+  li.unpublished .status {
+    color: var(--hug-text-muted);
+  }
+
+  .code-block {
+    margin: 0.5rem 0 0;
+    // Room above the first line for the PULL / VERIFY label, which otherwise
+    // sits on top of the end of the command.
+    padding-top: 1.6rem;
+    font-size: 0.78rem;
+  }
+}
+
+.badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+// A version is copied by hand into commands: it must show exactly as tagged,
+// never upper-cased like the BETA label next to it.
+.badge.version {
+  font-family: t.$font-mono;
+  font-weight: 600;
+  text-transform: none;
+}
+
+.ref {
+  margin: 0.3rem 0 0;
+  font-size: 0.82rem;
+
+  code {
+    font-family: t.$font-mono;
+    overflow-wrap: anywhere;
+  }
+}
+
+.cmd {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+
+  .code-block {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  button {
+    flex: 0 0 auto;
+    margin-top: 0.5rem;
+    padding: 0.3rem 0.6rem;
+    background: var(--hug-bg-2);
+    border: 1px solid var(--hug-border);
+    border-radius: t.$radius-sm;
+    color: var(--hug-text);
+    font-size: 0.75rem;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+      border-color: var(--hug-accent-soft);
+    }
+  }
+}
+
+.digest {
+  margin: 0.4rem 0 0;
+  color: var(--hug-text-muted);
+  font-size: 0.8rem;
+
+  code {
+    font-family: t.$font-mono;
+    color: var(--hug-text);
+  }
+}
+
+.checked {
+  margin-top: 2rem;
+  color: var(--hug-text-muted);
+  font-size: 0.82rem;
 }

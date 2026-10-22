@@ -5,7 +5,7 @@ slug: "host-shell-security"
 summary: "Vulnerability policy for the host shell, noting it exposes no feature surface of its own since authorization is enforced at the gateway and role BFFs."
 source_repo: "hugmesh-host-shell"
 source_path: "SECURITY.md"
-source_ref: "8264536"
+source_ref: "hugmesh/hugmesh-host-shell@HEAD"
 ---
 
 ## Scope

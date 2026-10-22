@@ -26,17 +26,47 @@
 # closes hugmesh.github.io#15, is docs/go-live-cloudflare.md.
 # The CNAME file in src/ is copied into the artifact by the build; losing it silently
 # unbinds the domain, so scripts/spa-fallback.mjs asserts it is present.
+#
+# RELEASE DATA (the Downloads page). The page reads assets/releases.json, and nobody
+# writes that file by hand: the "Fetch release data" step below builds it on every run
+# from the GitHub Releases API (Studio, hugmesh-generator `studio-v*` tags) and the
+# GHCR registry (every image in release-sources.json), anonymously apart from this
+# workflow's own token. So the site must be rebuilt whenever something is published.
+# Three triggers do that, none of which needs a secret in THIS repository:
+#   * repository_dispatch `releases-updated`: sent by the release workflows in the other
+#     repos as their last step. GITHUB_TOKEN cannot dispatch across repositories, so
+#     the SENDER needs a secret SITE_DISPATCH_TOKEN (a fine-grained token or GitHub App
+#     token with Contents: read and write on hugmesh/hugmesh.github.io). Until that
+#     secret exists the senders skip the call with a notice, and:
+#   * schedule, hourly: the fallback that works with no secret anywhere. GitHub runs
+#     scheduled workflows only from the default branch, may start them late, and
+#     DISABLES them in a public repository after 60 days without a commit; re-enable
+#     from the Actions tab if that happens.
+#   * workflow_dispatch: a person asks for a refresh.
+# The payload of a dispatch is never trusted: the fetch step re-reads GitHub itself.
 name: Deploy Pages
 
 on:
   push:
     branches: [main]
   workflow_dispatch: {}
+  repository_dispatch:
+    types: [releases-updated]
+  schedule:
+    - cron: '17 * * * *'
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+# LEAST PRIVILEGE, per job. Nothing at workflow level, so a job that forgets its own
+# block gets no token scopes at all rather than inheriting write ones.
+#   build:  contents: read (checkout) and pages: read (the probe step, the hourly
+#           "changed" step and configure-pages only GET /repos/{repo}/pages;
+#           configure-pages writes only with `enablement: true`, which is not set).
+#           It runs npm ci, the release fetch and ng build hourly and on every
+#           dispatch, so it must never hold a write scope or an OIDC token.
+#   deploy: pages: write and id-token: write, nothing else; it runs no repository code.
+# Uploading the Pages artifact and deploy-pages' artifact lookup use the Actions
+# runtime token, not GITHUB_TOKEN, so neither job needs `actions: read`.
+# scripts/pages-workflow.test.mjs (part of `npm test`) fails if any of this regresses.
+permissions: {}
 
 concurrency:
   group: pages
@@ -48,8 +78,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
+      pages: read
     outputs:
       pages_ready: ${{ steps.probe.outputs.ready }}
+      release_data_changed: ${{ steps.changed.outputs.changed }}
     steps:
       - uses: actions/checkout@v4
 
@@ -80,6 +114,18 @@ jobs:
         run: npm run check:content
         continue-on-error: true
 
+      - name: Fetch release data (Studio releases, GHCR images)
+        # Writes src/assets/releases.json; the build copies it to assets/. Not-yet-
+        # published items (404, or a package the registry will not list anonymously)
+        # are written as "not published", which is what a visitor would see. A
+        # timeout, a 5xx, a rate limit or a checksum that disagrees with GitHub's own
+        # digest FAILS this step after retries: the deploy is then skipped and the
+        # live site keeps its previous, still-correct data. The token only raises the
+        # API rate limit; it reads public repositories, as any visitor could.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: npm run fetch:releases
+
       - name: Build
         # prebuild renders content/ -> src/assets/content; postbuild writes the SPA
         # fallback, .nojekyll and asserts the CNAME survived.
@@ -103,6 +149,18 @@ jobs:
           pages=$(find assets/content -name '*.json' | wc -l)
           echo "404 fallback OK · CNAME $(cat CNAME) · $pages content files"
           [ "$pages" -gt 10 ] || { echo "::error::content payload looks empty"; exit 1; }
+          # The Downloads page's data must be in the artifact and must be what the page
+          # can read (the same validator the page runs).
+          [ -f assets/releases.json ] || { echo "::error::assets/releases.json missing from the Pages artifact"; exit 1; }
+          node --input-type=module -e "
+            import { readFileSync } from 'node:fs';
+            import { validateReleaseData } from '../../src/app/downloads/release-data.ts';
+            const data = JSON.parse(readFileSync('assets/releases.json', 'utf8'));
+            const errors = validateReleaseData(data);
+            if (errors.length) { for (const e of errors) console.log('::error::releases.json: ' + e); process.exit(1); }
+            const n = data.images.filter((i) => i.version).length;
+            console.log('releases.json OK · Studio ' + (data.studio ? data.studio.version : 'not published') + ' · images ' + n + '/' + data.images.length + ' published');
+          "
 
       - id: probe
         name: Is Pages configured on this repository?
@@ -147,19 +205,46 @@ jobs:
             echo "::notice::Pages is not enabled on this repository (expected while it stays private, decision 115) — built and verified, deploy skipped by design."
           fi
 
+      - id: changed
+        name: On the hourly run, did the release data change?
+        # A scheduled run exists only to pick up new releases. If what it fetched
+        # equals what the live site already serves (ignoring the generation time),
+        # do not redeploy an identical site every hour. Any doubt (live file
+        # unreachable, unparsable) counts as changed, so the failure mode is one
+        # redundant deploy, never a missed release.
+        if: github.event_name == 'schedule' && steps.probe.outputs.ready == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          base="$(gh api "repos/${GITHUB_REPOSITORY}/pages" --jq .html_url)"
+          if curl -fsSL --max-time 30 "${base%/}/assets/releases.json" -o "$RUNNER_TEMP/live.json" &&
+             node -e '
+               const fs = require("node:fs");
+               const strip = (f) => { const d = JSON.parse(fs.readFileSync(f, "utf8")); delete d.generated; return JSON.stringify(d); };
+               process.exit(strip(process.argv[1]) === strip(process.argv[2]) ? 0 : 1);
+             ' "$RUNNER_TEMP/live.json" dist/browser/assets/releases.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Release data unchanged since the last deploy; skipping this hourly deploy."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/configure-pages@v5
-        if: steps.probe.outputs.ready == 'true'
+        if: steps.probe.outputs.ready == 'true' && steps.changed.outputs.changed != 'false'
 
       - uses: actions/upload-pages-artifact@v3
-        if: steps.probe.outputs.ready == 'true'
+        if: steps.probe.outputs.ready == 'true' && steps.changed.outputs.changed != 'false'
         with:
           path: dist/browser
 
   deploy:
     needs: build
-    if: needs.build.outputs.pages_ready == 'true'
+    if: needs.build.outputs.pages_ready == 'true' && needs.build.outputs.release_data_changed != 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
