@@ -5,7 +5,7 @@ slug: "shared-build-config"
 summary: "A resource-only JAR carrying the ecosystem's shared static-analysis rulesets."
 source_repo: "hugmesh-build-config"
 source_path: "README.md"
-source_ref: "hugmesh/hugmesh-build-config@HEAD"
+source_ref: "3d21950"
 ---
 
 A small **resource-only JAR** that carries the shared static-analysis rulesets
@@ -15,7 +15,7 @@ argued about once; rules copied into every repo get argued about in every repo.
 ```
 groupId:    net.hugmesh
 artifactId: hugmesh-build-config
-version:    0.5.0
+version:    0.6.0-beta.1
 packaging:  jar
 ```
 
@@ -38,7 +38,7 @@ Checked against the code and config on `main`:
   the 4 XML files under `src/main/resources/hugmesh/`. There is nothing to
   unit-test beyond the package build itself.
 - **`mvn -o package` builds offline.** It produces
-  `target/hugmesh-build-config-0.5.0.jar` with exactly the 4 resources at the
+  `target/hugmesh-build-config-0.6.0-beta.1.jar` with exactly the 4 resources at the
   bare `hugmesh/<file>.xml` path.
 - **All three analysers (PMD, Checkstyle, SpotBugs) fail the build, fleet-wide.**
   `hugmesh-parent`'s `pom.xml` shows it. PMD flipped to
@@ -88,7 +88,7 @@ flowchart LR
     PASS["Build succeeds"]
 
     XML --> JAR
-    JAR -->|"Release workflow\n(manual dispatch)"| REG
+    JAR -->|"Release workflow\n(v* tag push)"| REG
     REG -->|"plugin classpath dependency\n(hugmesh/*.xml)"| PARENT
     PARENT -->|"inherited by every child repo"| REPO
     REPO --> GATE
@@ -147,12 +147,41 @@ the 4 resources. It needs no external repository, because this artifact has no
 ## Publishing
 
 Publishing is the **`Release`** GitHub Actions workflow
-(`.github/workflows/release.yml`). It runs on `workflow_dispatch` only, never on
-push or tag. It runs `mvn package`, then `mvn deploy` to GitHub Packages
-(`https://maven.pkg.github.com/hugmesh/hugmesh-build-config`), using the
-workflow's own `GITHUB_TOKEN`. No secret is committed. This jar is link 1 of 4 in
-the org's publish chain (`hugmesh-build-config` → `hugmesh-parent` →
-`hugmesh-commons` → `hugmesh-auth-core`); `RELEASING.md` in this repo has the detail.
+(`.github/workflows/release.yml`). A person publishes a version by pushing an
+annotated tag `v<version>` on a commit on `main`, where `<version>` is exactly the
+`<version>` in `pom.xml` (today `v0.6.0-beta.1`). The workflow then runs
+`mvn verify`, `mvn deploy` to GitHub Packages
+(`https://maven.pkg.github.com/hugmesh/hugmesh-build-config`) with the
+workflow's own `GITHUB_TOKEN`, and creates a GitHub Release. While the version
+has a `-` (a beta), that release is a prerelease and is never marked latest.
+
+| Event | What happens |
+|---|---|
+| push of tag `v<version>` | verify, deploy, GitHub Release |
+| manual run (`workflow_dispatch`) on a `v*` tag | the same; this is the re-run path |
+| manual run on `main` | `mvn verify` only, nothing deployed |
+| anything else | refused by the version guard |
+
+There is no push-to-branch and no pull-request trigger: a Maven coordinate is
+immutable, so only a tag decides that a version is published. The version guard
+refuses a tag that does not match `pom.xml`, a tag on a commit that is not on
+`main`, and any `-SNAPSHOT` version.
+
+Every job runs on the runner named by the repository variable
+`RUNS_ON_PUBLISH` (a JSON array such as `["self-hosted","Linux","X64"]`) when
+the run is for `main` or a `v*` tag, and on hosted `ubuntu-latest` otherwise,
+including whenever that variable is unset. Deleting the variable sends
+publishing back to hosted runners. No job here reads `RUNS_ON`.
+
+Version scheme: `MAJOR.MINOR.PATCH-beta.N`. N starts at 1 and goes up by one
+for each published beta of the same base version. `0.6.0-beta.1` is the first
+beta after `0.5.0`. `0.5.0` had one green deploy run on 2026-10-07 (run
+37699404165, a manual run of the old dispatch-only workflow); nobody has read it
+back from the registry yet.
+
+This jar is link 1 of 4 in the org's publish chain (`hugmesh-build-config` →
+`hugmesh-parent` → `hugmesh-commons` → `hugmesh-auth-core`); `RELEASING.md` in
+this repo has the detail.
 
 Two rules for a release:
 

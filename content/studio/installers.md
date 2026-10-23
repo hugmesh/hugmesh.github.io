@@ -5,7 +5,7 @@ slug: "installers"
 summary: "What the installers package, what they still need from the host, and how a release is cut."
 source_repo: "hugmesh-generator"
 source_path: "docs/STUDIO-INSTALLERS.md"
-source_ref: "hugmesh/hugmesh-generator@HEAD"
+source_ref: "94f21156"
 ---
 
 The HugMesh Image Studio runs from a checkout (`studio/hugmesh-studio`, or
@@ -22,10 +22,41 @@ checkout.
 |---|---|---|
 | `hugmesh-studio-<version>-x64.msi` | Windows 10/11 x64 | PyInstaller → WiX v6 |
 | `hugmesh-studio-<version>-x86_64.flatpak` | x86_64 Linux with Flatpak | flatpak-builder, `org.kde.Platform` 6.8 |
+| `hugmesh-studio-<version>-linux-x86_64.tar.gz` | x86_64 Linux, glibc 2.39+ | PyInstaller (same spec as the MSI) |
 
 [`.github/workflows/studio-release.yml`](../.github/workflows/studio-release.yml)
-builds both and attaches them to a GitHub Release, with `SHA256SUMS` and a
-`releases.json` that feeds the Downloads page on the documentation site.
+builds all three **on GitHub-hosted runners only**, signs them there, and attaches
+them to a GitHub Release with `SHA256SUMS`, its cosign signature bundle
+`SHA256SUMS.sigstore.json`, SPDX SBOMs and a `releases.json` that feeds the Downloads
+page on the documentation site. Nothing built on a developer machine is ever published;
+the local scripts below are dry runs.
+
+## Verifying a download
+
+Every published file has a GitHub build-provenance attestation, and `SHA256SUMS` is
+signed keyless with cosign by the release workflow at the release tag. For
+`0.3.0-beta.1`:
+
+```bash
+gh attestation verify hugmesh-studio-0.3.0-beta.1-x64.msi \
+  --repo hugmesh/hugmesh-generator \
+  --signer-workflow hugmesh/hugmesh-generator/.github/workflows/studio-release.yml \
+  --source-ref refs/tags/studio-v0.3.0-beta.1 \
+  --deny-self-hosted-runners
+
+cosign verify-blob --bundle SHA256SUMS.sigstore.json \
+  --certificate-identity https://github.com/hugmesh/hugmesh-generator/.github/workflows/studio-release.yml@refs/tags/studio-v0.3.0-beta.1 \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+  SHA256SUMS
+sha256sum --check --ignore-missing SHA256SUMS
+```
+
+The release notes print the same commands for each release, including the identity as
+an anchored regular expression for `--certificate-identity-regexp`.
+
+Artifact attestations need the repository to be **public** on this org's plan. On a
+private repository the attest step fails and the workflow creates no release, so the
+first release must be tagged after the repository is public.
 
 ## What an installer does and does not give you
 
@@ -55,12 +86,12 @@ refuses a machine the app runs on only teaches people to switch checks off.
 The MSI installs **per-user**, under `%LOCALAPPDATA%\HugMesh\Image Studio`. It needs
 no administrator rights and shows no UAC prompt.
 
-It is **not code-signed**; no certificate is configured. SmartScreen will warn you the
-first time you run it. Check the SHA-256 from the release against your download
-before you run it:
+It is **not Authenticode-signed** yet; no certificate is configured. SmartScreen will
+warn you the first time you run it. Verify it as in "Verifying a download" above, or at
+least check its SHA-256 against `SHA256SUMS`:
 
 ```powershell
-Get-FileHash .\hugmesh-studio-1.0.0-x64.msi -Algorithm SHA256
+Get-FileHash .\hugmesh-studio-0.3.0-beta.1-x64.msi -Algorithm SHA256
 ```
 
 > **Windows and WSL.** `core/platform_info.py` records a decision (2026-08-14) that
@@ -75,7 +106,7 @@ Get-FileHash .\hugmesh-studio-1.0.0-x64.msi -Algorithm SHA256
 ## Linux
 
 ```bash
-flatpak install --user ./hugmesh-studio-1.0.0-x86_64.flatpak
+flatpak install --user ./hugmesh-studio-0.3.0-beta.1-x86_64.flatpak
 flatpak run org.hugmesh.ImageStudio --generator-dir ~/Github/hugmesh-generator
 ```
 
@@ -91,20 +122,73 @@ The release is a **bundle**, not a Flathub app. HugMesh's own governed desktops 
 the Flathub remote (`keys-template/desktop-governance/flatpak/flathub-disable.conf`),
 so Flathub would not reach the machines most likely to want this.
 
+## Versions
+
+The Studio follows the org's beta scheme: `MAJOR.MINOR.PATCH-beta.N`, for example
+`0.3.0-beta.1`. N starts at 1 and goes up by one for each published beta of the same
+base. A fix during a beta raises N, not PATCH. There is no `+build` part and never a
+`-SNAPSHOT`.
+
+The version is written in one place, `__version__` in
+`studio/hugmesh_studio/__init__.py`. Everything else is derived from it:
+
+| Where | What it shows for `0.3.0-beta.1` |
+|---|---|
+| Installer file names, About box, release tag | `0.3.0-beta.1`, tag `studio-v0.3.0-beta.1` |
+| MSI ProductVersion (Add/Remove Programs) | `0.3.1` |
+| Python package metadata (PEP 440) | `0.3.0b1` |
+
+**Why the MSI shows a different number.** An MSI version is numbers only, and
+Windows Installer compares just the first three fields when it decides whether one
+install replaces another. So the beta number goes into the third field:
+`PATCH * 100 + N` for `-beta.N`, and `PATCH * 100 + 99` for the final release.
+`0.3.0-beta.2` becomes `0.3.2`, the final `0.3.0` becomes `0.3.99`, and
+`0.3.1-beta.1` becomes `0.3.101`. That always goes up, and allows 98 betas per PATCH.
+[`studio/packaging/wix/msi_version.py`](../studio/packaging/wix/msi_version.py) does the
+mapping for both the workflow and `build-msi-wine.sh`.
+
+**If a 1.0.0 MSI is installed.** The Studio was numbered 1.0.0 before the beta scheme,
+and no 1.0.0 was ever released. A local 1.0.0 MSI built with `build-msi-wine.sh`
+counts as newer than `0.3.1`, so the beta installer refuses to replace it. Uninstall
+the 1.0.0 build first.
+
 ## Cutting a release
 
-1. Bump `__version__` in `studio/hugmesh_studio/__init__.py`. It is the **only** place
-   a version is written. The installer filenames, the About box and the release tag
-   all derive from it.
-2. Tag: `git tag studio-v1.2.3 && git push origin studio-v1.2.3`.
-   (Or run the workflow manually with **publish** ticked.)
-3. The workflow stops if the tag and `__version__` disagree.
-4. Copy the `releases.json` from the job summary into `hugmesh.github.io` at
-   `src/assets/releases.json`. That updates the site's Downloads page.
+1. Set `__version__` in `studio/hugmesh_studio/__init__.py` to the new beta, and add a
+   matching `<release>` to
+   `studio/packaging/flatpak/org.hugmesh.ImageStudio.metainfo.xml` (AppStream writes
+   the pre-release with `~`: `0.3.0~beta.2`). Merge that to `main`.
+2. Tag the merged commit on `main` and push the tag:
+   `git tag -a studio-v0.3.0-beta.2 -m "Studio 0.3.0-beta.2" && git push origin studio-v0.3.0-beta.2`.
+3. The workflow stops if the tag and `__version__` disagree. It builds the MSI, the
+   Flatpak and the tarball, writes `SHA256SUMS`, signs it with cosign, attests every
+   file, and only then creates the GitHub Release, marked **pre-release** and never
+   "latest".
+4. Its last step sends `hugmesh/hugmesh.github.io` a `releases-updated`
+   repository_dispatch so the site rebuilds its Downloads data. That needs the
+   repository secret `SITE_DISPATCH_TOKEN` (a fine-grained token with Contents: read
+   and write on `hugmesh/hugmesh.github.io` only). Without it the step prints a notice
+   and the site must be updated by hand: copy `releases.json` from the release into
+   `src/assets/releases.json` there.
 
-Step 4 is manual on purpose. `GITHUB_TOKEN` cannot reach another repository, and a
-cross-repo PAT for a once-per-release file would be the first PAT anywhere in this
-org. It is also the natural moment to write the release notes.
+To re-run a release, run the workflow manually **on the tag** with **publish** ticked:
+`gh workflow run studio-release.yml --repo hugmesh/hugmesh-generator --ref studio-v0.3.0-beta.2 -f publish=true`.
+If the release already exists, the run stops without changing it. A manual run on
+`main` builds both installers as workflow artifacts and publishes nothing. A run on
+any other branch is refused.
+
+Every job runs on a GitHub-hosted runner (`ubuntu-latest`, `ubuntu-24.04`,
+`windows-latest`); no variable can move one onto the self-hosted runner. Only the
+publish job can write or sign (`contents`, `id-token` and `attestations: write`).
+
+**Authenticode (optional).** Add the secrets `STUDIO_AUTHENTICODE_PFX_BASE64` (a
+base64-encoded code-signing `.pfx`) and `STUDIO_AUTHENTICODE_PFX_PASSWORD`, and the MSI
+job signs the exe and the MSI with `signtool` before checksumming them; the release
+notes and `releases.json` then stop saying SmartScreen will warn. Since 2023, newly
+issued public code-signing certificates live on hardware tokens and cannot be exported
+as a `.pfx`, so in practice this means a signing service (SignPath for open source, or
+Azure Trusted Signing); its action replaces the two `signtool` steps at the same two
+places. Until then the MSI is unsigned and SmartScreen warns.
 
 ## Building locally
 

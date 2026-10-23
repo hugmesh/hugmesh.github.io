@@ -5,7 +5,7 @@ slug: "wizard-flow"
 summary: "The Studio image-build wizard's four-choice to seven-step flow, per-path page map, and the parity TODO for ncurses, CLI and web channels."
 source_repo: "hugmesh-generator"
 source_path: "docs/STUDIO-WIZARD-FLOW.md"
-source_ref: "hugmesh/hugmesh-generator@HEAD"
+source_ref: "94f21156"
 ---
 
 > **Status: ✅ shipped in the Studio GUI.** This is the canonical reference for the
@@ -172,7 +172,7 @@ becomes applicable again is reachable and emitted again.
 | "Identity & Domain" (apex domain / games domain / release state) | cloud + mesh, and every ARM platform | `network.py` on a standalone x86 image — the "in-between menu for configuring domain" (`cluster_identity_applies`) |
 | Default account | `home.py` "Local user" | `system.py` "Default user" on desktop-class flows (`default_user_is_local_user`) |
 | Machine hardware scan | `hardware.py` | the synthetic `this-machine-scan` profile row on `role.py` |
-| "Themes" (web login) vs "Desktop theme" | both, retitled | the bare "Themes" label — the web group is now "Web login theme", and is mesh-only |
+| "Themes" (web login) vs "Desktop theme" | both, retitled | the bare "Themes" label — the web group was "Web login theme", mesh-only; since 2026-10-21 it is the Look tab of the mesh's own domain on the Domain services step, and the Branding page only points there |
 | "Seed stack code" | branded images | `home.py` on an unaffiliated image |
 | Image posture / `--capable` / desktop weight | roles where they genuinely compose | roles whose builder arm already pins them (`role_presets_standalone` / `role_presets_capable`) |
 | Sunshine | tailnet client desktops | standalone mode |

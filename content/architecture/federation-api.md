@@ -5,7 +5,7 @@ slug: "federation-api"
 summary: "The dynamic-federation registry and manifest API: the authoritative catalog of federated remote modules the host shells bootstrap from."
 source_repo: "hugmesh-federation-api"
 source_path: "README.md"
-source_ref: "92bc61a"
+source_ref: "c41c061"
 ---
 
 The platform's **dynamic-federation registry / DB / manifest API** — the
@@ -41,9 +41,9 @@ patterns.
 - ✅ **On the unified org baseline.** Migrated to **Spring Boot 4.0.7 / Spring
   Cloud 2025.1.2** (Spring Framework 7 / Spring Security 7 / Jackson 3, Java 25 LTS,
   GraalVM-native-ready). The repo is the org's **first adopter / exemplar** of the
-  shared Maven artifacts: it inherits `net.hugmesh:hugmesh-parent:2.8.0`
+  shared Maven artifacts: it inherits `net.hugmesh:hugmesh-parent:2.9.0-beta.1`
   (a child of `spring-boot-starter-parent:4.0.7`) and consumes
-  `net.hugmesh:hugmesh-commons:2.8.0` for the shared security/tenancy
+  `net.hugmesh:hugmesh-commons:2.2.0-beta.1` for the shared security/tenancy
   primitives (`CasdoorAuthorities`, `DomainRegistry`, `PrincipalDomain`, `Roles`,
   `TenancyResourceServerConfig`). The local copies were deleted — see *Shared
   commons library*.
@@ -80,8 +80,9 @@ patterns.
   (Dependency-Check SCA + ZAP DAST + nuclei, advisory) extend the org-wide template
   from `hugmesh-generator`. **No GitHub Actions anywhere.**
 - 🚧 / 🔭 open items are below in *Deferred / stubbed* and *Roadmap* (the vanity
-  PUBLISH trigger and moderation auto-apply are both shipped now; the remaining
-  cross-service gap is the gateway `PUBLIC_PATHS` allowlist entry).
+  PUBLISH trigger, moderation auto-apply and the gateway public-path allowlist
+  entry are all shipped now; the open entries are the MFA gate and the rest of the
+  tailnet module class, whose registration write surface has shipped).
 
 ## Where it sits in the architecture
 
@@ -150,7 +151,7 @@ flowchart TB
 This service is the **first adopter** of the org's shared Maven artifacts. Two
 de-duplication moves:
 
-1. **Parent POM →** `net.hugmesh:hugmesh-parent:2.8.0` (itself a child of
+1. **Parent POM →** `net.hugmesh:hugmesh-parent:2.9.0-beta.1` (itself a child of
    `spring-boot-starter-parent:4.0.7`, so the whole Spring Boot dependency/plugin
    management is inherited transitively). The parent consolidates the reactive-BFF
    `<dependencies>` (webflux/actuator/security/oauth2-resource-server/validation,
@@ -160,7 +161,7 @@ de-duplication moves:
    `commons-text`, `data-cassandra-reactive`, the AWS `s3` client, and the
    (now-version-managed) resilience4j artifacts.
 
-2. **Shared security/tenancy/web →** `net.hugmesh:hugmesh-commons:2.8.0`.
+2. **Shared security/tenancy/web →** `net.hugmesh:hugmesh-commons:2.2.0-beta.1`.
    The local copies of `security.{Roles,DomainRegistry,DomainScope}` and
    `config.{CasdoorAuthorities,TenancyResourceServerConfig}` were **deleted** and
    replaced by:
@@ -800,7 +801,7 @@ cached body, and a brand-B mutation (`OverrideService.applyUserScope` /
                      # REAL Postgres via Testcontainers, so a working Docker daemon
                      # IS required to run `./mvnw test` to completion (CI's `test:mvn`
                      # job attaches a `docker:27-dind` service for exactly this).
-./mvnw package       # builds target/federation-0.2.0.jar
+./mvnw package       # builds target/federation-0.3.0-beta.1.jar
 ./mvnw -Pnative native:compile   # GraalVM binary (needs a GraalVM host)
 ```
 
@@ -852,6 +853,29 @@ Postgres — see `FederationApplicationContextTest` and `application-test.yml`):
   authority mapping (incl. the authority-injection regressions), the multi-issuer
   fail-closed decoder, and HTTP authz per role.
 - `FederationApplicationContextTest` — full-context boot with degraded defaults.
+
+## Releases (beta)
+
+The version is the project `<version>` in `pom.xml`, currently `0.3.0-beta.1`
+(`MAJOR.MINOR.PATCH-beta.N`, the org beta scheme). `.github/workflows/release.yml`
+publishes `ghcr.io/hugmesh/hugmesh-federation-api`:
+
+- a push to `main` pushes `:main` and `:sha-<12 hex>`;
+- pushing the tag `v<version>` (for example `v0.3.0-beta.1`) pushes `:<version>`,
+  `:beta` and `:sha-<12 hex>`, and creates a GitHub Release marked prerelease and
+  not latest. The tag must equal `v` + the pom version, and an existing `:<version>`
+  is never overwritten: a fix raises N (`-beta.2`);
+- a manual dispatch on a `v*` tag re-runs that release; on `main` it is a main build.
+  A dispatch re-run only helps when the image was never pushed: once
+  `:<version>` exists the run stops at the overwrite check. If only the
+  GitHub Release step failed, use "Re-run failed jobs" on the original run.
+
+`:latest` is never pushed for a beta. The image build needs the
+`net.hugmesh` libraries (parent `2.9.0-beta.1`, commons `2.2.0-beta.1`) to be
+readable from GitHub Packages first, and the `PACKAGES_READ_TOKEN` secret.
+Jobs run on the runner named by the `RUNS_ON_PUBLISH` variable (a JSON array)
+for `main`, `v*` tags and their dispatches, and on hosted `ubuntu-latest`
+otherwise or when the variable is unset.
 
 ## Configuration (env)
 
@@ -946,17 +970,23 @@ Intentionally NOT implemented in the scaffold:
   profile fragment is synced/served only once the publish path above creates its
   registry row. The vanity HOST page is a `hugmesh.net` front-end concern,
   out of scope here.
-- **Gateway `PUBLIC_PATHS` allowlist (cross-service).** The shared gateway image
-  ends every chain with `anyExchange().authenticated()` and opens a hardcoded
-  `PUBLIC_PATHS` allowlist. `/api/federation/vanity/**` (and `/capabilities`) must
-  be added there so the fe-gateway does not 401 the anonymous public read before it
-  reaches federation — a one-line change in the `hugmesh-gateway` repo.
+- ~~**Gateway public-path allowlist (cross-service).**~~ **✅ Shipped in
+  `hugmesh-gateway`.** The shared gateway image ends every chain with
+  `anyExchange().authenticated()`. The three entries `/api/federation/vanity`,
+  `/api/federation/vanity/**` and `/api/federation/capabilities` live in the gateway's
+  `FE_SHELL_PUBLIC_GET_PATHS` constant (`SecurityConfig.java`, not in `PUBLIC_PATHS`),
+  which applies on the fe tier only and to GET only. `CanonicalSeed.java` seeds the
+  same three routes as `PUBLIC`, so the fe-gateway no longer 401s the anonymous public
+  read before it reaches federation. The compose route-access seed
+  (`compose/route-access-seed.sql`) carries the same rows since `hugmesh-gateway`
+  PR #36 (issue #34).
 
 ## Roadmap
 
 > **State convention:** ✅ shipped (merged to `main`) · 🚧 in-flight (code on an
-> open branch/PR, not yet merged) · 🔭 planned (design only, no code). Nothing
-> below is shipped in this repo — do not treat it as implemented.
+> open branch/PR, not yet merged) · 🔭 planned (design only, no code). Entries
+> struck through below are shipped; every other entry is either marked shipped in its own
+> text or not implemented in this repo — do not treat an unmarked entry as implemented.
 
 Within this repo (detail in *Deferred / stubbed*):
 
@@ -976,8 +1006,10 @@ Within this repo (detail in *Deferred / stubbed*):
 
 Cross-service / platform roadmap (other repos own the bulk; noted here for shape):
 
-- 🔭 **Gateway `PUBLIC_PATHS` allowlist** entry for `/api/federation/vanity/**` +
-  `/capabilities` — a one-line change in the `hugmesh-gateway` repo (see above).
+- ~~🔭 **Gateway public-path allowlist** entry for `/api/federation/vanity/**`
+  + `/capabilities`~~ **No longer roadmap — ✅ shipped** in `hugmesh-gateway`
+  (`FE_SHELL_PUBLIC_GET_PATHS` in `SecurityConfig.java`, fe tier and GET only, seeded
+  as `PUBLIC` in `CanonicalSeed.java`; see *Deferred / stubbed* above).
 - 🔭 **Casdoor MFA enforcement** (platform auth roadmap; design-complete, admin-bff
   Liquibase 150-band, `gateway_route_access.mfa_required` fail-closed gating). The
   shared commons converter already emits the `MFA_SATISFIED` authority (parity with

@@ -5,7 +5,7 @@ slug: "wiki-ui"
 summary: "The wiki management remote mounted at /wiki and gated to users holding the wiki role."
 source_repo: "hugmesh-wiki-ui"
 source_path: "README.md"
-source_ref: "hugmesh/hugmesh-wiki-ui@HEAD"
+source_ref: "ee7103a"
 ---
 
 The **wiki management UI** for the [HugMesh](https://github.com/hugmesh)
@@ -622,10 +622,38 @@ The pipeline has four stages (`stages: [test, e2e, build, pentest]`):
    security widget without breaking the pipeline. This is CI tooling only. It
    is not a deployed job and has no in-app trigger.
 
-A separate [`.github/workflows/release.yml`](.github/workflows/release.yml)
-(`workflow_dispatch` only; a person starts it) builds the same Dockerfile and
-publishes it to `ghcr.io/hugmesh/hugmesh-wiki-ui`, for consumers who pull the
-public image instead of building from the GitLab pipeline's internal registry.
+The one GitHub Actions workflow,
+[`.github/workflows/release.yml`](.github/workflows/release.yml), builds the
+same Dockerfile and publishes it to `ghcr.io/hugmesh/hugmesh-wiki-ui`, for
+consumers who pull the public image instead of building from the GitLab
+pipeline's internal registry. It first runs the same Karma unit tests as the
+GitLab `test` job, then:
+
+- On a push to `main`, it pushes the tags `main` and
+  `sha-<first 12 hex of the commit>`.
+- On a `v<version>` tag, it pushes `<version>`, `beta` (for beta versions) and
+  `sha-<12 hex>`, and creates a GitHub release marked as a prerelease and not
+  latest. The tag must equal `v` plus the `version` in `package.json` (and
+  `package-lock.json`), and it must point at a commit on `main`. A version tag
+  that is already in the registry is never overwritten.
+- A manual run (`workflow_dispatch`) on `main` or on a `v*` tag does the same
+  as the matching push. Any other branch or tag is refused.
+- It never pushes `latest`, and it has no pull-request trigger.
+
+Its jobs run on the self-hosted runner only when the repository variable
+`RUNS_ON_PUBLISH` holds a runner label list (for example
+`["self-hosted","Linux","X64"]`) and the run is for `main` or a `v*` tag.
+Otherwise they run on GitHub's hosted `ubuntu-latest`.
+
+### Versions
+
+The version in `package.json` is the image version. It uses
+`MAJOR.MINOR.PATCH-beta.N`; the current version is `0.2.0-beta.1` (built and
+tested, not yet proven on a live mesh). To publish a beta, set the new version
+in `package.json` and `package-lock.json` (for example
+`npm version 0.2.0-beta.2 --no-git-tag-version`), merge that to `main`, then
+push an annotated tag `v0.2.0-beta.2` on that commit. A fix during a beta
+raises `N`.
 
 ## Platform context
 
@@ -721,17 +749,35 @@ only).
   `/bff/*` calls use the HttpOnly `bff_` cookie, and the gateway swaps it for
   the internal custody JWT. The browser never holds a JWT (see **Session**
   above). This model is rolling out across the other HugMesh front ends.
-- **Planned — Casdoor MFA / step-up:** platform-wide MFA enforcement (WebAuthn
-  + TOTP + recovery codes, gateway `mfa_required` fail-closed + `amr`/`acr` →
-  `MFA_SATISFIED`, with step-up for sensitive operations) is designed at the
-  platform level. The wiki BFF already gates `/bff/wiki/admin/**` and
-  `/bff/wiki/superadmin/**` with `stepUp(...)` (`SecurityConfig`). That adds
-  `MFA_SATISFIED` to the role check only while `app.mfa.enabled=true`, and the
-  flag is off by default. This remote has no MFA code in `src/`. It cannot tell
-  a step-up refusal from a plain role 403, because the BFF emits no
-  `X-Step-Up-Required` signal yet (`hugmesh-wiki-bff-api#35`, open). The
-  remote's own tracking issue is `hugmesh-wiki-ui#4` (open). The e2e suite
-  pins the gap in `features/security/step-up-signal.feature`.
+- **Partly shipped — Casdoor MFA / step-up:** platform-wide MFA enforcement
+  (WebAuthn + TOTP + recovery codes, gateway `mfa_required` fail-closed +
+  `amr`/`acr` -> `MFA_SATISFIED`, with step-up for sensitive operations) is
+  designed at the platform level. The wiki BFF gates `/bff/wiki/admin/**` and
+  `/bff/wiki/superadmin/**` with `stepUp(...)` (`SecurityConfig`), which adds
+  `MFA_SATISFIED` to the role check only while `app.mfa.enabled=true`; the flag
+  is off by default. When the role granted and the stamp is missing, the BFF
+  answers 403 with `X-Step-Up-Required: X-Wiki-StepUp` and a body containing
+  `requires step-up` (`hugmesh-wiki-bff-api#35`, merged). A role refusal carries
+  neither.
+  - **Consumer, manage view only:** `src/app/step-up.ts` recognises that refusal
+    (the header, or the phrase when a hop drops it; 403 only), and
+    `WikiApiError.stepUp` carries it. A refused read in the manage view
+    (active overrides, history, audit trail) opens `hug-wiki-step-up`, which
+    loads login-ui's federated dialog on demand (`src/app/mfa-step-up.ts`).
+    `satisfied` re-reads exactly the refused sections, `dismissed` retries
+    nothing, and `unavailable` or a failed load shows the
+    `/login/mfa/challenge?returnTo=` link.
+  - **Decision 35:** the remote entry is the one exported constant
+    `LOGIN_REMOTE_ENTRY` (`/login/remoteEntry.json`), pinned by a spec. It is a
+    second copy of the `login` row in hugmesh-host-shell's
+    `federation.manifest.prod.json`. A federation-api `federation_modules` row
+    outranks that file at runtime, and `ng serve` uses a different `login` URL;
+    in either case this remote falls back to the link.
+  - **Not covered yet:** the `/bff/wiki/admin/**` calls (page writes, the access
+    console) still show their plain error on a step-up refusal. The live round
+    trip (the dialog against a mesh with `app.mfa.enabled=true`) and the header
+    reaching the browser through the gateway have not been observed. The
+    remote's tracking issue is `hugmesh-wiki-ui#4`.
 
 ## Known gaps / TODO
 

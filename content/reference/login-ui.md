@@ -5,7 +5,7 @@ slug: "login-ui"
 summary: "The login and account-security remote owning sign-in, two-stage registration, MFA and the ban and suspension surfaces."
 source_repo: "hugmesh-login-ui"
 source_path: "README.md"
-source_ref: "hugmesh/hugmesh-login-ui@HEAD"
+source_ref: "35a8be5"
 ---
 
 The login and account-security surface for [HugMesh](https://github.com/hugmesh). It is an Angular
@@ -360,6 +360,34 @@ instead of merging silently.
 
 Measured on a checkout that has `node_modules` (`--context <dir>`, 2026-10-07): 37 483 files /
 3 244.4 MiB with no `.dockerignore` (`--no-ignore`), 538 files / 2.7 MiB with it.
+
+### Versions and published images
+
+The version lives in `package.json` (and the matching root entries of `package-lock.json`). It is
+`MAJOR.MINOR.PATCH-beta.N` while the remote is in beta: today `0.3.0-beta.1`, where 0.3 means it
+runs in the default mesh and the sign-in path has been checked live. A fix during the beta raises
+`N`; a step up the status ladder raises MINOR and resets `N` to 1.
+
+`.github/workflows/release.yml` publishes `ghcr.io/hugmesh/hugmesh-login-ui`:
+
+| Trigger | Image tags | GitHub release |
+|---|---|---|
+| push to `main` | `main`, `sha-<12 hex>` | none |
+| push of tag `v<version>` | `<version>`, `beta`, `sha-<12 hex>` | prerelease, never marked latest |
+| manual run on `main` | same as a push to `main` | none |
+| manual run on a `v*` tag | re-runs that release; what already exists is left alone | same |
+
+`latest` is never pushed for a beta. The tag must equal `v` plus the `package.json` version and
+point at a commit on `main`, and a version that is already in the registry is never overwritten.
+Before the image is built, the workflow runs the same gates and Karma suite as `ci.yml`. The
+workflow has no pull-request trigger. Its jobs use the self-hosted runner only when the repository
+variable `RUNS_ON_PUBLISH` is set and the run is for `main` or a `v*` tag; otherwise they run on
+`ubuntu-latest`. To cut a beta, merge the version bump, then push an annotated tag on that commit:
+
+```sh
+git tag -a v0.3.0-beta.1 -m "hugmesh-login-ui 0.3.0-beta.1" <merge commit>
+git push origin v0.3.0-beta.1
+```
 
 ## Roadmap
 

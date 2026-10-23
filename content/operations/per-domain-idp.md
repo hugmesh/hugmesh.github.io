@@ -5,7 +5,7 @@ slug: "per-domain-idp"
 summary: "The per-domain Domain.idp axis and why it must not be conflated with the mesh-level identity stack chosen at build time."
 source_repo: "hugmesh-generator"
 source_path: "docs/DOMAIN-IDP.md"
-source_ref: "hugmesh/hugmesh-generator@HEAD"
+source_ref: "94f21156"
 ---
 
 Two DIFFERENT "idp" axes exist. Do not mix them up:
@@ -17,6 +17,45 @@ Two DIFFERENT "idp" axes exist. Do not mix them up:
   WHERE one domain's sign-in lives. `superdomain` (the default; absent means the same,
   byte for byte) uses the mesh's central Casdoor (`manifests/casdoor/`). `own` stands
   up a dedicated Casdoor instance for that domain. This page covers `own`.
+
+## A domain's own EXTERNAL provider (`Domain.idp_settings`, 2026-10-21)
+
+In the Studio this is chosen on the domain's **Identity** tab (Domain services step,
+section 1 of the text screen: `signin mesh|casdoor|entra|aws|oidc ...`), on every route
+that has a domains table; the Domains table's Sign-in cell still flips `superdomain` /
+`own`, and both write through `config.set_domain_signin`. The mesh-level IdP step is the
+default every `superdomain` domain inherits.
+
+An `own` domain can sign in through its own external provider instead of its own
+Casdoor. The row keeps `idp: own` and adds
+`idp_settings: {provider, issuer, client_id, jwks}`, with the provider being Entra,
+Cognito or OIDC. These follow the same rules as the mesh-level `--idp` (see
+docs/IDENTITY-PROVIDERS.md). The JWKS address is derived per provider when it is left
+empty.
+
+What changes and what does not:
+
+* **No Casdoor is stood up for it.** The own-Casdoor consumers all ask
+  `config.runs_own_casdoor`. These are the compose overlay, its port sequence,
+  `own_idp_domains` and `--own-casdoor-domain`.
+* **The issuer is still one brand.** The domain's issuer becomes one more
+  `<issuer>=<brand id>` pair in `APP_TENANCY_ISSUERS`, and its name one more
+  `<domain>=<brand id>` pair in `APP_TENANCY_HOSTS`. These are the same registry
+  variables, extended and never renamed. On the local Docker mesh, `LocalStackNode`
+  threads the pairs (`LocalMeshBootstrap.external_idp_domains`), and the domain's Tor
+  onion opens its own sign-in. The gateways fetch that issuer's keys by OIDC
+  discovery, so the provider must be reachable from the stack.
+* **An own row never inherits an external mesh provider.** A domain that wants the
+  mesh's provider uses `superdomain`. Two brands on one issuer are refused
+  (`config.domain_signin_problems`), because `DomainRegistry` maps one issuer to one
+  brand.
+* **The honest limits are the mesh-level ones.** Native `/bff/login`, MFA step-up and
+  role claims stay Casdoor-coupled, so people sign in on the provider's own page. The
+  Studio's bring-up warnings say so for each such domain.
+* **Cluster lane:** the manifest row carries `idp_settings`. The planned
+  `casdoor-domains` element writer must select `idp == "own"` **without** an external
+  provider, or it would stand up a Casdoor that nobody uses. That writer is not built
+  yet (see Open follow-ups).
 
 ## The issuer contract (proven by tests/stack/compose.brand-b.yaml)
 
@@ -102,6 +141,45 @@ domain is created (the planned DomainReconciler would take over this step).
 (`hugmesh/casdoor-domain`) under `OPERATOR_SEEDED_PATHS`. Until the path exists, the
 instance's pods stay pending on their Secret mounts. That is fail-closed, per-domain
 and loud.
+
+## Image CLI: `--domain-idp` (issue #509)
+
+Every stage4 builder (`build-*-stage4.sh`, all ten) takes a repeatable
+
+```
+--domain-idp <domain>=own|superdomain
+```
+
+* `own` marks the domain as running its own Casdoor; `superdomain` is the explicit
+  spelling of the default.
+* The vocabulary is the Studio's `DOMAIN_IDP_CHOICES`; `tests/scripts/test-domain-idp-flag.sh`
+  pins the two together.
+* The domain must be a lowercase DNS name, named once, and may not be the mesh's own
+  `--cluster-domain` as `own` (the own domain always uses the superdomain Casdoor,
+  the same rule the Studio CLI applies). On x86 client images, where `--domains` is
+  meaningful, the name must also be one of the `--domains` elements. The other nine
+  builders take no domain list, so they check the name's shape only.
+  `--unaffiliated` refuses the flag.
+* All ten parse it through `scripts/_domain-idp-lib.sh`, which each builder sources.
+
+What it does: the builders do not write the Studio's `hugmesh-mesh-manifest.json`,
+so the choice is recorded in the image, with the manifest's field name, values and
+omit-the-default rule, as `/etc/hugmesh/domain-idp`: one `<domain>=own` line per
+own-Casdoor domain. The file exists only when at least one domain is `own`, and
+`--print-plan` prints `PLAN_DOMAIN_IDP=<own domains>` under the same condition. A
+build with no flag, or with only `=superdomain`, is byte-identical to one built
+before the flag existed.
+
+Nothing on the image reads `/etc/hugmesh/domain-idp` yet: the build-time writer of
+the `casdoor-domains` elements (below) is still open, and this file is the input it
+would take.
+
+The Studio does not pass `--domain-idp` to any builder (`ImageConfig.to_cli_args`); a
+domain's own sign-in picked in the Studio rides the mesh manifest only. So on a built
+image, and in a Fleet build (whose rows reach no builder and no manifest), every domain
+signs in through the mesh. The domain's Identity tab and the text screen say so on those
+routes (`tui/brand_step.SIGNIN_NOT_APPLIED`), and the Docker route's tab says what its
+start applies and that the kind lane does not (`SIGNIN_DOCKER_APPLIED`).
 
 ## Removal runbook (idp flip back / domain deletion)
 

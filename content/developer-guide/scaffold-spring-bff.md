@@ -5,7 +5,7 @@ slug: "scaffold-spring-bff"
 summary: "A runnable minimal Spring Boot 4 WebFlux BFF skeleton that builds, tests and runs, unlike the older placeholder."
 source_repo: "hugmesh-admin-bff-api"
 source_path: "src/main/resources/scaffold/spring-bff/README.md"
-source_ref: "de0c704"
+source_ref: "59a498d"
 ---
 
 A minimal but **REAL** Spring Boot 4 / WebFlux BFF in the platform shape,
@@ -57,6 +57,9 @@ git mv src/main/java/net/hugmesh/app src/main/java/net/hugmesh/{{APP_SLUG}}
 git mv src/test/java/net/hugmesh/app src/test/java/net/hugmesh/{{APP_SLUG}}
 ```
 
+A ZIP from the admin BFF's Service-Store scaffold (`/archive`) is already relocated;
+skip these commands for it.
+
 ## No persistence yet — deliberately
 
 `hugmesh-parent` injects the fleet data stack (R2DBC + Liquibase), but this
@@ -72,5 +75,5 @@ The archetype's real path is overlay-on-base: when `hugmesh-{{REPO_NAME}}`
 is resolvable, `render-repo-tree.sh` pulls it and anchor-edits only the
 brand-coupled seams (see `templates/archetypes/spring-bff/recipe.yaml`). This
 skeleton is the standing example codebase + the base-absent fallback — see
-docs/FEDERATION-EXAMPLES.md for the full walkthrough of wiring a new BFF into
-the federation surface.
+docs/FEDERATION-EXAMPLES.md in hugmesh-generator for the full walkthrough of wiring
+a new BFF into the federation surface.

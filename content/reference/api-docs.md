@@ -5,7 +5,7 @@ slug: "api-docs"
 summary: "An admin-gated OpenAPI documentation browser built as a custom navigator rather than a generic Swagger UI."
 source_repo: "hugmesh-api-docs"
 source_path: "README.md"
-source_ref: "hugmesh/hugmesh-api-docs@HEAD"
+source_ref: "f36730c"
 ---
 
 An API documentation browser for [HugMesh](https://github.com/hugmesh), open to admins only. It is
@@ -21,8 +21,9 @@ an Angular native-federation remote with its own OpenAPI navigator. It is not a 
 - **Spec loading that fails in the open.** The committed spec loads first. If that is missing, the
   navigator fetches the spec live from the running service. If neither works, the page says "not
   yet published". It never shows a silently empty page. A committed spec with no operations counts
-  as missing. All six committed specs (`src/assets/specs/`) are stubs today, so the live fetch does
-  the work.
+  as missing. The Admin, Mod, User and Wiki specs in `src/assets/specs/` are copies of the specs
+  those backends commit. The Federation and Actions specs are stubs, so the live fetch does the work
+  for those two.
 - **Spec extensions.** Services can add `x-hugmesh` keys to their OpenAPI documents (`sampleRequest`,
   `sampleResponse`, `sampleEvent`, `sse`, `binaryUpload`, `blurb`, `longDescription`). The navigator
   uses them to render better.
@@ -62,6 +63,22 @@ CORS is on, so a host shell can fetch `remoteEntry.json` cross-origin. `/healthz
 readiness probes. The build passes `--base-href=/api-docs/`: the gateway routes `/api-docs/**` to
 this image, and without the flag the bundle requests its chunks from `/`. The host shell mounts the
 remote at `/admin/docs`.
+
+## Releasing
+
+The version lives in `package.json` (and `package-lock.json`, which must match). Today it is a
+beta, `MAJOR.MINOR.PATCH-beta.N`. `.github/workflows/release.yml` publishes
+`ghcr.io/hugmesh/hugmesh-api-docs`:
+
+- A push to `main` pushes `:main` and `:sha-<12 hex>`.
+- Pushing the tag `v<version>` (for example `v0.2.0-beta.1`, on a commit on `main`) pushes
+  `:<version>`, `:beta` and `:sha-<12 hex>`, and creates a GitHub Release marked prerelease.
+  A version tag that already exists in the registry is never overwritten: raise `N` instead.
+- `:latest` is never pushed for a beta.
+
+`scripts/release-version.sh` is the guard: it refuses a tag that does not match the version, a
+lock file that disagrees, a SNAPSHOT, and any pull-request run. `npm run test:release-version`
+tests it.
 
 ## Security scanning
 
@@ -127,7 +144,7 @@ care about.
 
 ## Roadmap
 
-- Replace the six stub specs with real captures as backend services publish real OpenAPI documents.
+- Replace the Federation and Actions stub specs with real captures once those services publish OpenAPI documents. Refresh the Admin, Mod, User and Wiki copies when their backends change.
 
 ## License
 

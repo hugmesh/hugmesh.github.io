@@ -5,7 +5,7 @@ slug: "overview"
 summary: "The Game Studio front door: a self-hosted multi-game portal with RPG and visual-novel makers, a 19-title catalog, an Angular shell and a Spring Boot gaming BFF."
 source_repo: "hugmesh-games"
 source_path: "README.md"
-source_ref: "hugmesh/hugmesh-games@HEAD"
+source_ref: "443605d"
 ---
 
 A self-hosted multi-game studio and portal. Authors build RPG and visual-novel titles with the built-in makers. Players get a 20-title catalog through an **Angular** shell with live SSE multiplayer sessions. The **HugMesh Gaming BFF** (Spring Boot) handles game state, controls, and role management. **Casdoor** (OAuth2/OIDC) handles authentication, and its admin UI is never exposed to the network.
@@ -142,7 +142,7 @@ Status as of the current `main`. Phase-2 detail is in [`docs/PLAN-module-federat
 - **Strict CSP.** 🔭 Planned. The first-cut Content-Security-Policy ships in both nginx confs ([decision 023](docs/wiki/decisions/023-content-security-policy.md)). The path to *strict* CSP, which drops the remaining `unsafe-*` tokens once the es-module-shims and Angular runtime needs are gone, is a documented future step and is not done.
 - **Retire `CassandraSyncService`.** 🔭 Planned. The Kafka → ClickHouse streaming pipeline foundation, producers, and cross-pod consumer are ✅ on `main` ([decision 021](docs/wiki/decisions/021-kafka-clickhouse-streaming-pipeline.md)). `CassandraSyncService` stays until the streaming pipeline has shown production stability; retiring it is a planned follow-up.
 - **Move bearer tokens off web storage.** 🔭 Planned. The frontend stores the Casdoor token in `localStorage` (`tw_auth`, moved from `sessionStorage` in PR #57 so that open-in-new-tab keeps the user signed in). Moving off XSS-readable web storage entirely (HttpOnly `bff_` session cookies, the platform's native-login convention) is a platform-wide security backlog item that this repo inherits if and when the games frontend is in scope.
-- **Re-export the Godot bridge onto the `localStorage` auth store.** 🔭 Planned. `games/three-wizards-in-a-trenchcoat/scripts/game_bridge.gd` still reads the JWT from `window.parent.sessionStorage`, which PR #57 emptied when it moved `tw_auth` to `localStorage`. So the in-iframe Godot control POSTs (`POST /api/controls/{characterId}`) go out with no `Authorization` header. `/api/controls/**` now requires authentication (`SecurityConfig.PLAYER_PATHS`, and the controller also 401s a missing subject), so the BFF refuses them with 401. The bridge's `fetch` ignores that failure: it is a silent loss of the server-side control event, not a crash. The in-WASM cast still plays locally, and the Angular page sends its own control POST with the token. The fix is a one-line source change **plus** a real Godot re-export, because the compiled bridge also ships inside the tracked `index.pck` bundles under `backend/src/main/resources/assets/levels/{cave,field}/`. Changing the `.gd` alone would leave source and shipped bundle disagreeing. It is tracked as a dedicated follow-up that runs `make build-rust && make build-godot`.
+- **Re-export the Godot bridge onto the `localStorage` auth store.** 🚧 Source fixed, bundles not yet re-exported. `games/three-wizards-in-a-trenchcoat/scripts/game_bridge.gd` now reads the JWT from `window.parent.localStorage` first and falls back to `sessionStorage`, the same order as the `rpg-builder` Godot template; `games/_shared/test/godot-bridge-auth-storage.test.mjs` fails if a bridge that reads `tw_auth` stops doing so. The compiled bridge also ships inside the tracked `index.pck` bundles under `backend/src/main/resources/assets/levels/{cave,field}/`, and those have not been re-exported from the new source. Until `make build-rust && make build-godot` is run with the Godot 4.6 toolchain the bundles were built with, the shipped game still sends `POST /api/controls/{characterId}` with no `Authorization` header and the BFF refuses it with 401. The bridge's `fetch` ignores that failure: it is a silent loss of the server-side control event, not a crash. The in-WASM cast still plays locally, and the Angular page sends its own control POST with the token.
 
 ---
 
@@ -452,7 +452,7 @@ flowchart TB
         FK["keydown '1' (KEY_1)"]
         FInput["game_bridge._unhandled_input"]
         FCast["player._cast_spell(1)<br/>projectile from hand"]
-        FSend["send_control('CAST_INSTANT_1', true)<br/>POST /api/controls/1 — reads parent sessionStorage, stale since PR 57 moved 'tw_auth' to localStorage,<br/>so the token is empty and the BFF refuses this POST with 401 (see hardening follow-ups)<br/>keyup: send_control(…, false)"]
+        FSend["send_control('CAST_INSTANT_1', true)<br/>POST /api/controls/1 — source reads parent localStorage 'tw_auth'; the shipped cave/field bundles predate that and<br/>still send no token, so the BFF refuses this POST with 401 (see hardening follow-ups)<br/>keyup: send_control(…, false)"]
         FK --> FInput
         FInput --> FCast
         FInput --> FSend
@@ -1749,6 +1749,31 @@ overlay). Pin the player password with `E2E_PLAYER_PASS=...` (otherwise a genera
 ```bash
 make clean
 ```
+
+### Versions and releases
+
+All five images (`backend`, `frontend`, `rpg-builder`, `vn-builder`, `wasm-fragment`) carry one
+version, kept in the top-level [`VERSION`](VERSION) file. The current version is `0.2.0-beta.1`:
+built and tested, not yet in the default mesh. The same string is written into the three poms,
+the three Java Dockerfiles' jar names, `frontend/package.json` and its lock, and the Makefile's
+`BACKEND_JAR`. `make check-version` fails if any of them disagree.
+
+[`.github/workflows/release.yml`](.github/workflows/release.yml) runs the same four test legs as
+the GitLab test stage, then builds and pushes `ghcr.io/hugmesh/hugmesh-games/<component>`:
+
+| Trigger | Image tags | GitHub Release |
+|---|---|---|
+| push to `main`, or a manual run on `main` | `:main`, `:sha-<12>` | none |
+| push of tag `v<VERSION>`, or a manual run on that tag | `:<VERSION>`, `:beta`, `:sha-<12>` | prerelease, never marked latest |
+
+A beta is never tagged `latest`, and a published `<VERSION>` tag is never overwritten: the run
+fails if it already exists. To cut the next beta, raise `N` in `-beta.N` in every file above
+(`make check-version` green), merge, then tag that commit on `main` with `v<VERSION>`.
+
+The jobs run on hosted `ubuntu-latest` unless the repo variable `RUNS_ON_PUBLISH` holds a runner
+label array (for example `["self-hosted","Linux","X64"]`) and the run is on `main` or a `v*` tag.
+Deleting the variable sends every job back to hosted runners. The workflow has no pull-request
+trigger.
 
 ---
 
