@@ -42,6 +42,8 @@
               "dayjs"
             ],
             "assets": [
+              "src/sitemap.xml",
+              "src/robots.txt",
               "src/favicon.ico",
               "src/CNAME",
               {
