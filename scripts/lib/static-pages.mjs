@@ -83,13 +83,16 @@ export function canonicalUrl(origin, route) {
  */
 export function pageHtml(indexHtml, { route, title, description }, origin) {
   const url = canonicalUrl(origin, route);
+  // Tolerant of both spellings: the source file writes `content="…" />` and
+  // the Angular build re-serialises it as `content="…"/>` on one line.
+  const tag = (name, attr) => new RegExp(`<${name}\\s+${attr}\\s+(content|href)="[^"]*"\\s*\\/?>`);
   const swaps = [
     [/<title>[^<]*<\/title>/, `<title>${escapeText(title)}</title>`],
-    [/<meta\s+name="description"\s+content="[^"]*"\s*\/>/, `<meta name="description" content="${escapeAttr(description)}" />`],
-    [/<meta property="og:title" content="[^"]*" \/>/, `<meta property="og:title" content="${escapeAttr(title)}" />`],
-    [/<meta\s+property="og:description"\s+content="[^"]*"\s*\/>/, `<meta property="og:description" content="${escapeAttr(description)}" />`],
-    [/<meta property="og:url" content="[^"]*" \/>/, `<meta property="og:url" content="${escapeAttr(url)}" />`],
-    [/<link rel="canonical" href="[^"]*" \/>/, `<link rel="canonical" href="${escapeAttr(url)}" />`],
+    [tag('meta', 'name="description"'), `<meta name="description" content="${escapeAttr(description)}" />`],
+    [tag('meta', 'property="og:title"'), `<meta property="og:title" content="${escapeAttr(title)}" />`],
+    [tag('meta', 'property="og:description"'), `<meta property="og:description" content="${escapeAttr(description)}" />`],
+    [tag('meta', 'property="og:url"'), `<meta property="og:url" content="${escapeAttr(url)}" />`],
+    [tag('link', 'rel="canonical"'), `<link rel="canonical" href="${escapeAttr(url)}" />`],
   ];
   let html = indexHtml;
   for (const [re, replacement] of swaps) {

@@ -226,7 +226,8 @@
   // sideways with nothing visibly out of place, which is why this survived.
   .bar {
     flex-wrap: wrap;
-    row-gap: 0;
+    row-gap: 0.35rem;
+    padding-block: 0.4rem;
   }
 
   .menu-toggle {

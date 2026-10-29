@@ -294,23 +294,15 @@
     border-radius: t.$radius-card;
   }
 
-  li.unpublished {
-    background: rgba(t.$black, 0.5);
-  }
-
-  // A published image carries two long commands: give it the whole row so they
+  // Each listed image carries two long commands: give it the whole row so they
   // can be read without scrolling inside the block on a desktop.
-  li:not(.unpublished) {
+  li {
     grid-column: 1 / -1;
   }
 
   .status {
     margin: 0.35rem 0 0;
     font-size: 0.85rem;
-  }
-
-  li.unpublished .status {
-    color: var(--hug-text-muted);
   }
 
   .code-block {
@@ -439,8 +431,7 @@
     font-size: 0.85rem;
     cursor: pointer;
 
-    &:hover,
-    &:focus-visible {
+    &:hover {
       color: var(--hug-text);
     }
 
@@ -576,6 +567,16 @@
   font-size: 0.9rem;
 }
 
+// With no build for this system, the packaged builds become the buttons.
+.get-others.as-buttons a[download] {
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--hug-border);
+  border-radius: 999px;
+  color: var(--hug-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
 .jump {
   display: flex;
   flex-wrap: wrap;
@@ -670,6 +671,8 @@
 }
 
 .packages {
+  display: grid;
+  gap: 0.75rem;
   margin: 1rem 0 0;
   padding: 0;
   list-style: none;
@@ -679,9 +682,5 @@
     background: rgba(t.$black, 0.72);
     border: 1px solid var(--hug-border);
     border-radius: t.$radius-card;
-  }
-
-  > li + li {
-    margin-top: 0.75rem;
   }
 }

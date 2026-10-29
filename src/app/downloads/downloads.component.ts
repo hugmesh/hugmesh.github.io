@@ -58,7 +58,16 @@ export class DownloadsComponent {
 
   /** Tests set this; unset means "detect the visitor's system". */
   readonly initialOs = input<DownloadOs | null>(null);
-  private readonly detectedOs: DownloadOs = downloadOsFor(detectPlatform());
+  /** What detection actually saw: 'source' means a phone, a tablet or an unknown system. */
+  private readonly detectedPlatform = detectPlatform();
+  private readonly detectedOs: DownloadOs = downloadOsFor(this.detectedPlatform);
+  /** The sentence about the guess. A phone is told plainly that Studio is a desktop app. */
+  readonly guessText = computed(() => {
+    if (this.os() !== 'other') return `This looks like ${DOWNLOAD_OS_LABEL[this.os()]}.`;
+    return this.detectedPlatform === 'macos'
+      ? 'This looks like macOS.'
+      : 'Studio is a desktop app, and this does not look like Windows or Linux (a phone or tablet, perhaps).';
+  });
   private readonly pickedOs = signal<DownloadOs | null>(null);
   readonly os = computed<DownloadOs>(() => this.pickedOs() ?? this.initialOs() ?? this.detectedOs);
   /** True while the shown system is the detected guess, so the page can say so. */

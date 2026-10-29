@@ -60,6 +60,18 @@ test('a page carries its own title, description, canonical and og tags, escaped'
   assert.ok(html.includes('<base href="/" />'));
 });
 
+test('the head as the Angular build re-serialises it (content="…"/> on one line) is rewritten too', () => {
+  const built = indexHtml
+    .replace(/\s*\n\s*/g, ' ')
+    .replace(/"\s+\/>/g, '"/>');
+  assert.match(built, /<meta property="og:title" content="HugMesh Documentation"\/>/, 'the fixture really is the built shape');
+  const [, , , doc] = routesFromIndex(index);
+  const html = pageHtml(built, doc, ORIGIN);
+  assert.match(html, /<link rel="canonical" href="https:\/\/docs\.example\/tutorials\/start-here\/" \/>/);
+  assert.match(html, /<meta property="og:title" content="Start here — HugMesh Documentation" \/>/);
+  assert.match(html, /<meta name="description" content="An ordered &quot;path&quot; &lt;first&gt;\." \/>/);
+});
+
 test('a head that no longer has the expected tags fails loudly instead of writing copies of the home page', () => {
   const [page] = routesFromIndex(index);
   assert.throws(() => pageHtml(indexHtml.replace(/<link rel="canonical"[^>]*>/, ''), page, ORIGIN), /canonical/);

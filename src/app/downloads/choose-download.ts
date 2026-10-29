@@ -14,7 +14,7 @@ export type DownloadOs = 'windows' | 'linux' | 'other';
 export const DOWNLOAD_OS_LABEL: Readonly<Record<DownloadOs, string>> = {
   windows: 'Windows',
   linux: 'Linux',
-  other: 'macOS and other systems',
+  other: 'macOS / other',
 };
 
 export function downloadOsFor(platform: PlatformId): DownloadOs {

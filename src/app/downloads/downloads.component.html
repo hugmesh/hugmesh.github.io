@@ -55,7 +55,7 @@
           </div>
           <p class="get-for" data-testid="get-for">
             @if (osIsGuess()) {
-              This looks like <strong>{{ osLabel[os()] }}</strong>. Not right? Pick your system above.
+              {{ guessText() }} Not right? Pick the computer you will install it on.
             } @else {
               Showing <strong>{{ osLabel[os()] }}</strong>.
             }
@@ -157,7 +157,7 @@ flatpak run org.hugmesh.ImageStudio --generator-dir ~/hugmesh-generator</code></
           }
 
           @if (c.others.length) {
-            <p class="get-others" data-testid="other-platforms">
+            <p class="get-others" [class.as-buttons]="!c.primary" data-testid="other-platforms">
               {{ c.primary ? 'Other platforms:' : '' }}
               @for (o of c.others; track o.file) {
                 <a [href]="o.url" [attr.download]="o.file">{{ shortLabel(o) }}</a>
