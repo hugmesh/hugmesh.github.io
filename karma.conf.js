@@ -34,7 +34,9 @@ module.exports = function (config) {
     customLaunchers: {
       ChromeHeadlessCI: {
         base: 'ChromeHeadless',
-        flags: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage'],
+        // A laptop-sized window, so layout specs (the header's every-link-reachable
+        // check) measure the desktop layout. 1280px is where main already lost links.
+        flags: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage', '--window-size=1280,900'],
       },
     },
     restartOnFileChange: true,

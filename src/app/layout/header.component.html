@@ -61,6 +61,21 @@
     </button>
   </form>
 
+  <!-- The one action most visitors came for, on every page and at every width:
+       it never folds into the menu. -->
+  <a
+    class="dl-cta"
+    routerLink="/downloads"
+    routerLinkActive="active"
+    data-testid="header-download"
+    (click)="closeMenu()"
+  >
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" width="18" height="18">
+      <path fill="currentColor" d="M5 20h14v-2H5v2Zm7-3 6-6-1.41-1.41L13 13.17V4h-2v9.17L7.41 9.59 6 11l6 6Z" />
+    </svg>
+    <span>Download</span>
+  </a>
+
   <a
     class="gh"
     href="https://github.com/hugmesh"

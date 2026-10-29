@@ -14,10 +14,16 @@
  *           SHA-256 values (from the release's own SHA256SUMS), the Sigstore bundle
  *           that signs SHA256SUMS, and whether GitHub holds a provenance
  *           attestation for each installer.
+ *           Every older `studio-v*` release too (studioArchive), so nothing that was
+ *           ever published becomes unreachable from the page.
  *   Images  for each image in release-sources.json, the newest SemVer tag in the
  *           GHCR registry, its manifest digest, whether a cosign signature exists
  *           for that digest, whether GitHub holds an attestation for it, and the
  *           matching GitHub Release (if any).
+ *   Maven   for each library in release-sources.json, the newest `v<version>`
+ *           GitHub Release of its repository (see fetchPackage for why).
+ *   Repos   every repository any of the above comes from, with its newest release,
+ *           so the page can link each one's Releases page.
  *
  * WHAT COUNTS AS "NOT PUBLISHED" AND WHAT IS AN ERROR. A 404 from the releases
  * API, or a registry that refuses to list a package (401/403/404), means
@@ -248,13 +254,31 @@ async function hasAttestation(client, repo, digest) {
   return Array.isArray(body?.attestations) && body.attestations.length > 0;
 }
 
-export async function fetchStudio(client, src) {
-  const releases = (await client.gh(`/repos/${src.repo}/releases?per_page=100`)) ?? [];
-  const candidates = releases
-    .filter((r) => !r.draft && typeof r.tag_name === 'string' && r.tag_name.startsWith(src.tagPrefix))
-    .map((r) => ({ r, version: r.tag_name.slice(src.tagPrefix.length) }))
+/**
+ * Every non-draft release of a repository whose tag is `<tagPrefix><SemVer>`,
+ * newest version first. Drafts are invisible to visitors, so they are never listed.
+ */
+export function releasesWithPrefix(releases, tagPrefix) {
+  return (releases ?? [])
+    .filter((r) => !r.draft && typeof r.tag_name === 'string' && r.tag_name.startsWith(tagPrefix))
+    .map((r) => ({ r, version: r.tag_name.slice(tagPrefix.length) }))
     .filter((c) => isSemver(c.version))
     .sort((a, b) => compareSemver(b.version, a.version));
+}
+
+const day = (r) => String(r.published_at ?? r.created_at).slice(0, 10);
+
+/** The Releases API for one repository, asked once per build however many items share it. */
+export function releaseCache(client) {
+  const cache = new Map();
+  return (repo) => {
+    if (!cache.has(repo)) cache.set(repo, client.gh(`/repos/${repo}/releases?per_page=100`).then((r) => r ?? []));
+    return cache.get(repo);
+  };
+}
+
+export async function fetchStudio(client, src, releasesOf = releaseCache(client)) {
+  const candidates = releasesWithPrefix(await releasesOf(src.repo), src.tagPrefix);
   if (!candidates.length) return null;
   const { r, version } = candidates[0];
   const assets = Array.isArray(r.assets) ? r.assets : [];
@@ -313,7 +337,7 @@ export async function fetchStudio(client, src) {
     tag: r.tag_name,
     version,
     prerelease: Boolean(r.prerelease) || version.includes('-'),
-    published: String(r.published_at ?? r.created_at).slice(0, 10),
+    published: day(r),
     notesUrl: r.html_url,
     installers,
     checksums: file(sumsAsset),
@@ -326,7 +350,7 @@ export async function fetchStudio(client, src) {
 /** Release version tags only: X.Y.Z or X.Y.Z-beta.N. Not main, sha-…, beta or latest. */
 const VERSION_TAG = /^\d+\.\d+\.\d+(?:-beta\.\d+)?$/;
 
-export async function fetchImage(client, src) {
+export async function fetchImage(client, src, releasesOf = releaseCache(client)) {
   const name = src.image.replace(/^ghcr\.io\//, '');
   const base = {
     id: src.id,
@@ -336,6 +360,13 @@ export async function fetchImage(client, src) {
     image: src.image,
     identity: signingIdentity(src.repo, src.workflow, src.tagPrefix),
   };
+  // The GitHub release is looked up whatever the registry says: a release whose
+  // image cannot be pulled anonymously means the GHCR package is still private,
+  // and the page says exactly that instead of "not released yet".
+  const [rel0] = releasesWithPrefix(await releasesOf(src.repo), src.tagPrefix).filter(
+    ({ r }) => typeof r.html_url === 'string' && r.html_url.startsWith('https://'),
+  );
+  base.githubRelease = rel0 ? { tag: rel0.r.tag_name, url: rel0.r.html_url } : null;
   const none = { ...base, version: null, prerelease: false, digest: null, signed: false, attested: false, notesUrl: null };
 
   const bearer = await client.registryToken(name);
@@ -389,17 +420,123 @@ export async function fetchImage(client, src) {
   };
 }
 
+/**
+ * Every Studio release except the newest, newest first: the files a visitor can
+ * still download from each, with GitHub's own SHA-256 where the API reports one.
+ * Lighter than the newest release on purpose (no attestation lookups): it is an
+ * archive, and the page sends people to each release's notes for the rest.
+ */
+export async function fetchStudioArchive(src, releasesOf) {
+  const older = releasesWithPrefix(await releasesOf(src.repo), src.tagPrefix).slice(1);
+  return older.map(({ r, version }) => {
+    const assets = Array.isArray(r.assets) ? r.assets : [];
+    const files = assets
+      .filter(
+        (a) =>
+          classifyStudioAsset(a.name, version) || a.name === 'SHA256SUMS' || SIGNATURE_NAMES.includes(a.name),
+      )
+      // Installers first (Windows, Flatpak, tarball), then the checksum list and its signature.
+      .map((a) => ({ a, rank: KIND_ORDER[classifyStudioAsset(a.name, version)?.kind] ?? (a.name === 'SHA256SUMS' ? 3 : 4) }))
+      .sort((x, y) => x.rank - y.rank || x.a.name.localeCompare(y.a.name))
+      .map(({ a }) => a)
+      .map((a) => ({
+        file: a.name,
+        url: a.browser_download_url,
+        size: humanSize(a.size),
+        sha256: typeof a.digest === 'string' && /^sha256:[0-9a-f]{64}$/.test(a.digest) ? a.digest.slice(7) : null,
+      }));
+    return {
+      tag: r.tag_name,
+      version,
+      prerelease: Boolean(r.prerelease) || version.includes('-'),
+      published: day(r),
+      notesUrl: r.html_url,
+      files,
+    };
+  });
+}
+
+/**
+ * A Maven library: its newest `v<version>` GitHub Release. Each library's
+ * release.yml runs `mvn deploy` first and creates that release only after the
+ * deploy succeeded, so the release is the evidence the coordinate exists. The
+ * registry itself (maven.pkg.github.com) cannot be read without a token holding
+ * read:packages, which this build deliberately does not have.
+ */
+export async function fetchPackage(src, releasesOf) {
+  const base = {
+    id: src.id,
+    label: src.label,
+    groupId: src.groupId,
+    artifactId: src.artifactId,
+    packaging: src.packaging,
+    repo: src.repo,
+  };
+  const [newest] = releasesWithPrefix(await releasesOf(src.repo), src.tagPrefix);
+  if (!newest) return { ...base, version: null, prerelease: false, published: null, notesUrl: null };
+  return {
+    ...base,
+    version: newest.version,
+    prerelease: Boolean(newest.r.prerelease) || newest.version.includes('-'),
+    published: day(newest.r),
+    notesUrl: newest.r.html_url,
+  };
+}
+
+/** Every repository the page lists something from, with its newest non-draft release. */
+export async function fetchRepos(sources, releasesOf) {
+  const provides = new Map();
+  const add = (repo, what) => {
+    if (!provides.has(repo)) provides.set(repo, new Set());
+    provides.get(repo).add(what);
+  };
+  add(sources.studio.repo, 'studio');
+  for (const i of sources.images) add(i.repo, 'image');
+  for (const p of sources.packages ?? []) add(p.repo, 'package');
+  const order = ['studio', 'image', 'package'];
+  const out = [];
+  for (const repo of [...provides.keys()].sort()) {
+    // A release the page could not date or link is not one it can show.
+    const visible = (await releasesOf(repo)).filter(
+      (r) =>
+        !r.draft &&
+        typeof r.tag_name === 'string' &&
+        /^\d{4}-\d{2}-\d{2}$/.test(day(r)) &&
+        typeof r.html_url === 'string' &&
+        r.html_url.startsWith('https://'),
+    );
+    visible.sort((a, b) => day(b).localeCompare(day(a)));
+    const r = visible[0];
+    out.push({
+      repo,
+      provides: order.filter((o) => provides.get(repo).has(o)),
+      latest: r ? { tag: r.tag_name, prerelease: Boolean(r.prerelease), published: day(r), url: r.html_url } : null,
+    });
+  }
+  return out;
+}
+
 /** The whole file. `now` is injectable so a fixture run is reproducible. */
 export async function buildReleaseData({ sources, client, now = new Date() }) {
-  const studio = await fetchStudio(client, sources.studio);
+  const releasesOf = releaseCache(client);
+  const studio = await fetchStudio(client, sources.studio, releasesOf);
+  const studioArchive = await fetchStudioArchive(sources.studio, releasesOf);
   const images = [];
   // One at a time: 39 images, a handful of small requests each. Gentle on the
   // anonymous registry limits, and an error names the image it came from.
   for (const src of sources.images) {
     try {
-      images.push(await fetchImage(client, src));
+      images.push(await fetchImage(client, src, releasesOf));
     } catch (e) {
       throw new FetchFailure(`${src.image}: ${e?.message ?? e}`);
+    }
+  }
+  const packages = [];
+  for (const src of sources.packages ?? []) {
+    try {
+      packages.push(await fetchPackage(src, releasesOf));
+    } catch (e) {
+      throw new FetchFailure(`${src.groupId}:${src.artifactId}: ${e?.message ?? e}`);
     }
   }
   return {
@@ -407,7 +544,10 @@ export async function buildReleaseData({ sources, client, now = new Date() }) {
     generated: now.toISOString(),
     studioRepo: sources.studio.repo,
     studio,
+    studioArchive,
     images,
+    packages,
+    repos: await fetchRepos(sources, releasesOf),
   };
 }
 
@@ -433,8 +573,10 @@ async function main(argv) {
 
   const published = data.images.filter((i) => i.version);
   console.log(
-    `fetch-releases: Studio ${data.studio ? `${data.studio.version} (${data.studio.installers.length} installers)` : 'not published'}; ` +
-      `images ${published.length}/${data.images.length} published -> ${path.relative(ROOT, out)}`,
+    `fetch-releases: Studio ${data.studio ? `${data.studio.version} (${data.studio.installers.length} installers, ${data.studioArchive.length} older)` : 'not published'}; ` +
+      `images ${published.length}/${data.images.length} published; ` +
+      `packages ${data.packages.filter((p) => p.version).length}/${data.packages.length} released; ` +
+      `repos ${data.repos.filter((r) => r.latest).length}/${data.repos.length} with a release -> ${path.relative(ROOT, out)}`,
   );
   for (const i of published) {
     console.log(`  ${i.image}:${i.version} ${i.digest} signed=${i.signed} attested=${i.attested}`);

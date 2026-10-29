@@ -29,8 +29,10 @@ const ORG_URL = 'https://github.com/hugmesh';
 /**
  * Whether the code repositories are readable by the public.
  *
- * They are NOT, today: all 38 hugmesh-* repos are private while this site is
- * public. That single fact decides how two things render.
+ * They ARE since the go-public release (2026-10-21): docs.manifest.json sets
+ * meta.sourcesArePublic, which overrides the default below. Before that, all
+ * hugmesh-* repos were private while this site was public, and that single fact
+ * decided how two things render.
  *
  *   - A relative `./OTHER.md` link whose target is not published here would
  *     naturally become a github.com blob URL. Against a private repo that is a
@@ -54,6 +56,37 @@ const ORG_URL = 'https://github.com/hugmesh';
  * change.
  */
 let sourcesArePublic = false;
+
+/**
+ * Repository names that vendored documents link to but that do not exist in the
+ * org (checked against `gh repo list hugmesh`, 2026-10-22). Each one is a 404
+ * for every reader whatever the repos' visibility, so it is corrected here, with
+ * a warning, rather than published broken. Fix the source documents upstream and
+ * these entries become dead code that warns about nothing.
+ */
+const RENAMED_REPOS = new Map([
+  ['hugmesh-admin-bff', 'hugmesh-admin-bff-api'],
+  ['hugmesh-forum-bff', 'hugmesh-forum-bff-api'],
+  ['hugmesh-mod-bff', 'hugmesh-mod-bff-api'],
+  ['hugmesh-owncast-bff', 'hugmesh-owncast-bff-api'],
+  ['hugmesh-tube-bff', 'hugmesh-tube-bff-api'],
+  ['hugmesh-user-bff', 'hugmesh-user-bff-api'],
+  ['hugmesh-wiki-bff', 'hugmesh-wiki-bff-api'],
+  ['login-ui', 'hugmesh-login-ui'],
+  ['user-bff', 'hugmesh-user-bff-api'],
+]);
+/**
+ * Relative links in vendored documents whose target is not a file on that
+ * repository's main branch (each was a GitHub 404, checked 2026-10-22). The
+ * source documents name the wrong path; fix them upstream and delete the entry.
+ */
+const MISSING_TARGETS = new Set([
+  'hugmesh-games/THIRD_PARTY_ASSETS.md',
+  'hugmesh-games/docs/publishing/javadoc-output/',
+]);
+
+/** Linked from vendored documents, but never a repository of this org. */
+const NONEXISTENT_REPOS = new Set(['hugmesh-ui-standard', 'catalyst-scripts']);
 
 /** Languages we hand to highlight.js. Anything else is emitted as a plain code
  *  block rather than guessed at — `hljs.highlightAuto` mislabels short shell
@@ -97,10 +130,12 @@ function createRenderer({ routeFor, isSiteRoute, entry, warn }) {
         const id = slugger.slug(plain);
         // H2/H3 get a permalink. It is a REAL link with an accessible name, so it
         // is always in the a11y tree; .prose reveals it visually on hover/focus
-        // rather than leaving every heading permanently cluttered.
+        // rather than leaving every heading permanently cluttered. The href names
+        // the page's own route: index.html sets <base href="/">, so a bare `#id`
+        // resolves against the SITE ROOT and took every reader to the home page.
         const anchor =
           depth === 2 || depth === 3
-            ? `<a class="heading-anchor" href="#${id}" aria-label="Link to this section: ${escapeHtml(plain)}">#</a>`
+            ? `<a class="heading-anchor" href="${entry.route}#${id}" aria-label="Link to this section: ${escapeHtml(plain)}">#</a>`
             : '';
         if (depth === 2 || depth === 3) headings.push({ id, level: depth, text: plain });
         return `<h${depth} id="${id}">${anchor}${text}</h${depth}>\n`;
@@ -210,7 +245,10 @@ function escapeHtml(s) {
 function resolveLink(href, { routeFor, isSiteRoute, entry, warn }) {
   const raw = (href ?? '').trim();
   if (!raw) return { href: '#', external: false };
-  if (raw.startsWith('#')) return { href: raw, external: false };
+  // Same-page anchor: prefix the page's own route. With <base href="/"> a bare
+  // `#id` resolves to `/#id`, so clicking it (or opening it in a new tab) left
+  // the page for the home page. That was every in-page link on the site.
+  if (raw.startsWith('#')) return { href: `${entry.route}${raw}`, external: false };
   if (/^[a-z][a-z0-9+.-]*:/i.test(raw)) {
     // The one absolute-URL rewrite this build performs, and the reason it does not
     // contradict "author links are left exactly as written" above.
@@ -226,11 +264,25 @@ function resolveLink(href, { routeFor, isSiteRoute, entry, warn }) {
     // Rewritten HERE rather than in sync-content, so `content/` stays a faithful
     // projection of the source and the defect keeps showing up in the warning below
     // instead of being silently laundered out of existence upstream.
-    const fixed = raw.replace(/(https?:\/\/(?:www\.)?github\.com)\/hugmesh-net(?=$|[/#?])/gi, '$1/hugmesh');
-    if (fixed !== raw) {
-      warn(`dead org slug -> ${raw} (rewritten to ${fixed}; fix it upstream)`);
-      return { href: fixed, external: true };
+    let fixed = raw.replace(/(https?:\/\/(?:www\.)?github\.com)\/hugmesh-net(?=$|[/#?])/gi, '$1/hugmesh');
+    if (fixed !== raw) warn(`dead org slug -> ${raw} (rewritten to ${fixed}; fix it upstream)`);
+    // The same reasoning for repository NAMES that never existed in the org, or no
+    // longer do: those links can never come good either. A known rename is
+    // rewritten (and warned about); a repository that does not exist at all keeps
+    // its words and loses its link.
+    const repoLink = /^(https?:\/\/(?:www\.)?github\.com\/hugmesh\/)([A-Za-z0-9_.-]+)(?=$|[/#?])/i.exec(fixed);
+    if (repoLink) {
+      const name = repoLink[2];
+      if (RENAMED_REPOS.has(name)) {
+        const to = `${repoLink[1]}${RENAMED_REPOS.get(name)}${fixed.slice(repoLink[0].length)}`;
+        warn(`dead org slug -> ${raw} (repository renamed; rewritten to ${to}; fix it upstream)`);
+        fixed = to;
+      } else if (NONEXISTENT_REPOS.has(name)) {
+        warn(`unpublished target -> ${raw} (no such repository in the org; rendered as plain text)`);
+        return { href: null, external: false, unpublished: raw };
+      }
     }
+    if (fixed !== raw) return { href: fixed, external: true };
     return { href: raw, external: !raw.startsWith('/') };
   }
 
@@ -263,6 +315,12 @@ function resolveLink(href, { routeFor, isSiteRoute, entry, warn }) {
     // not resolve above is simply broken. Loud, because nothing else will catch it.
     warn(`BROKEN LINK -> ${raw} (site-authored page; not a route this site serves)`);
     return { href: null, external: false, unpublished: raw };
+  }
+  // A relative path that climbs out of its own repository, or a file the source
+  // document names that is not in that repository, would be a GitHub 404.
+  if (repoPath.startsWith('../') || MISSING_TARGETS.has(`${entry.repo}/${repoPath}`)) {
+    warn(`unpublished target -> ${entry.repo}/${repoPath} (not a file in the repository; rendered as plain text)`);
+    return { href: null, external: false, unpublished: `${entry.repo}/${repoPath}` };
   }
   if (!sourcesArePublic) {
     warn(`unpublished target -> ${entry.repo}/${repoPath} (rendered as plain text)`);
@@ -477,8 +535,8 @@ async function main() {
     const urls = new Set(rewrites.map((w) => w.split(' -> ')[1].split(' ')[0]));
     console.warn(
       `\n${rewrites.length} link(s) across ${urls.size} distinct URL(s) pointed at the ` +
-        'github.com/hugmesh-net org, which does not exist. Rewritten to github.com/hugmesh ' +
-        'for this build -- the typo is still upstream and should be fixed there.',
+        'github.com/hugmesh-net org or at a repository name the org does not have. Rewritten ' +
+        'to the real repository for this build -- the typo is still upstream and should be fixed there.',
     );
     for (const u of [...urls].slice(0, 10)) console.warn(`  ${u}`);
     if (urls.size > 10) console.warn(`  … and ${urls.size - 10} more`);

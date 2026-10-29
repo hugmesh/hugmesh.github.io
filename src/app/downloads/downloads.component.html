@@ -1,11 +1,10 @@
 <main id="maincontent" class="downloads">
   <header>
-    <h1>Downloads</h1>
+    <h1>Download HugMesh Studio</h1>
     <p class="lede">
-      HugMesh Studio, the desktop app that builds HugMesh images and runs a mesh from your
-      system tray, and the container images a mesh is made of. Everything here is meant to be
-      built and signed by GitHub Actions in the public HugMesh repositories; the status line
-      on each item says what this build of the page actually found signed, and what not.
+      Studio is the desktop app that builds HugMesh images and runs a mesh from your system
+      tray. Everything on this page is read from the published GitHub releases when the site
+      is built, so the versions, sizes and checksums are the real ones.
     </p>
   </header>
 
@@ -34,16 +33,168 @@
       </div>
     }
     @case ('ready') {
-      <!-- ── Studio ─────────────────────────────────────────────────────── -->
-      <section class="product" id="studio" aria-labelledby="studio-title">
-        <div class="product-head">
-          <h2 id="studio-title">HugMesh Studio</h2>
-          @if (studio(); as s) {
-            @if (s.prerelease) { <span class="badge beta">Beta</span> }
-          }
-        </div>
-
+      <!-- ── The one download for this visitor ──────────────────────────── -->
+      <section class="get" id="get" aria-labelledby="get-title" data-testid="get">
         @if (studio(); as s) {
+          <div class="get-head">
+            <h2 id="get-title">
+              Studio {{ s.version }}
+              @if (s.prerelease) { <span class="badge beta" data-testid="get-beta">Beta</span> }
+            </h2>
+            <div class="os-switch" role="group" aria-label="Choose your system">
+              @for (o of osOrder; track o) {
+                <button
+                  type="button"
+                  [class.on]="os() === o"
+                  [attr.aria-pressed]="os() === o"
+                  [attr.data-testid]="'os-' + o"
+                  (click)="chooseOs(o)"
+                >{{ osLabel[o] }}</button>
+              }
+            </div>
+          </div>
+          <p class="get-for" data-testid="get-for">
+            @if (osIsGuess()) {
+              {{ guessText() }} Not right? Pick the computer you will install it on.
+            } @else {
+              Showing <strong>{{ osLabel[os()] }}</strong>.
+            }
+          </p>
+
+          @let c = choice();
+          @if (c.primary; as p) {
+            <div class="get-buttons">
+              <a class="btn-download" [href]="p.url" [attr.download]="p.file" data-testid="primary-download">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" width="22" height="22">
+                  <path fill="currentColor" d="M5 20h14v-2H5v2Zm7-3 6-6-1.41-1.41L13 13.17V4h-2v9.17L7.41 9.59 6 11l6 6Z" />
+                </svg>
+                <span>
+                  Download for {{ osLabel[os()] }}
+                  <small>{{ p.file }}</small>
+                </span>
+              </a>
+              @if (c.secondary; as f) {
+                <a class="btn-second" [href]="f.url" [attr.download]="f.file" data-testid="secondary-download">
+                  Or the Flatpak bundle <small>{{ f.size }}</small>
+                </a>
+              }
+            </div>
+            <dl class="get-facts">
+              <dt>Version</dt>
+              <dd>{{ s.version }} @if (s.prerelease) { <span class="muted">(beta: expect rough edges)</span> }</dd>
+              <dt>Size</dt>
+              <dd data-testid="primary-size">{{ p.size }}</dd>
+              <dt>SHA-256</dt>
+              <dd class="sha">
+                @if (p.sha256) {
+                  <code data-testid="primary-sha">{{ p.sha256 }}</code>
+                  <button type="button" (click)="copy(p.sha256)">
+                    {{ copied() === p.sha256 ? 'Copied' : 'Copy' }}
+                    <span class="sr">SHA-256 checksum for {{ p.file }}</span>
+                  </button>
+                } @else {
+                  <span class="muted">not listed in this release</span>
+                }
+              </dd>
+              <dt>Published</dt>
+              <dd>{{ s.published }} · <a [href]="s.notesUrl" target="_blank" rel="noopener noreferrer">release notes</a></dd>
+            </dl>
+
+            <div class="get-steps">
+              <h3>Check it, then run it</h3>
+              <ol>
+                <li>
+                  Compare the file's SHA-256 with the one above:
+                  <pre class="code-block" [attr.data-lang]="p.platform === 'windows' ? 'powershell' : 'bash'"><code>{{ quickVerify(p) }}</code></pre>
+                  A different value means the file is not the one published here: delete it.
+                  <a [routerLink]="[]" fragment="verify">Full signature check</a>
+                </li>
+                @switch (p.kind) {
+                  @case ('msi') {
+                    <li data-testid="smartscreen">
+                      Double-click the <code>.msi</code>. It installs for your user only, no
+                      administrator rights needed.
+                      @if (!s.authenticode) {
+                        <strong>The MSI is not Authenticode-signed yet</strong>, so Windows
+                        SmartScreen will say "Windows protected your PC". Once the checksum matches,
+                        click <strong>More info</strong>, then <strong>Run anyway</strong>.
+                      }
+                    </li>
+                  }
+                  @case ('tarball') {
+                    <li>
+                      Unpack it and start Studio (x86_64, glibc 2.39 or newer):
+                      <pre class="code-block" data-lang="bash"><code>tar -xzf {{ p.file }}
+./{{ p.file.replace('.tar.gz', '') }}/hugmesh-studio --generator-dir ~/hugmesh-generator</code></pre>
+                    </li>
+                  }
+                  @case ('flatpak') {
+                    <li>
+                      Install and start it (needs Flatpak and the KDE 6.8 runtime):
+                      <pre class="code-block" data-lang="bash"><code>flatpak install --user ./{{ p.file }}
+flatpak run org.hugmesh.ImageStudio --generator-dir ~/hugmesh-generator</code></pre>
+                    </li>
+                  }
+                }
+                <li>
+                  Studio drives the build scripts in a <code>hugmesh-generator</code> checkout, which
+                  the installer does not include. Clone it once and point Studio at it with
+                  <code>--generator-dir</code>:
+                  <pre class="code-block" data-lang="bash"><code>git clone https://github.com/hugmesh/hugmesh-generator ~/hugmesh-generator</code></pre>
+                  Building images also needs Docker. See
+                  <a routerLink="/studio/installers">the installer notes</a>.
+                </li>
+              </ol>
+            </div>
+          } @else {
+            <div class="notice" data-testid="no-build">
+              <p>
+                There is no packaged Studio for macOS or other systems yet. Studio is Python and Qt,
+                so it runs <a [routerLink]="[]" fragment="from-source">from a checkout</a>
+                anywhere those run. The packaged builds are:
+              </p>
+            </div>
+          }
+
+          @if (c.others.length) {
+            <p class="get-others" [class.as-buttons]="!c.primary" data-testid="other-platforms">
+              {{ c.primary ? 'Other platforms:' : '' }}
+              @for (o of c.others; track o.file) {
+                <a [href]="o.url" [attr.download]="o.file">{{ shortLabel(o) }}</a>
+                <span class="muted">({{ o.size }})</span>
+              }
+              <span aria-hidden="true">·</span>
+              <a [routerLink]="[]" fragment="studio">every file and checksum</a>
+            </p>
+          }
+        } @else {
+          <div class="notice" data-testid="studio-none">
+            <h2 id="get-title">No Studio release has been published yet</h2>
+            <p>
+              The first one will appear here by itself as soon as it is released on
+              <a [href]="releasesUrl(studioRepo())" target="_blank" rel="noopener noreferrer">GitHub</a>.
+              Until then, run Studio from a checkout (below).
+            </p>
+          </div>
+        }
+      </section>
+
+      <nav class="jump" aria-label="On this page">
+        <a [routerLink]="[]" fragment="studio">All Studio files</a>
+        <a [routerLink]="[]" fragment="images">Container images</a>
+        <a [routerLink]="[]" fragment="packages">Maven packages</a>
+        <a [routerLink]="[]" fragment="repos">Every release page</a>
+        <a [routerLink]="[]" fragment="from-source">From source</a>
+      </nav>
+
+      <!-- ── Studio: every file ─────────────────────────────────────────── -->
+      @if (studio(); as s) {
+        <section class="product" id="studio" aria-labelledby="studio-title">
+          <div class="product-head">
+            <h2 id="studio-title">All Studio {{ s.version }} files</h2>
+            @if (s.prerelease) { <span class="badge beta">Beta</span> }
+          </div>
+
           <p class="status" data-testid="studio-status">{{ studioStatus(s) }}</p>
           <p class="version">
             Version <strong>{{ s.version }}</strong>
@@ -116,7 +267,7 @@
             }
           }
 
-          <section class="verify" aria-labelledby="verify-title">
+          <section class="verify" id="verify" aria-labelledby="verify-title">
             <h3 id="verify-title">Verify what you downloaded</h3>
             <p class="sums">
               @if (s.checksums; as c) {
@@ -143,73 +294,204 @@
               <pre class="code-block" data-lang="powershell"><code>{{ hashMsi(item) }}</code></pre>
             }
           </section>
-        } @else {
-          <div class="notice" data-testid="studio-none">
-            <h3>No Studio beta has been published yet</h3>
-            <p>
-              The first one will appear here by itself as soon as it is released on
-              <a [href]="'https://github.com/' + studioRepo() + '/releases'" target="_blank" rel="noopener noreferrer">GitHub</a>.
-              Until then, run Studio from a checkout (below).
-            </p>
-          </div>
-        }
-      </section>
 
-      <!-- ── Images ─────────────────────────────────────────────────────── -->
+          <details class="archive" data-testid="archive">
+            <summary>Older Studio releases ({{ archive().length }})</summary>
+            @if (archive().length) {
+              <ul>
+                @for (a of archive(); track a.tag) {
+                  <li>
+                    <p class="archive-head">
+                      <strong>{{ a.version }}</strong>
+                      @if (a.prerelease) { <span class="badge beta">Beta</span> }
+                      <span class="muted">published {{ a.published }}</span>
+                      <a [href]="a.notesUrl" target="_blank" rel="noopener noreferrer">release notes</a>
+                    </p>
+                    <ul class="archive-files">
+                      @for (f of a.files; track f.file) {
+                        <li><a [href]="f.url">{{ f.file }}</a> <span class="muted">{{ f.size }}</span></li>
+                      }
+                    </ul>
+                  </li>
+                }
+              </ul>
+            } @else {
+              <p class="muted">{{ s.version }} is the first Studio release; there are no older ones.</p>
+            }
+          </details>
+        </section>
+      }
+
+      <!-- ── Container images ───────────────────────────────────────────── -->
       <section class="product" id="images" aria-labelledby="images-title">
         <div class="product-head">
           <h2 id="images-title">Container images</h2>
-          <span class="badge beta">Beta</span>
         </div>
-        <p class="status" data-testid="images-status">
-          {{ imagesPublished() }} of {{ imagesTotal() }} images published on GitHub Container Registry.
-          Pull by version: during the beta no image is tagged <code>latest</code>.
-        </p>
+        @if (imagesPublished() === 0) {
+          <p class="status" data-testid="images-status">
+            No container image can be pulled yet. Each of the {{ imagesTotal() }} images below
+            will show its version, pull command and verify command here as soon as it is public
+            on GitHub Container Registry.
+          </p>
+        } @else {
+          <p class="status" data-testid="images-status">
+            {{ imagesPublished() }} of {{ imagesTotal() }} images published on GitHub Container Registry.
+            Pull by version: during the beta no image is tagged <code>latest</code>.
+          </p>
+        }
 
-        @for (group of imageGroups(); track group.id) {
+        @for (group of publishedImageGroups(); track group.id) {
           <section class="image-group">
             <h3>{{ group.title }}</h3>
             <p class="field-help">{{ group.blurb }}</p>
             <ul class="images">
               @for (img of group.items; track img.image) {
-                <li [class.unpublished]="!img.version" [attr.data-image]="img.id">
+                <li [attr.data-image]="img.id">
                   <div class="head">
                     <h4>{{ img.label }}</h4>
-                    @if (img.version) {
-                      <span class="badges">
-                        @if (img.prerelease) { <span class="badge beta">Beta</span> }
-                        <span class="badge version" data-testid="image-version">{{ img.version }}</span>
-                      </span>
-                    }
+                    <span class="badges">
+                      @if (img.prerelease) { <span class="badge beta">Beta</span> }
+                      <span class="badge version" data-testid="image-version">{{ img.version }}</span>
+                    </span>
                   </div>
-                  <p class="ref"><code>{{ img.image }}</code></p>
+                  <p class="ref">
+                    <a [href]="ghcrUrl(img)" target="_blank" rel="noopener noreferrer"><code>{{ img.image }}</code></a>
+                  </p>
                   <p class="status">{{ imageStatus(img) }}
                     @if (img.notesUrl) {
                       <a [href]="img.notesUrl" target="_blank" rel="noopener noreferrer">Release notes</a>
                     }
                   </p>
-                  @if (img.version) {
-                    <div class="cmd">
-                      <pre class="code-block" data-lang="pull"><code>{{ pull(img) }}</code></pre>
-                      <button type="button" (click)="copy(pull(img))">
-                        {{ copied() === pull(img) ? 'Copied' : 'Copy' }}
-                        <span class="sr">pull command for {{ img.image }}</span>
-                      </button>
-                    </div>
-                    <p class="digest">Digest <code [title]="img.digest">{{ shortDigest(img.digest) }}</code></p>
-                    <div class="cmd">
-                      <pre class="code-block" data-lang="verify"><code>{{ verifyImage(img) }}</code></pre>
-                      <button type="button" (click)="copy(verifyImage(img))">
-                        {{ copied() === verifyImage(img) ? 'Copied' : 'Copy' }}
-                        <span class="sr">verify commands for {{ img.image }}</span>
-                      </button>
-                    </div>
-                  }
+                  <div class="cmd">
+                    <pre class="code-block" data-lang="pull"><code>{{ pull(img) }}</code></pre>
+                    <button type="button" (click)="copy(pull(img))">
+                      {{ copied() === pull(img) ? 'Copied' : 'Copy' }}
+                      <span class="sr">pull command for {{ img.image }}</span>
+                    </button>
+                  </div>
+                  <p class="digest">Digest <code [title]="img.digest">{{ shortDigest(img.digest) }}</code></p>
+                  <div class="cmd">
+                    <pre class="code-block" data-lang="verify"><code>{{ verifyImage(img) }}</code></pre>
+                    <button type="button" (click)="copy(verifyImage(img))">
+                      {{ copied() === verifyImage(img) ? 'Copied' : 'Copy' }}
+                      <span class="sr">verify commands for {{ img.image }}</span>
+                    </button>
+                  </div>
                 </li>
               }
             </ul>
           </section>
         }
+
+        @if (unpublishedImages().length) {
+          <details class="pending" data-testid="images-pending">
+            <summary>{{ imagesPublished() === 0 ? 'All' : 'Not released yet:' }} {{ unpublishedImages().length }} images, by repository</summary>
+            <table class="pending-table">
+              <thead><tr><th scope="col">Image</th><th scope="col">Status</th><th scope="col">Repository</th></tr></thead>
+              <tbody>
+                @for (img of unpublishedImages(); track img.image) {
+                  <tr [attr.data-image]="img.id">
+                    <td><strong>{{ img.label }}</strong><br /><code>{{ img.image }}</code></td>
+                    <td>
+                      @if (img.githubRelease; as gr) {
+                        <span data-testid="image-private">released as
+                          <a [href]="gr.url" target="_blank" rel="noopener noreferrer">{{ gr.tag }}</a>,
+                          but the image is not public on GitHub Container Registry yet</span>
+                      } @else {
+                        <span class="muted">not released yet</span>
+                      }
+                    </td>
+                    <td><a [href]="repoUrl(img.repo)" target="_blank" rel="noopener noreferrer">{{ img.repo }}</a></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </details>
+        }
+      </section>
+
+      <!-- ── Maven packages ─────────────────────────────────────────────── -->
+      <section class="product" id="packages" aria-labelledby="packages-title">
+        <div class="product-head">
+          <h2 id="packages-title">Maven packages</h2>
+        </div>
+        <p class="status">
+          The Java libraries every HugMesh service builds on, published to GitHub Packages under
+          the group <code>net.hugmesh</code>. GitHub Packages asks for a token even for public
+          packages: add a <code>&lt;server&gt;</code> with your GitHub user name and a token that
+          has <code>read:packages</code> to <code>~/.m2/settings.xml</code>, with the same id as the
+          repository below.
+        </p>
+        <ul class="packages">
+          @for (p of packages(); track p.id) {
+            <li [attr.data-package]="p.id">
+              <div class="head">
+                <h4>{{ p.label }}</h4>
+                <span class="badges">
+                  @if (p.version) {
+                    @if (p.prerelease) { <span class="badge beta">Beta</span> }
+                    <span class="badge version">{{ p.version }}</span>
+                  } @else {
+                    <span class="badge" data-testid="package-unreleased">not released yet</span>
+                  }
+                </span>
+              </div>
+              <p class="ref"><code>{{ p.groupId }}:{{ p.artifactId }}</code> · {{ p.packaging === 'pom' ? 'parent POM' : 'jar' }}</p>
+              @if (p.version) {
+                <p class="status">
+                  Released {{ p.published }} ·
+                  <a [href]="packagesUrl(p)" target="_blank" rel="noopener noreferrer">GitHub Packages</a> ·
+                  <a [href]="p.notesUrl" target="_blank" rel="noopener noreferrer">release notes</a>
+                </p>
+                <div class="cmd">
+                  <pre class="code-block" data-lang="pom.xml"><code>{{ mavenSnippet(p) }}</code></pre>
+                  <button type="button" (click)="copy(mavenSnippet(p))">
+                    {{ copied() === mavenSnippet(p) ? 'Copied' : 'Copy' }}
+                    <span class="sr">Maven snippet for {{ p.artifactId }}</span>
+                  </button>
+                </div>
+              } @else {
+                <p class="status muted">
+                  Not released yet. Source:
+                  <a [href]="repoUrl(p.repo)" target="_blank" rel="noopener noreferrer">{{ p.repo }}</a>
+                </p>
+              }
+            </li>
+          }
+        </ul>
+      </section>
+
+      <!-- ── Every repository's release page ───────────────────────────── -->
+      <section class="product" id="repos" aria-labelledby="repos-title">
+        <div class="product-head">
+          <h2 id="repos-title">Every release page</h2>
+        </div>
+        <p class="status">
+          Each of the {{ repos().length }} HugMesh repositories that publishes something, with its
+          newest release.
+        </p>
+        <details class="pending" data-testid="repos">
+          <summary>All {{ repos().length }} repositories</summary>
+          <table class="pending-table">
+            <thead><tr><th scope="col">Repository</th><th scope="col">Publishes</th><th scope="col">Newest release</th></tr></thead>
+            <tbody>
+              @for (r of repos(); track r.repo) {
+                <tr [attr.data-repo]="r.repo">
+                  <td><a [href]="releasesUrl(r.repo)" target="_blank" rel="noopener noreferrer">{{ r.repo }}</a></td>
+                  <td>{{ r.provides.join(', ') }}</td>
+                  <td>
+                    @if (r.latest; as l) {
+                      <a [href]="l.url" target="_blank" rel="noopener noreferrer">{{ l.tag }}</a>
+                      <span class="muted">{{ l.published }}</span>
+                    } @else {
+                      <span class="muted">no release yet</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </details>
       </section>
 
       @if (checkedAt(); as at) {
@@ -218,12 +500,13 @@
     }
   }
 
-  <section class="from-source">
+  <section class="from-source" id="from-source">
     <h2>Or run Studio from a checkout</h2>
     <p>
-      Studio needs no installer to run. From a <code>hugmesh-generator</code> checkout:
+      Studio needs no installer to run, and this is the way to run it on macOS or BSD:
     </p>
-    <pre class="code-block" data-lang="bash"><code>cd studio
+    <pre class="code-block" data-lang="bash"><code>git clone https://github.com/hugmesh/hugmesh-generator
+cd hugmesh-generator/studio
 python3 -m venv .venv &amp;&amp; . .venv/bin/activate
 pip install -r requirements.txt
 ./hugmesh-studio            # Windows: hugmesh-studio.bat</code></pre>

@@ -1,6 +1,7 @@
 {
   "meta": {
-    "description": "Publication allowlist for hugmesh.net. Every hugmesh-* code repo is PRIVATE and this site is public, so nothing is published unless it is listed here.",
+    "description": "Publication allowlist for hugmesh.net. Nothing is published unless it is listed here.",
+    "sourcesArePublic": true,
     "generated": "from a full inventory of the workspace; 40 further documents were reviewed and deliberately withheld as internal."
   },
   "docs": [

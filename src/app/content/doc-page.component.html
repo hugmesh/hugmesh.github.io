@@ -70,7 +70,7 @@
           <ul>
             @for (item of doc.toc; track item.id) {
               <li [class.sub]="item.level === 3">
-                <a [href]="'#' + item.id">{{ item.text }}</a>
+                <a [routerLink]="doc.route" [fragment]="item.id">{{ item.text }}</a>
               </li>
             }
           </ul>
@@ -84,7 +84,7 @@
         </p>
       }
 
-      <article class="prose" [innerHTML]="body()"></article>
+      <article class="prose" [innerHTML]="body()" (click)="onProseClick($event)"></article>
 
       @let sib = siblings();
       @if (sib.prev || sib.next) {
@@ -129,7 +129,7 @@
       <p class="toc-title">On this page</p>
       <ul>
         @for (item of loaded.toc; track item.id) {
-          <li [class.sub]="item.level === 3"><a [href]="'#' + item.id">{{ item.text }}</a></li>
+          <li [class.sub]="item.level === 3"><a [routerLink]="loaded.route" [fragment]="item.id">{{ item.text }}</a></li>
         }
       </ul>
     </aside>

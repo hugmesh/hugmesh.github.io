@@ -19,7 +19,8 @@
     "coverage": "ng test --watch=false --code-coverage --browsers=ChromeHeadlessCI",
     "check:integrity": "node scripts/check-content-integrity.mjs",
     "fetch:releases": "node scripts/fetch-releases.mjs",
-    "test:releases": "node --test scripts/fetch-releases.test.mjs",
+    "test:releases": "node --test scripts/fetch-releases.test.mjs scripts/check-release-sources.test.mjs scripts/static-pages.test.mjs scripts/content-payload.test.mjs",
+    "check:release-sources": "node scripts/check-release-sources.mjs",
     "test:workflows": "node --test scripts/pages-workflow.test.mjs"
   },
   "dependencies": {

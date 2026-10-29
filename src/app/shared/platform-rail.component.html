@@ -19,7 +19,7 @@
       <span class="rail-note">{{ offer().note }}</span>
     </span>
     <a class="rail-cta" routerLink="/downloads">
-      @if (offer().packaged) { Get the Studio } @else { Run from source }
+      @if (offer().packaged) { Download for {{ offer().name }} } @else { Run from source }
     </a>
   </div>
 
@@ -31,7 +31,7 @@
   </p>
 
   <p class="rail-install">
-    <code>{{ offer().install[0] }}</code>
+    <code>{{ installLine() }}</code>
     <a routerLink="/downloads">Full install notes for every platform →</a>
   </p>
 </section>

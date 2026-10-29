@@ -5,6 +5,7 @@ import { ContentService } from '../content/content.service';
 import { SECTIONS } from '../content/sections';
 import { PlatformRailComponent } from '../shared/platform-rail.component';
 import { MachinesComponent } from '../shared/machines.component';
+import { ReleasesService } from '../downloads/releases.service';
 
 /** One of the services a mesh stands up — "world" is reserved for the mesh
  *  itself, the whole world it hosts for its people. Pastels key the cards;
@@ -32,11 +33,11 @@ interface MeshService {
  * in that order, without scrolling to find any of it. Everything else on the
  * page is subordinate to that.
  *
- * WHAT IT MUST NOT DO. Promise a download that does not exist. No release is
- * published yet, so the platform rail leads with the install path that actually
- * works today and says plainly when a packaged build is not available. The
- * moment `assets/releases.json` carries an installer for a platform, that
- * platform's rail becomes a real download with no change here.
+ * THE MAIN CALL TO ACTION IS THE DOWNLOAD. The hero's first button goes to
+ * /downloads, which hands the visitor the build for their system. The version
+ * line under it is read from `assets/releases.json` (the same data the Downloads
+ * page shows), so the front door never names a version that was not published,
+ * and says nothing at all when nothing is.
  */
 @Component({
   selector: 'hug-home',
@@ -47,6 +48,13 @@ interface MeshService {
 })
 export class HomeComponent {
   private readonly content = inject(ContentService);
+  private readonly releases = inject(ReleasesService);
+
+  /** The newest Studio release, for the line under the Download button. */
+  readonly studio = computed(() => {
+    const l = this.releases.loaded();
+    return l.state === 'ready' ? l.data.studio : null;
+  });
 
   readonly sections = SECTIONS;
   readonly indexFailed = this.content.indexFailed;
