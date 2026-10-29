@@ -672,12 +672,16 @@
 
 .packages {
   display: grid;
+  // minmax(0, 1fr), not the implicit auto track: a <pre> snippet's min-content
+  // width would otherwise widen the whole grid past a phone's viewport.
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.75rem;
   margin: 1rem 0 0;
   padding: 0;
   list-style: none;
 
   > li {
+    min-width: 0;
     padding: 1rem 1.25rem;
     background: rgba(t.$black, 0.72);
     border: 1px solid var(--hug-border);

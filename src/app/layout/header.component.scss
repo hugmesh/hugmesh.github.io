@@ -19,13 +19,25 @@
 
 .bar {
   display: flex;
+  // TWO ROWS on a desktop: brand, search, Download and GitHub on the first; all
+  // eleven section links on the second. In one row they did not fit: at 1440px
+  // the Download button pushed "Devices" under the search field and "Reference"
+  // out of reach, and at 1280px even main lost two links. --hug-header-h (styles.scss)
+  // is the measured height of both rows, so sticky rails and anchors still clear it.
+  flex-wrap: wrap;
   align-items: center;
-  gap: 1rem;
+  gap: 0 1rem;
   max-width: 92rem;
-  min-height: var(--hug-header-h);
+  min-height: t.$header-height;
   margin: 0 auto;
   padding: 0 clamp(0.75rem, 2vw, 1.5rem);
 }
+
+.brand { order: 1; }
+.search { order: 2; margin-inline-start: auto; }
+.dl-cta { order: 3; }
+.gh { order: 4; }
+.primary { order: 5; }
 
 .brand {
   display: inline-flex;
@@ -66,23 +78,18 @@
 }
 
 .primary {
-  flex: 1 1 auto;
-  // Without min-width:0 a flex item refuses to shrink below its content's
-  // min-content width, so eleven nav labels push the search field and the
-  // GitHub link off the end of the bar instead of scrolling inside their own rail.
+  flex: 1 0 100%;
   min-width: 0;
 
   ul {
     display: flex;
+    // Wrap, never scroll: a scrolling rail hid its last entries under the search
+    // field with nothing on screen saying more existed.
+    flex-wrap: wrap;
     gap: 0.15rem;
-    margin: 0;
-    padding: 0;
+    margin: 0 0 0 -0.5rem;
+    padding: 0 0 0.45rem;
     list-style: none;
-    // A nine-section nav does not fit every laptop. Scrolling the RAIL beats
-    // wrapping it into a second row that shoves the page content down, and beats
-    // hiding entries behind an overflow menu nobody opens.
-    overflow-x: auto;
-    scrollbar-width: thin;
   }
 }
 
@@ -214,11 +221,11 @@
 }
 
 // ── Narrow viewports ─────────────────────────────────────────────────────────
-// Below $bp-lg the section rail moves into a disclosure panel under the bar. The
+// At or below $bp-lg the section rail moves into a disclosure panel under the bar. The
 // search field stays in the bar: on a phone, search is the primary way people
 // navigate a documentation site, so burying it behind a second tap is the wrong
 // trade.
-@media (max-width: t.$bp-xl) {
+@media (max-width: t.$bp-lg) {
   // .primary below asks for `flex: 1 0 100%` so it drops onto its own line, but
   // a flex container is `nowrap` by default — so it never wrapped. It stayed in
   // the bar as a 366px-wide item that `max-height: 0` merely made INVISIBLE,
@@ -238,7 +245,7 @@
   .brand { order: 1; }
   // Download stays on the brand's row, pushed to the far end, at every width.
   .dl-cta { order: 2; margin-inline-start: auto; }
-  .search { order: 3; flex: 1 1 8rem; }
+  .search { order: 3; flex: 1 1 8rem; margin-inline-start: 0; }
   .gh { display: none; }
 
   .primary {
@@ -249,14 +256,18 @@
     transition: max-height t.$transition-base;
 
     &.open {
-      max-height: 22rem;
+      // Room for all eleven links (about 31rem) on any phone tall enough; a
+      // shorter screen scrolls inside the panel. 22rem hid the last three.
+      max-height: min(34rem, 75vh);
       overflow-y: auto;
       padding-bottom: 0.5rem;
     }
 
     ul {
       flex-direction: column;
-      overflow-x: visible;
+      flex-wrap: nowrap;
+      margin: 0;
+      padding: 0;
     }
   }
 

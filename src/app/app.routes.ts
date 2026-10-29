@@ -33,7 +33,7 @@ export const routes: Routes = [
     path: 'downloads',
     loadComponent: () =>
       import('./downloads/downloads.component').then((m) => m.DownloadsComponent),
-    title: 'Downloads — HugMesh Documentation',
+    title: 'Download HugMesh Studio — HugMesh Documentation',
   },
   {
     // Section index, e.g. /tutorials. Guarded by the closed section list so a

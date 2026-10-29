@@ -27,6 +27,29 @@
   color-scheme: dark;
 }
 
+// Above $bp-lg the header has two rows (header.component.scss): the bar plus the
+// section links. Measured with the browser probe; sticky rails and anchor
+// targets use this to clear it.
+@media (min-width: #{t.$bp-lg + 1px}) {
+  :root {
+    --hug-header-h: 5.1rem;
+  }
+}
+
+// Narrow phones: the search field drops under the brand row (measured 102px
+// below 640px wide, 134px at 320px), so anchors must clear that much.
+@media (max-width: 639px) {
+  :root {
+    --hug-header-h: 6.4rem;
+  }
+}
+
+@media (max-width: 359px) {
+  :root {
+    --hug-header-h: 8.4rem;
+  }
+}
+
 *,
 *::before,
 *::after {
