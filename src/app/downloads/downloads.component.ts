@@ -1,24 +1,19 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { catchError, map, of } from 'rxjs';
 import {
   type ImageEntry,
   type ImageGroup,
   type Installer,
-  type ReleaseData,
+  type PackageEntry,
   type StudioRelease,
-  validateReleaseData,
 } from './release-data';
+import { ReleasesService } from './releases.service';
+import { DOWNLOAD_OS_LABEL, type DownloadOs, chooseDownload, downloadOsFor, shortLabel } from './choose-download';
+import { detectPlatform } from '../shared/platform';
 
 export type { ImageEntry, Installer, ReleaseData, StudioRelease } from './release-data';
 
-type Loaded =
-  | { readonly state: 'loading' }
-  | { readonly state: 'missing' }
-  | { readonly state: 'invalid'; readonly errors: readonly string[] }
-  | { readonly state: 'ready'; readonly data: ReleaseData };
+const OS_ORDER: readonly DownloadOs[] = ['windows', 'linux', 'other'];
 
 const GROUPS: readonly { readonly id: ImageGroup; readonly title: string; readonly blurb: string }[] = [
   { id: 'node', title: 'Mesh node', blurb: 'Joins a machine to a mesh. Runs on any Docker host.' },
@@ -59,20 +54,22 @@ function shQuote(s: string): string {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DownloadsComponent {
-  private readonly http = inject(HttpClient);
+  private readonly releases = inject(ReleasesService);
+
+  /** Tests set this; unset means "detect the visitor's system". */
+  readonly initialOs = input<DownloadOs | null>(null);
+  private readonly detectedOs: DownloadOs = downloadOsFor(detectPlatform());
+  private readonly pickedOs = signal<DownloadOs | null>(null);
+  readonly os = computed<DownloadOs>(() => this.pickedOs() ?? this.initialOs() ?? this.detectedOs);
+  /** True while the shown system is the detected guess, so the page can say so. */
+  readonly osIsGuess = computed(() => this.pickedOs() === null && this.initialOs() === null);
+  readonly osOrder = OS_ORDER;
+  readonly osLabel = DOWNLOAD_OS_LABEL;
+  readonly shortLabel = shortLabel;
 
   readonly copied = signal<string | null>(null);
 
-  private readonly loaded = toSignal(
-    this.http.get<unknown>('assets/releases.json').pipe(
-      map((raw): Loaded => {
-        const errors = validateReleaseData(raw);
-        return errors.length ? { state: 'invalid', errors } : { state: 'ready', data: raw as ReleaseData };
-      }),
-      catchError(() => of<Loaded>({ state: 'missing' })),
-    ),
-    { initialValue: { state: 'loading' } as Loaded },
-  );
+  private readonly loaded = this.releases.loaded;
 
   readonly state = computed(() => this.loaded().state);
   readonly data = computed(() => {
@@ -81,6 +78,9 @@ export class DownloadsComponent {
   });
   readonly studio = computed(() => this.data()?.studio ?? null);
   readonly studioRepo = computed(() => this.data()?.studioRepo ?? 'hugmesh/hugmesh-generator');
+  readonly archive = computed(() => this.data()?.studioArchive ?? []);
+
+  readonly choice = computed(() => chooseDownload(this.os(), this.studio()?.installers ?? []));
 
   readonly windows = computed(() => (this.studio()?.installers ?? []).filter((i) => i.platform === 'windows'));
   readonly linux = computed(() => (this.studio()?.installers ?? []).filter((i) => i.platform === 'linux'));
@@ -91,14 +91,72 @@ export class DownloadsComponent {
       (g) => g.items.length > 0,
     );
   });
+  readonly publishedImageGroups = computed(() =>
+    this.imageGroups()
+      .map((g) => ({ ...g, items: g.items.filter((i) => i.version) }))
+      .filter((g) => g.items.length > 0),
+  );
+  readonly unpublishedImages = computed(() => (this.data()?.images ?? []).filter((i) => !i.version));
   readonly imagesPublished = computed(() => (this.data()?.images ?? []).filter((i) => i.version).length);
   readonly imagesTotal = computed(() => (this.data()?.images ?? []).length);
+
+  readonly packages = computed(() => this.data()?.packages ?? []);
+  readonly repos = computed(() => this.data()?.repos ?? []);
 
   /** When the build last asked GitHub and the registry. */
   readonly checkedAt = computed(() => {
     const g = this.data()?.generated;
     return g ? new Date(g).toUTCString().replace('GMT', 'UTC') : null;
   });
+
+  chooseOs(os: DownloadOs): void {
+    this.pickedOs.set(os);
+  }
+
+  /** The one verify line under the big button, for the file it downloads. */
+  quickVerify(i: Installer): string {
+    return i.platform === 'windows'
+      ? `(Get-FileHash .\\${i.file} -Algorithm SHA256).Hash`
+      : `sha256sum ${i.file}`;
+  }
+
+  repoUrl(repo: string): string {
+    return `https://github.com/${repo}`;
+  }
+
+  releasesUrl(repo: string): string {
+    return `https://github.com/${repo}/releases`;
+  }
+
+  /** The image's page on GitHub Packages; it exists only once something is published. */
+  ghcrUrl(i: ImageEntry): string {
+    const [, owner, ...rest] = i.image.split('/');
+    return `https://github.com/orgs/${owner}/packages/container/package/${encodeURIComponent(rest.join('/'))}`;
+  }
+
+  /** A Maven repository's packages on GitHub. */
+  packagesUrl(p: PackageEntry): string {
+    return `https://github.com/${p.repo}/packages`;
+  }
+
+  /** The POM lines that use a released library: <parent> for the parent POM, <dependency> otherwise. */
+  mavenSnippet(p: PackageEntry): string {
+    const tag = p.packaging === 'pom' ? 'parent' : 'dependency';
+    const repoName = p.repo.split('/')[1];
+    return [
+      `<${tag}>`,
+      `  <groupId>${p.groupId}</groupId>`,
+      `  <artifactId>${p.artifactId}</artifactId>`,
+      `  <version>${p.version}</version>`,
+      `</${tag}>`,
+      '',
+      '<!-- in <repositories> -->',
+      '<repository>',
+      `  <id>github-${repoName}</id>`,
+      `  <url>https://maven.pkg.github.com/${p.repo}</url>`,
+      '</repository>',
+    ].join('\n');
+  }
 
   /** One honest line about a Studio release: what is signed, and what is not. */
   studioStatus(s: StudioRelease): string {

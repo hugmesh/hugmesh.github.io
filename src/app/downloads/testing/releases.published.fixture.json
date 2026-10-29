@@ -1,5 +1,5 @@
 {
-  "schema": 2,
+  "schema": 3,
   "generated": "2026-10-22T08:00:00.000Z",
   "studioRepo": "hugmesh/hugmesh-generator",
   "studio": {
@@ -67,6 +67,29 @@
     },
     "authenticode": false
   },
+  "studioArchive": [
+    {
+      "tag": "studio-v0.3.0-beta.1",
+      "version": "0.3.0-beta.1",
+      "prerelease": true,
+      "published": "2026-10-21",
+      "notesUrl": "https://github.com/hugmesh/hugmesh-generator/releases/tag/studio-v0.3.0-beta.1",
+      "files": [
+        {
+          "file": "hugmesh-studio-0.3.0-beta.1-x64.msi",
+          "url": "https://github.com/hugmesh/hugmesh-generator/releases/download/studio-v0.3.0-beta.1/hugmesh-studio-0.3.0-beta.1-x64.msi",
+          "size": "45 MB",
+          "sha256": "9999999999999999999999999999999999999999999999999999999999999999"
+        },
+        {
+          "file": "SHA256SUMS",
+          "url": "https://github.com/hugmesh/hugmesh-generator/releases/download/studio-v0.3.0-beta.1/SHA256SUMS",
+          "size": "0.0 MB",
+          "sha256": null
+        }
+      ]
+    }
+  ],
   "images": [
     {
       "id": "mesh-node",
@@ -730,6 +753,335 @@
       "signed": false,
       "attested": false,
       "notesUrl": null
+    }
+  ],
+  "packages": [
+    {
+      "id": "build-config",
+      "label": "Build configuration (shared static-analysis rulesets)",
+      "groupId": "net.hugmesh",
+      "artifactId": "hugmesh-build-config",
+      "packaging": "jar",
+      "repo": "hugmesh/hugmesh-build-config",
+      "version": null,
+      "prerelease": false,
+      "published": null,
+      "notesUrl": null
+    },
+    {
+      "id": "parent",
+      "label": "Parent POM (the shared Spring Boot and Java baseline)",
+      "groupId": "net.hugmesh",
+      "artifactId": "hugmesh-parent",
+      "packaging": "pom",
+      "repo": "hugmesh/hugmesh-parent",
+      "version": null,
+      "prerelease": false,
+      "published": null,
+      "notesUrl": null
+    },
+    {
+      "id": "commons",
+      "label": "Commons (shared security, tenancy, config and web building blocks)",
+      "groupId": "net.hugmesh",
+      "artifactId": "hugmesh-commons",
+      "packaging": "jar",
+      "repo": "hugmesh/hugmesh-commons",
+      "version": "2.2.0-beta.1",
+      "prerelease": true,
+      "published": "2026-10-22",
+      "notesUrl": "https://github.com/hugmesh/hugmesh-commons/releases/tag/v2.2.0-beta.1"
+    },
+    {
+      "id": "auth-core",
+      "label": "Auth core (accounts, sessions, MFA)",
+      "groupId": "net.hugmesh",
+      "artifactId": "hugmesh-auth-core",
+      "packaging": "jar",
+      "repo": "hugmesh/hugmesh-auth-core",
+      "version": null,
+      "prerelease": false,
+      "published": null,
+      "notesUrl": null
+    }
+  ],
+  "repos": [
+    {
+      "repo": "hugmesh/hugmesh-actions",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-admin-bff-api",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-admin-ui",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-api-docs",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-auth-core",
+      "provides": [
+        "package"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-be-gateway",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-build-config",
+      "provides": [
+        "package"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-character-forge-bff-api",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-character-studio-ui",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-commons",
+      "provides": [
+        "package"
+      ],
+      "latest": {
+        "tag": "v2.2.0-beta.1",
+        "prerelease": true,
+        "published": "2026-10-22",
+        "url": "https://github.com/hugmesh/hugmesh-commons/releases/tag/v2.2.0-beta.1"
+      }
+    },
+    {
+      "repo": "hugmesh/hugmesh-fe-gateway",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-federation-api",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-forum-api",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-forum-bff-api",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-forum-ui",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-games",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-gateway",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-generator",
+      "provides": [
+        "studio",
+        "image"
+      ],
+      "latest": {
+        "tag": "studio-v0.3.0-beta.2",
+        "prerelease": true,
+        "published": "2026-10-22",
+        "url": "https://github.com/hugmesh/hugmesh-generator/releases/tag/studio-v0.3.0-beta.2"
+      }
+    },
+    {
+      "repo": "hugmesh/hugmesh-host-shell",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-login-ui",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-mastodon-ui",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-matrix-ui",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-mesh-bff-api",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-mod-bff-api",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-mod-ui",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-owncast-bff-api",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-owncast-ui",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-parent",
+      "provides": [
+        "package"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-pki-gateway",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-remote-fragment",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-superadmin-service-catalog-ui",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-tube-bff-api",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-tube-ui",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-user-bff-api",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-user-mesh-ui",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-user-ui",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-wiki-bff-api",
+      "provides": [
+        "image"
+      ],
+      "latest": null
+    },
+    {
+      "repo": "hugmesh/hugmesh-wiki-ui",
+      "provides": [
+        "image"
+      ],
+      "latest": null
     }
   ]
 }

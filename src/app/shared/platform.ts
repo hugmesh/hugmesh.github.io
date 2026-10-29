@@ -55,7 +55,7 @@ export const PLATFORM_OFFERS: Readonly<Record<PlatformId, PlatformOffer>> = {
     accent: '#caffbf',
     packaged: true,
     install: [
-      'flatpak install --user hugmesh-studio-<version>-x86_64.flatpak',
+      'flatpak install --user ./hugmesh-studio-<version>-x86_64.flatpak',
       'flatpak run org.hugmesh.ImageStudio',
     ],
     verify: 'sha256sum hugmesh-studio-<version>-x86_64.flatpak',

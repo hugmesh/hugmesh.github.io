@@ -40,6 +40,7 @@ const NODE_DIGEST = `sha256:${hex('e')}`;
 const V = '0.3.0-beta.2';
 const DL = `https://github.com/hugmesh/hugmesh-generator/releases/download/studio-v${V}`;
 const ASSET_API = 'https://api.github.com/repos/hugmesh/hugmesh-generator/releases/assets';
+const OLD_DL = 'https://github.com/hugmesh/hugmesh-generator/releases/download/studio-v0.3.0-beta.1';
 
 const asset = (id, name, size, digest) => ({
   id,
@@ -82,7 +83,26 @@ const studioReleases = [
     prerelease: true,
     published_at: '2026-10-21T07:12:00Z',
     html_url: 'https://github.com/hugmesh/hugmesh-generator/releases/tag/studio-v0.3.0-beta.1',
-    assets: [],
+    // The OLDER release: it must stay downloadable from the archive list.
+    assets: [
+      {
+        id: 21,
+        name: 'hugmesh-studio-0.3.0-beta.1-x64.msi',
+        size: 44_970_597,
+        url: `${ASSET_API}/21`,
+        browser_download_url: `${OLD_DL}/hugmesh-studio-0.3.0-beta.1-x64.msi`,
+        digest: `sha256:${hex('9')}`,
+      },
+      {
+        id: 22,
+        name: 'SHA256SUMS',
+        size: 300,
+        url: `${ASSET_API}/22`,
+        browser_download_url: `${OLD_DL}/SHA256SUMS`,
+      },
+      // Not a Studio download: never listed.
+      { id: 23, name: 'notes.txt', size: 10, url: `${ASSET_API}/23`, browser_download_url: `${OLD_DL}/notes.txt` },
+    ],
   },
   // Not a Studio release at all.
   { tag_name: 'mesh-node-v0.1.0-beta.1', draft: false, prerelease: true, assets: [] },
@@ -153,6 +173,26 @@ function publishedWorld() {
     }),
     // gateway: a package that exists but has only dev tags (main / sha-…): not published.
     'GET https://ghcr.io/v2/hugmesh/hugmesh-gateway/tags/list?n=1000': json({ tags: ['main', 'sha-0123456789ab', 'latest'] }),
+    // commons: a Maven library with a released beta, a newer DRAFT, and an older beta.
+    'GET https://api.github.com/repos/hugmesh/hugmesh-commons/releases?per_page=100': json([
+      { tag_name: 'v2.3.0-beta.1', draft: true, prerelease: true, assets: [] },
+      {
+        tag_name: 'v2.2.0-beta.1',
+        draft: false,
+        prerelease: true,
+        published_at: '2026-10-22T05:00:00Z',
+        html_url: 'https://github.com/hugmesh/hugmesh-commons/releases/tag/v2.2.0-beta.1',
+        assets: [],
+      },
+      {
+        tag_name: 'v2.1.0',
+        draft: false,
+        prerelease: false,
+        published_at: '2026-09-01T05:00:00Z',
+        html_url: 'https://github.com/hugmesh/hugmesh-commons/releases/tag/v2.1.0',
+        assets: [],
+      },
+    ]),
   };
 }
 
@@ -251,6 +291,41 @@ test('published world: newest Studio beta, its files, checksums and signing fact
   assert.equal(data.images.length, sources.images.length);
   assert.equal(data.images.filter((i) => i.version).length, 2);
 
+  // Every older Studio release stays reachable, with only its Studio files.
+  assert.deepEqual(
+    data.studioArchive.map((a) => [a.version, a.files.map((f) => [f.file, f.sha256])]),
+    [['0.3.0-beta.1', [['hugmesh-studio-0.3.0-beta.1-x64.msi', hex('9')], ['SHA256SUMS', null]]]],
+    'the newest release is not repeated, the draft never appears, notes.txt is not a download',
+  );
+  for (const f of data.studioArchive[0].files) assert.ok(f.url.startsWith(`${OLD_DL}/`));
+
+  const commons = data.packages.find((p) => p.id === 'commons');
+  assert.deepEqual(
+    [commons.groupId, commons.artifactId, commons.version, commons.prerelease, commons.published, commons.notesUrl],
+    ['net.hugmesh', 'hugmesh-commons', '2.2.0-beta.1', true, '2026-10-22', 'https://github.com/hugmesh/hugmesh-commons/releases/tag/v2.2.0-beta.1'],
+    'the draft 2.3.0 is invisible; 2.2.0-beta.1 outranks 2.1.0 by version',
+  );
+  assert.equal(data.packages.find((p) => p.id === 'parent').version, null, 'no release: not released yet');
+  assert.equal(data.packages.find((p) => p.id === 'parent').packaging, 'pom');
+
+  assert.deepEqual(
+    data.repos.find((r) => r.repo === 'hugmesh/hugmesh-generator'),
+    {
+      repo: 'hugmesh/hugmesh-generator',
+      provides: ['studio', 'image'],
+      latest: {
+        tag: `studio-v${V}`,
+        prerelease: true,
+        published: '2026-10-22',
+        url: `https://github.com/hugmesh/hugmesh-generator/releases/tag/studio-v${V}`,
+      },
+    },
+  );
+  assert.equal(data.repos.find((r) => r.repo === 'hugmesh/hugmesh-gateway').latest, null);
+  // The Releases API is asked once per repository, however many items share it.
+  const generatorListCalls = fetchImpl.calls.filter((c) => c.key.endsWith('/repos/hugmesh/hugmesh-generator/releases?per_page=100'));
+  assert.equal(generatorListCalls.length, 1);
+
   // The registry is read anonymously: the site's GitHub token must never be sent to ghcr.io.
   for (const c of fetchImpl.calls.filter((c) => c.key.includes('ghcr.io'))) {
     assert.notEqual(c.headers.authorization, 'Bearer site-token', c.key);
@@ -264,6 +339,9 @@ test('nothing published (the state before the first release): valid, and says so
   assert.equal(data.studio, null);
   assert.equal(data.studioRepo, 'hugmesh/hugmesh-generator');
   assert.ok(data.images.every((i) => i.version === null && i.digest === null && !i.signed && !i.attested));
+  assert.deepEqual(data.studioArchive, []);
+  assert.ok(data.packages.every((p) => p.version === null && p.notesUrl === null));
+  assert.ok(data.repos.every((r) => r.latest === null));
   await matchFixture('releases.empty.fixture.json', data);
 });
 
@@ -339,9 +417,36 @@ test('a permission refusal on an attestation lookup is "not attested", not a fai
 });
 
 test('the validator rejects what the page cannot render', () => {
-  const ok = { schema: 2, generated: NOW.toISOString(), studioRepo: 'hugmesh/hugmesh-generator', studio: null, images: [] };
+  const ok = {
+    schema: 3,
+    generated: NOW.toISOString(),
+    studioRepo: 'hugmesh/hugmesh-generator',
+    studio: null,
+    studioArchive: [],
+    images: [],
+    packages: [],
+    repos: [],
+  };
   assert.deepEqual(validateReleaseData(ok), []);
-  assert.notDeepEqual(validateReleaseData({ ...ok, schema: 1 }), []);
+  assert.notDeepEqual(validateReleaseData({ ...ok, schema: 2 }), []);
+  assert.notDeepEqual(validateReleaseData({ ...ok, packages: undefined }), [], 'packages is required');
+  assert.notDeepEqual(validateReleaseData({ ...ok, repos: undefined }), [], 'repos is required');
+  const pkg = {
+    id: 'commons', label: 'Commons', groupId: 'net.hugmesh', artifactId: 'hugmesh-commons', packaging: 'jar',
+    repo: 'hugmesh/hugmesh-commons', version: null, prerelease: false, published: null, notesUrl: null,
+  };
+  assert.deepEqual(validateReleaseData({ ...ok, packages: [pkg] }), []);
+  assert.notDeepEqual(validateReleaseData({ ...ok, packages: [{ ...pkg, packaging: 'war' }] }), []);
+  assert.notDeepEqual(
+    validateReleaseData({ ...ok, packages: [{ ...pkg, notesUrl: 'https://github.com/x' }] }),
+    [],
+    'release facts without a version would render a link to nothing',
+  );
+  assert.notDeepEqual(validateReleaseData({ ...ok, packages: [pkg, pkg] }), [], 'duplicate package');
+  assert.notDeepEqual(
+    validateReleaseData({ ...ok, repos: [{ repo: 'hugmesh/x', provides: ['wheel'], latest: null }] }),
+    [],
+  );
   assert.notDeepEqual(validateReleaseData({ ...ok, images: undefined }), []);
   const img = {
     id: 'x', label: 'X', group: 'ui', repo: 'hugmesh/x', image: 'ghcr.io/hugmesh/x',

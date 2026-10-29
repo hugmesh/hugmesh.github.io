@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
 import { DocPageComponent } from './doc-page.component';
@@ -157,6 +157,64 @@ describe('DocPageComponent', () => {
   it('renders a table of contents when the page has enough headings', () => {
     setup();
     expect(fixture.nativeElement.querySelectorAll('.toc li').length).toBe(3);
+  });
+
+  it('points every contents link at THIS page, not the site root', () => {
+    // index.html sets <base href="/">, so an href of bare "#a" resolves to "/#a":
+    // clicking it, or opening it in a new tab, went to the home page.
+    setup();
+    const hrefs = [...fixture.nativeElement.querySelectorAll('.toc a, .toc-inline a')].map((a) =>
+      (a as HTMLAnchorElement).getAttribute('href'),
+    );
+    expect(hrefs.length).toBe(6);
+    for (const h of hrefs) expect(h).toMatch(/^\/tutorials\/two#[abc]$/);
+  });
+
+  describe('clicks inside the rendered document', () => {
+    const html =
+      '<p><a id="same" href="/tutorials/two#c">same page</a> <a id="other" href="/tutorials/one#x">other</a> ' +
+      '<a id="ext" href="https://example.org/" target="_blank" rel="noopener">ext</a> ' +
+      '<a id="asset" href="/assets/content/index.json">raw</a></p>';
+    let navigate: jasmine.Spy;
+
+    beforeEach(() => {
+      setup(page({ html }));
+      navigate = spyOn(TestBed.inject(Router), 'navigateByUrl').and.resolveTo(true);
+    });
+
+    /** Click a link; true when the PAGE took the click over. A listener on the host
+     *  (which the click reaches after the article's handler) then cancels it in
+     *  every case, so the Karma frame itself never navigates away. */
+    const click = (id: string, init: MouseEventInit = {}): boolean => {
+      let takenOver = false;
+      const host = fixture.nativeElement as HTMLElement;
+      const guard = (e: Event) => {
+        takenOver = e.defaultPrevented;
+        e.preventDefault();
+      };
+      host.addEventListener('click', guard);
+      const ev = new MouseEvent('click', { bubbles: true, cancelable: true, button: 0, ...init });
+      (host.querySelector(`#${id}`) as HTMLElement).dispatchEvent(ev);
+      host.removeEventListener('click', guard);
+      return takenOver;
+    };
+
+    it('routes a link to another page of this site in-app instead of reloading', () => {
+      expect(click('other')).toBeTrue();
+      expect(navigate).toHaveBeenCalledWith('/tutorials/one#x');
+    });
+
+    it('keeps a same-page anchor on this page', () => {
+      expect(click('same')).toBeTrue();
+      expect(navigate).toHaveBeenCalledWith('/tutorials/two#c');
+    });
+
+    it('leaves external links, the raw payload and modified clicks to the browser', () => {
+      expect(click('ext')).toBeFalse();
+      expect(click('asset')).toBeFalse();
+      expect(click('other', { ctrlKey: true })).toBeFalse();
+      expect(navigate).not.toHaveBeenCalled();
+    });
   });
 
   it('omits the contents rail for a short page', () => {

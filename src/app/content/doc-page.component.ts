@@ -7,7 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DomSanitizer, SafeHtml, Title, Meta } from '@angular/platform-browser';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map, switchMap } from 'rxjs';
@@ -41,6 +41,7 @@ export class DocPageComponent {
   private readonly title = inject(Title);
   private readonly meta = inject(Meta);
   private readonly doc = inject(DOCUMENT);
+  private readonly router = inject(Router);
 
   protected readonly params = toSignal(
     this.route.paramMap.pipe(
@@ -99,6 +100,33 @@ export class DocPageComponent {
       // source block that .prose styles (see _prose.scss).
       if (page.hasMermaid) queueMicrotask(() => void this.renderDiagrams());
     });
+  }
+
+  /**
+   * Links inside the rendered Markdown are plain <a href> (innerHTML has no
+   * RouterLink), so without this every click on a cross-reference reloaded the
+   * whole app. A plain left click on a link to this site is handed to the
+   * router instead; anything else (new tab, modifier keys, external, downloads,
+   * the /assets payload) is left to the browser. An anchor on the page itself
+   * scrolls even when it is already the current fragment.
+   */
+  onProseClick(event: MouseEvent): void {
+    if (event.defaultPrevented || event.button !== 0) return;
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const a = (event.target as Element | null)?.closest?.('a[href]') as HTMLAnchorElement | null;
+    if (!a || (a.target && a.target !== '_self') || a.hasAttribute('download')) return;
+    const win = this.doc.defaultView;
+    if (!win) return;
+    const url = new URL(a.href, win.location.href);
+    if (url.origin !== win.location.origin || url.pathname.startsWith('/assets/')) return;
+    event.preventDefault();
+    const target = `${url.pathname}${url.search}${url.hash}`;
+    const here = `${win.location.pathname}${win.location.search}${win.location.hash}`;
+    if (target === here && url.hash) {
+      this.doc.getElementById(decodeURIComponent(url.hash.slice(1)))?.scrollIntoView();
+      return;
+    }
+    void this.router.navigateByUrl(target);
   }
 
   private async renderDiagrams(): Promise<void> {

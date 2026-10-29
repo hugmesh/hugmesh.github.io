@@ -42,6 +42,7 @@ const TYPES = new Map(
     '.ttf': 'font/ttf',
     '.map': 'application/json; charset=utf-8',
     '.txt': 'text/plain; charset=utf-8',
+    '.xml': 'application/xml; charset=utf-8',
   }),
 );
 
@@ -69,10 +70,24 @@ const server = createServer(async (req, res) => {
   let body = await readIfFile(target);
   let file = target;
 
-  // Directory request -> its index.html, matching Pages.
-  if (!body && !path.extname(target)) {
-    file = path.join(target, 'index.html');
+  // Pages' lookup order, as measured on github.io (2026-10-22): the file itself;
+  // then, for an extensionless path, `<path>.html` (200, no redirect); then a
+  // directory, which answers `/dir/` from its index.html and redirects `/dir`
+  // to `/dir/` with a 301 first.
+  if (!body && !url.pathname.endsWith('/') && !path.extname(target)) {
+    file = `${target}.html`;
     body = await readIfFile(file);
+  }
+  if (!body && !path.extname(target)) {
+    const index = path.join(target, 'index.html');
+    if (await readIfFile(index)) {
+      if (!url.pathname.endsWith('/')) {
+        res.writeHead(301, { location: `${url.pathname}/${url.search}` }).end();
+        return;
+      }
+      file = index;
+      body = await readIfFile(file);
+    }
   }
 
   if (body) {

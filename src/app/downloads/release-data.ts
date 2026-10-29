@@ -18,7 +18,7 @@
  * number. They come from the release that was actually published.
  */
 
-export const RELEASE_DATA_SCHEMA = 2;
+export const RELEASE_DATA_SCHEMA = 3;
 
 /** GitHub's OIDC issuer: what a keyless signature made in Actions carries. */
 export const ACTIONS_OIDC_ISSUER = 'https://token.actions.githubusercontent.com';
@@ -96,6 +96,60 @@ export interface ImageEntry {
   readonly notesUrl: string | null;
 }
 
+/** One file of an older Studio release: enough to download and check it, no more. */
+export interface ArchivedFile extends ReleaseFile {
+  readonly size: string;
+  /** GitHub's own SHA-256 of the asset, when the API reports one. */
+  readonly sha256: string | null;
+}
+
+/** A Studio release that is not the newest. Listed so nothing published is unreachable. */
+export interface StudioArchiveEntry {
+  readonly tag: string;
+  readonly version: string;
+  readonly prerelease: boolean;
+  /** YYYY-MM-DD */
+  readonly published: string;
+  readonly notesUrl: string;
+  readonly files: readonly ArchivedFile[];
+}
+
+/**
+ * A Maven library published to GitHub Packages. Its version is the newest
+ * `v<version>` GitHub Release of its repository: each library's release
+ * workflow creates that release only AFTER `mvn deploy` succeeded, so a release
+ * means the coordinate is in the registry. (The registry itself cannot be read
+ * without a token that has read:packages, which the site build does not hold.)
+ */
+export interface PackageEntry {
+  readonly id: string;
+  readonly label: string;
+  readonly groupId: string;
+  readonly artifactId: string;
+  /** "pom" for a parent POM (used as <parent>), "jar" for a library. */
+  readonly packaging: 'jar' | 'pom';
+  readonly repo: string;
+  readonly version: string | null;
+  readonly prerelease: boolean;
+  /** YYYY-MM-DD of the GitHub release, or null. */
+  readonly published: string | null;
+  readonly notesUrl: string | null;
+}
+
+/** Every repository that releases something, with its newest GitHub release. */
+export interface RepoEntry {
+  readonly repo: string;
+  /** What the Downloads page lists from it. */
+  readonly provides: readonly ('studio' | 'image' | 'package')[];
+  readonly latest: {
+    readonly tag: string;
+    readonly prerelease: boolean;
+    /** YYYY-MM-DD */
+    readonly published: string;
+    readonly url: string;
+  } | null;
+}
+
 export interface ReleaseData {
   readonly schema: number;
   /** ISO 8601 time the data was generated. */
@@ -103,7 +157,11 @@ export interface ReleaseData {
   /** Where the Studio is released, even when nothing is yet. */
   readonly studioRepo: string;
   readonly studio: StudioRelease | null;
+  /** Every OTHER published Studio release, newest first. */
+  readonly studioArchive: readonly StudioArchiveEntry[];
   readonly images: readonly ImageEntry[];
+  readonly packages: readonly PackageEntry[];
+  readonly repos: readonly RepoEntry[];
 }
 
 // ── validation ───────────────────────────────────────────────────────────────
@@ -262,6 +320,103 @@ function image(v: unknown, where: string, errors: string[]): void {
   }
 }
 
+function archiveEntry(v: unknown, where: string, errors: string[]): void {
+  if (!isObj(v)) {
+    errors.push(`${where} must be an object`);
+    return;
+  }
+  str(v, 'tag', where, errors);
+  if (!isSemver(v['version'])) errors.push(`${where}.version must be a SemVer version`);
+  bool(v, 'prerelease', where, errors);
+  if (typeof v['published'] !== 'string' || !DAY.test(v['published'])) errors.push(`${where}.published must be YYYY-MM-DD`);
+  url(v, 'notesUrl', where, errors);
+  if (!Array.isArray(v['files'])) {
+    errors.push(`${where}.files must be a list`);
+    return;
+  }
+  v['files'].forEach((f, i) => {
+    const w = `${where}.files[${i}]`;
+    releaseFile(f, w, errors, false);
+    if (!isObj(f)) return;
+    str(f, 'size', w, errors);
+    if (f['sha256'] !== null && !(typeof f['sha256'] === 'string' && HEX64.test(f['sha256']))) {
+      errors.push(`${w}.sha256 must be 64 lower-case hex characters or null`);
+    }
+  });
+}
+
+const MAVEN_ID = /^[A-Za-z0-9_.-]+$/;
+
+function packageEntry(v: unknown, where: string, errors: string[]): void {
+  if (!isObj(v)) {
+    errors.push(`${where} must be an object`);
+    return;
+  }
+  str(v, 'id', where, errors);
+  str(v, 'label', where, errors);
+  for (const k of ['groupId', 'artifactId']) {
+    if (typeof v[k] !== 'string' || !MAVEN_ID.test(v[k] as string)) errors.push(`${where}.${k} must be a Maven identifier`);
+  }
+  if (v['packaging'] !== 'jar' && v['packaging'] !== 'pom') errors.push(`${where}.packaging must be "jar" or "pom"`);
+  if (typeof v['repo'] !== 'string' || !REPO.test(v['repo'])) errors.push(`${where}.repo must be owner/name`);
+  const version = v['version'];
+  if (version !== null && !isSemver(version)) errors.push(`${where}.version must be SemVer or null`);
+  bool(v, 'prerelease', where, errors);
+  const pub = v['published'];
+  if (pub !== null && !(typeof pub === 'string' && DAY.test(pub))) errors.push(`${where}.published must be YYYY-MM-DD or null`);
+  if (v['notesUrl'] !== null && !isAbsoluteHttps(v['notesUrl'])) {
+    errors.push(`${where}.notesUrl must be an absolute https URL or null`);
+  }
+  if (version === null && (pub !== null || v['notesUrl'] !== null)) errors.push(`${where} has release facts but no version`);
+}
+
+function repoEntry(v: unknown, where: string, errors: string[]): void {
+  if (!isObj(v)) {
+    errors.push(`${where} must be an object`);
+    return;
+  }
+  if (typeof v['repo'] !== 'string' || !REPO.test(v['repo'])) errors.push(`${where}.repo must be owner/name`);
+  const provides = v['provides'];
+  if (!Array.isArray(provides) || provides.some((p) => p !== 'studio' && p !== 'image' && p !== 'package')) {
+    errors.push(`${where}.provides must list "studio", "image" or "package"`);
+  }
+  const latest = v['latest'];
+  if (latest === null) return;
+  if (!isObj(latest)) {
+    errors.push(`${where}.latest must be an object or null`);
+    return;
+  }
+  str(latest, 'tag', `${where}.latest`, errors);
+  bool(latest, 'prerelease', `${where}.latest`, errors);
+  if (typeof latest['published'] !== 'string' || !DAY.test(latest['published'])) {
+    errors.push(`${where}.latest.published must be YYYY-MM-DD`);
+  }
+  url(latest, 'url', `${where}.latest`, errors);
+}
+
+/** Validate a list field, reporting duplicates of `key`. */
+function list(
+  data: Obj,
+  field: string,
+  key: string,
+  each: (v: unknown, where: string, errors: string[]) => void,
+  errors: string[],
+): void {
+  const v = data[field];
+  if (!Array.isArray(v)) {
+    errors.push(`${field} must be a list`);
+    return;
+  }
+  const seen = new Set<unknown>();
+  v.forEach((it, i) => {
+    each(it, `${field}[${i}]`, errors);
+    if (isObj(it)) {
+      if (seen.has(it[key])) errors.push(`${field}[${i}].${key} is listed twice`);
+      seen.add(it[key]);
+    }
+  });
+}
+
 /**
  * Every way `data` fails to be a ReleaseData the page can render, as plain
  * sentences. An empty list means valid.
@@ -279,18 +434,10 @@ export function validateReleaseData(data: unknown): string[] {
     errors.push('studioRepo must be owner/name');
   }
   studio(data['studio'], errors);
-  if (!Array.isArray(data['images'])) {
-    errors.push('images must be a list');
-  } else {
-    const seen = new Set<unknown>();
-    data['images'].forEach((it, i) => {
-      image(it, `images[${i}]`, errors);
-      if (isObj(it)) {
-        if (seen.has(it['image'])) errors.push(`images[${i}].image is listed twice`);
-        seen.add(it['image']);
-      }
-    });
-  }
+  list(data, 'studioArchive', 'tag', archiveEntry, errors);
+  list(data, 'images', 'image', image, errors);
+  list(data, 'packages', 'id', packageEntry, errors);
+  list(data, 'repos', 'repo', repoEntry, errors);
   return errors;
 }
 

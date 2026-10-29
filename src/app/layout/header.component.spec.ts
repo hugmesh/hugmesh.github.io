@@ -30,6 +30,14 @@ describe('HeaderComponent', () => {
     }
   });
 
+  it('offers a Download button that goes to /downloads and is not inside the collapsible menu', () => {
+    const dl = el('[data-testid="header-download"]');
+    expect(dl).toBeTruthy();
+    expect(dl.getAttribute('href')).toBe('/downloads');
+    expect(dl.textContent!.trim()).toBe('Download');
+    expect(dl.closest('#primary-nav')).withContext('must stay visible when the menu is closed').toBeNull();
+  });
+
   it('reports the disclosure state through aria-expanded', () => {
     const toggle = el('[data-testid="menu-toggle"]');
     expect(toggle.getAttribute('aria-expanded')).toBe('false');

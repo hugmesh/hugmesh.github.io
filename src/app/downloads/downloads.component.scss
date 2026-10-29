@@ -390,3 +390,298 @@
   color: var(--hug-text-muted);
   font-size: 0.82rem;
 }
+
+// ── The one download for this visitor ──────────────────────────────────────
+
+.get {
+  margin-top: 1.75rem;
+  padding: clamp(1rem, 3vw, 1.75rem);
+  background: rgba(t.$black, 0.78);
+  border: 1px solid var(--hug-accent);
+  border-radius: t.$radius-lg;
+  box-shadow: 0 0 0 4px rgba(124, 77, 255, 0.12);
+}
+
+.get-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+
+  h2 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0;
+    font-size: clamp(1.35rem, 3.5vw, 1.75rem);
+  }
+}
+
+.os-switch {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.2rem;
+  background: var(--hug-bg-1);
+  border: 1px solid var(--hug-border);
+  border-radius: 999px;
+
+  button {
+    min-height: 2.25rem;
+    padding: 0.3rem 0.85rem;
+    background: transparent;
+    border: 0;
+    border-radius: 999px;
+    color: var(--hug-text-muted);
+    font: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+      color: var(--hug-text);
+    }
+
+    // Selected = filled AND bold, never colour alone.
+    &.on {
+      background: var(--hug-accent);
+      color: #ffffff;
+      font-weight: 700;
+    }
+  }
+}
+
+.get-for {
+  margin: 0.75rem 0 1.1rem;
+  color: var(--hug-text-muted);
+}
+
+.get-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+}
+
+.btn-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 100%;
+  padding: 0.9rem 1.6rem;
+  background: t.$neon;
+  border-radius: 999px;
+  color: t.$black; // 14.9:1 on the neon — AAA
+  font-size: 1.15rem;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 0 6px 24px rgba(255, 215, 0, 0.25);
+
+  &:hover,
+  &:focus-visible {
+    background: t.$neon-bright;
+  }
+
+  span {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  small {
+    overflow-wrap: anywhere;
+    font-family: t.$font-mono;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+}
+
+.btn-second {
+  padding: 0.6rem 1.1rem;
+  border: 1px solid var(--hug-border);
+  border-radius: 999px;
+  color: var(--hug-text);
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--hug-accent-soft);
+  }
+
+  small {
+    color: var(--hug-text-muted);
+    font-weight: 400;
+  }
+}
+
+.get-facts {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.3rem 1rem;
+  margin: 1.25rem 0 0;
+  font-size: 0.9rem;
+
+  dt {
+    color: var(--hug-text-muted);
+  }
+
+  dd {
+    min-width: 0;
+    margin: 0;
+  }
+
+  code {
+    font-family: t.$font-mono;
+    font-size: 0.8rem;
+    overflow-wrap: anywhere;
+  }
+}
+
+.get-steps {
+  margin-top: 1.25rem;
+
+  h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.05rem;
+  }
+
+  ol {
+    margin: 0;
+    padding-inline-start: 1.25rem;
+  }
+
+  li {
+    margin-bottom: 0.75rem;
+    font-size: 0.92rem;
+  }
+
+  .code-block {
+    margin: 0.4rem 0;
+  }
+
+  code {
+    font-family: t.$font-mono;
+  }
+}
+
+.get-others {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.5rem;
+  margin: 1rem 0 0;
+  font-size: 0.9rem;
+}
+
+.jump {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  margin-top: 1.25rem;
+  font-size: 0.9rem;
+}
+
+// ── Older releases, unreleased items, release pages ─────────────────────────
+
+.archive,
+.pending {
+  margin-top: 1.25rem;
+  padding: 0.75rem 1rem;
+  background: rgba(t.$black, 0.72);
+  border: 1px solid var(--hug-border);
+  border-radius: t.$radius-card;
+
+  summary {
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  ul {
+    margin: 0.75rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+}
+
+.archive-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0 0.25rem;
+}
+
+.archive-files li {
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+.pending-table {
+  width: 100%;
+  margin-top: 0.75rem;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+
+  th,
+  td {
+    padding: 0.4rem 0.5rem;
+    border-bottom: 1px solid var(--hug-border);
+    text-align: start;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+  }
+
+  th {
+    color: var(--hug-text-muted);
+    font-weight: 600;
+  }
+
+  code {
+    font-family: t.$font-mono;
+    font-size: 0.78rem;
+  }
+}
+
+// A phone cannot fit three columns of repository names: stack each row.
+@media (max-width: t.$bp-sm) {
+  .pending-table {
+    thead {
+      display: none;
+    }
+
+    tr,
+    td {
+      display: block;
+    }
+
+    tr {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--hug-border);
+    }
+
+    td {
+      padding: 0.1rem 0;
+      border: 0;
+    }
+  }
+}
+
+.packages {
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    padding: 1rem 1.25rem;
+    background: rgba(t.$black, 0.72);
+    border: 1px solid var(--hug-border);
+    border-radius: t.$radius-card;
+  }
+
+  > li + li {
+    margin-top: 0.75rem;
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "$comment": "What the Downloads page lists, and where each item is released. NO VERSION NUMBERS BELONG HERE: scripts/fetch-releases.mjs reads them from the published releases and the registry at build time. Edit this file only when a product, image name, release workflow file or tag prefix changes.",
+  "$comment": "What the Downloads page lists, and where each item is released. NO VERSION NUMBERS BELONG HERE: scripts/fetch-releases.mjs reads them from the published releases and the registry at build time. Edit this file only when a product, image name, release workflow file or tag prefix changes. packages: Maven libraries published to GitHub Packages by each repo's release.yml on a v<version> tag; their version is read from that repo's GitHub Release, which the workflow creates only after the deploy succeeded. scripts/check-release-sources.mjs lists every public org repository with a release workflow and fails if one is missing here.",
   "studio": {
     "repo": "hugmesh/hugmesh-generator",
     "workflow": "studio-release.yml",
@@ -355,6 +355,44 @@
       "repo": "hugmesh/hugmesh-games",
       "image": "ghcr.io/hugmesh/hugmesh-games/wasm-fragment",
       "workflow": "release.yml",
+      "tagPrefix": "v"
+    }
+  ],
+  "packages": [
+    {
+      "id": "build-config",
+      "label": "Build configuration (shared static-analysis rulesets)",
+      "groupId": "net.hugmesh",
+      "artifactId": "hugmesh-build-config",
+      "packaging": "jar",
+      "repo": "hugmesh/hugmesh-build-config",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "parent",
+      "label": "Parent POM (the shared Spring Boot and Java baseline)",
+      "groupId": "net.hugmesh",
+      "artifactId": "hugmesh-parent",
+      "packaging": "pom",
+      "repo": "hugmesh/hugmesh-parent",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "commons",
+      "label": "Commons (shared security, tenancy, config and web building blocks)",
+      "groupId": "net.hugmesh",
+      "artifactId": "hugmesh-commons",
+      "packaging": "jar",
+      "repo": "hugmesh/hugmesh-commons",
+      "tagPrefix": "v"
+    },
+    {
+      "id": "auth-core",
+      "label": "Auth core (accounts, sessions, MFA)",
+      "groupId": "net.hugmesh",
+      "artifactId": "hugmesh-auth-core",
+      "packaging": "jar",
+      "repo": "hugmesh/hugmesh-auth-core",
       "tagPrefix": "v"
     }
   ]

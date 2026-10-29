@@ -11,7 +11,13 @@
       provider.
     </p>
     <div class="cta-row">
-      <a class="btn btn-primary" routerLink="/tutorials">
+      <a class="btn btn-primary btn-big" routerLink="/downloads" data-testid="home-download">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path fill="currentColor" d="M5 20h14v-2H5v2Zm7-3 6-6-1.41-1.41L13 13.17V4h-2v9.17L7.41 9.59 6 11l6 6Z" />
+        </svg>
+        Download HugMesh Studio
+      </a>
+      <a class="btn btn-ghost" routerLink="/tutorials">
         Create your world
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
           <path d="M5 12h13M12 5.5 18.5 12 12 18.5" fill="none" stroke="currentColor"
@@ -20,6 +26,12 @@
       </a>
       <a class="btn btn-ghost" routerLink="/architecture">See how it works</a>
     </div>
+    @if (studio(); as s) {
+      <p class="hero-note" data-testid="home-download-note">
+        Studio {{ s.version }}@if (s.prerelease) { (beta)} for Windows and Linux, published {{ s.published }}.
+        Free and open source.
+      </p>
+    }
 
     <hug-platform-rail />
   </section>
