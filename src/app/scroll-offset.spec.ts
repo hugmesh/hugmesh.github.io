@@ -35,6 +35,8 @@ describe('anchor scrolling offset', () => {
     const top = (scrollTo.calls.mostRecent().args[0] as ScrollToOptions).top!;
     const absolute = target.getBoundingClientRect().top + window.scrollY;
     expect(absolute - top).toBe(81 + ANCHOR_GAP_PX);
+    // Vertical only: never scroll sideways by the heading's left edge.
+    expect((scrollTo.calls.mostRecent().args[0] as ScrollToOptions).left!).toBeLessThanOrEqual(0);
   });
 
   it('follows the header when it changes height (one row on a phone, two on a desktop)', () => {

@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   Injector,
   afterNextRender,
   computed,
@@ -9,7 +10,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { DOCUMENT, ViewportScroller } from '@angular/common';
+import { DOCUMENT } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DomSanitizer, SafeHtml, Title, Meta } from '@angular/platform-browser';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -19,6 +20,7 @@ import { DocPage, DocSummary } from './content.models';
 import { SidebarComponent } from '../layout/sidebar.component';
 import { sectionMeta } from './sections';
 import { loadMermaid } from './mermaid-loader';
+import { type AnchorSettle, settleOnAnchor } from './anchor-settle';
 
 /**
  * Renders one documentation page.
@@ -45,8 +47,8 @@ export class DocPageComponent {
   private readonly meta = inject(Meta);
   private readonly doc = inject(DOCUMENT);
   private readonly router = inject(Router);
-  private readonly scroller = inject(ViewportScroller);
   private readonly injector = inject(Injector);
+  private readonly destroyRef = inject(DestroyRef);
 
   /** The URL's #fragment. Read once the page body exists: the router's own
    *  anchor scroll fires at NavigationEnd, before the document has been fetched,
@@ -98,6 +100,7 @@ export class DocPageComponent {
   readonly mermaidFailed = signal(false);
 
   constructor() {
+    this.destroyRef.onDestroy(() => this.settle?.stop());
     effect(() => {
       const page = this.page();
       if (!page) return;
@@ -141,28 +144,22 @@ export class DocPageComponent {
     if (target === here && url.hash) {
       // Already the current URL, so the router will not scroll: do it here, with
       // the same header offset the router uses.
-      this.scroller.scrollToAnchor(decodeURIComponent(url.hash.slice(1)));
+      this.jumpTo(decodeURIComponent(url.hash.slice(1)));
       return;
     }
     void this.router.navigateByUrl(target);
   }
 
+  /** The heading this page is holding in view while it settles, if any. */
+  private settle: AnchorSettle | null = null;
+
   /**
-   * Jump to a heading when the page arrives with a #fragment. Instant, not
-   * smooth: animating from the top of a long page is no use to anyone. If the
-   * web fonts are still loading, their swap moves the heading (measured: 18px at
-   * 1440px), so jump once more when they are ready, but only if the reader has
-   * not scrolled away in the meantime.
+   * Jump to a heading when the page arrives with a #fragment, and keep it in
+   * view while fonts and diagrams change the layout (anchor-settle.ts).
    */
   private jumpTo(fragment: string): void {
-    const win = this.doc.defaultView;
-    this.scroller.scrollToAnchor(fragment, { behavior: 'instant' });
-    const fonts = (this.doc as Document & { fonts?: FontFaceSet }).fonts;
-    if (!win || !fonts || fonts.status === 'loaded') return;
-    const landed = win.scrollY;
-    void fonts.ready.then(() => {
-      if (Math.abs(win.scrollY - landed) < 2) this.scroller.scrollToAnchor(fragment, { behavior: 'instant' });
-    });
+    this.settle?.stop();
+    this.settle = settleOnAnchor(this.doc, fragment, this.doc.querySelector('main.doc'));
   }
 
   private async renderDiagrams(): Promise<void> {
@@ -174,5 +171,8 @@ export class DocPageComponent {
     } catch {
       this.mermaidFailed.set(true);
     }
+    // Drawn diagrams are taller or shorter than their source blocks: keep a
+    // heading the page was opened at in view.
+    this.settle?.rejump();
   }
 }

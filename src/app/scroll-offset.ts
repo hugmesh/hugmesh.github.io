@@ -17,6 +17,16 @@ export function headerOffset(doc: Document): [number, number] {
 }
 
 /**
+ * The same, for ViewportScroller, which ALSO scrolls sideways by the target's
+ * left edge (rect.left + scrollX - offset[0]). This site never scrolls
+ * sideways on purpose, so the horizontal offset is the page's full width: the
+ * resulting left is never positive, and the browser clamps it to 0.
+ */
+export function scrollerOffset(doc: Document): [number, number] {
+  return [doc.documentElement.scrollWidth, headerOffset(doc)[1]];
+}
+
+/**
  * The router's anchorScrolling (and every ViewportScroller.scrollToAnchor call)
  * scrolls with window.scrollTo and an offset that defaults to zero; CSS
  * scroll-margin-top does not apply to that. Without this, every table-of-contents
@@ -25,6 +35,6 @@ export function headerOffset(doc: Document): [number, number] {
 export function provideAnchorOffset(): EnvironmentProviders {
   return provideEnvironmentInitializer(() => {
     const doc = inject(DOCUMENT);
-    inject(ViewportScroller).setOffset(() => headerOffset(doc));
+    inject(ViewportScroller).setOffset(() => scrollerOffset(doc));
   });
 }
