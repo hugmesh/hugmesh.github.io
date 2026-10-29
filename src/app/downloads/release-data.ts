@@ -94,6 +94,12 @@ export interface ImageEntry {
   readonly identity: SigningIdentity;
   /** The GitHub release for that version, if one exists. */
   readonly notesUrl: string | null;
+  /**
+   * The newest GitHub release of the image's repository with the image's tag
+   * prefix, whether or not the registry lets anyone pull the image. A release
+   * with no pullable version means the package is still private on GHCR.
+   */
+  readonly githubRelease: { readonly tag: string; readonly url: string } | null;
 }
 
 /** One file of an older Studio release: enough to download and check it, no more. */
@@ -317,6 +323,15 @@ function image(v: unknown, where: string, errors: string[]): void {
   identity(v['identity'], `${where}.identity`, errors);
   if (v['notesUrl'] !== null && !isAbsoluteHttps(v['notesUrl'])) {
     errors.push(`${where}.notesUrl must be an absolute https URL or null`);
+  }
+  const gr = v['githubRelease'];
+  if (gr !== null) {
+    if (!isObj(gr)) {
+      errors.push(`${where}.githubRelease must be an object or null`);
+    } else {
+      str(gr, 'tag', `${where}.githubRelease`, errors);
+      url(gr, 'url', `${where}.githubRelease`, errors);
+    }
   }
 }
 

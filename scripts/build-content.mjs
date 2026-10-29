@@ -83,7 +83,6 @@ const RENAMED_REPOS = new Map([
 const MISSING_TARGETS = new Set([
   'hugmesh-games/THIRD_PARTY_ASSETS.md',
   'hugmesh-games/docs/publishing/javadoc-output/',
-  'hugmesh-generator/specs/docs/EDGE-AI.md',
 ]);
 
 /** Linked from vendored documents, but never a repository of this org. */

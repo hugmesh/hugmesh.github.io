@@ -173,6 +173,18 @@ function publishedWorld() {
     }),
     // gateway: a package that exists but has only dev tags (main / sha-…): not published.
     'GET https://ghcr.io/v2/hugmesh/hugmesh-gateway/tags/list?n=1000': json({ tags: ['main', 'sha-0123456789ab', 'latest'] }),
+    // user-ui: released on GitHub, but its GHCR package is still private (the
+    // registry answers 401 by default here), as hugmesh-user-ui was on 2026-10-28.
+    'GET https://api.github.com/repos/hugmesh/hugmesh-user-ui/releases?per_page=100': json([
+      {
+        tag_name: 'v0.3.0-beta.1',
+        draft: false,
+        prerelease: true,
+        published_at: '2026-10-22T20:22:46Z',
+        html_url: 'https://github.com/hugmesh/hugmesh-user-ui/releases/tag/v0.3.0-beta.1',
+        assets: [],
+      },
+    ]),
     // commons: a Maven library with a released beta, a newer DRAFT, and an older beta.
     'GET https://api.github.com/repos/hugmesh/hugmesh-commons/releases?per_page=100': json([
       { tag_name: 'v2.3.0-beta.1', draft: true, prerelease: true, assets: [] },
@@ -287,6 +299,14 @@ test('published world: newest Studio beta, its files, checksums and signing fact
 
   const gateway = data.images.find((i) => i.id === 'gateway');
   assert.equal(gateway.version, null, 'main / sha-… / latest are not published versions');
+  assert.equal(gateway.githubRelease, null);
+
+  const userUi = data.images.find((i) => i.id === 'user-ui');
+  assert.equal(userUi.version, null, 'a private GHCR package is not something a visitor can pull');
+  assert.deepEqual(userUi.githubRelease, {
+    tag: 'v0.3.0-beta.1',
+    url: 'https://github.com/hugmesh/hugmesh-user-ui/releases/tag/v0.3.0-beta.1',
+  });
 
   assert.equal(data.images.length, sources.images.length);
   assert.equal(data.images.filter((i) => i.version).length, 2);
@@ -451,7 +471,7 @@ test('the validator rejects what the page cannot render', () => {
   const img = {
     id: 'x', label: 'X', group: 'ui', repo: 'hugmesh/x', image: 'ghcr.io/hugmesh/x',
     version: '0.1.0-beta.1', prerelease: true, digest: `sha256:${hex('1')}`, signed: true, attested: true,
-    identity: signingIdentity('hugmesh/x', 'release.yml', 'v'), notesUrl: null,
+    identity: signingIdentity('hugmesh/x', 'release.yml', 'v'), notesUrl: null, githubRelease: null,
   };
   assert.deepEqual(validateReleaseData({ ...ok, images: [img] }), []);
   assert.notDeepEqual(validateReleaseData({ ...ok, images: [{ ...img, digest: null }] }), [], 'version without digest');

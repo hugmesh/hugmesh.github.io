@@ -171,13 +171,22 @@ describe('DownloadsComponent', () => {
       const rows = Array.from(el.querySelectorAll('[data-testid="images-pending"] tr[data-image]'));
       expect(rows.length).toBe(published.images.length - 2);
       for (const r of rows) {
-        expect(text(r)).toContain('not released yet');
+        expect(text(r)).toMatch(/not released yet|not public on GitHub Container Registry yet/);
         expect(text(r)).not.toContain('docker pull');
-        expect(r.querySelector('a')!.getAttribute('href')).toMatch(/^https:\/\/github\.com\/hugmesh\/[a-z0-9-]+$/);
+        expect(r.querySelector('td:last-child a')!.getAttribute('href')).toMatch(/^https:\/\/github\.com\/hugmesh\/[a-z0-9-]+$/);
       }
       expect(text(el.querySelector('[data-testid="images-status"]'))).toContain(
         `2 of ${published.images.length} images published`,
       );
+    });
+
+    it('says when an image was released on GitHub but is still private on the registry', () => {
+      const row = el.querySelector('[data-testid="images-pending"] tr[data-image="user-ui"]')!;
+      expect(text(row)).toContain('released as v0.3.0-beta.1, but the image is not public on GitHub Container Registry yet');
+      expect(row.querySelector('[data-testid="image-private"] a')!.getAttribute('href')).toBe(
+        'https://github.com/hugmesh/hugmesh-user-ui/releases/tag/v0.3.0-beta.1',
+      );
+      expect(text(row)).not.toContain('docker pull');
     });
 
     it('gives a released Maven library its coordinates, GitHub Packages link and a dependency snippet', () => {
@@ -258,7 +267,7 @@ describe('DownloadsComponent', () => {
     });
 
     it('says in one line that no image is published, and still names every image', () => {
-      expect(text(el.querySelector('[data-testid="images-status"]'))).toContain('No container image is published yet');
+      expect(text(el.querySelector('[data-testid="images-status"]'))).toContain('No container image can be pulled yet');
       expect(el.querySelectorAll('#images [data-image]').length).toBe(empty.images.length);
       expect(el.querySelectorAll('#images ul.images').length).toBe(0);
     });

@@ -350,7 +350,7 @@ export async function fetchStudio(client, src, releasesOf = releaseCache(client)
 /** Release version tags only: X.Y.Z or X.Y.Z-beta.N. Not main, sha-…, beta or latest. */
 const VERSION_TAG = /^\d+\.\d+\.\d+(?:-beta\.\d+)?$/;
 
-export async function fetchImage(client, src) {
+export async function fetchImage(client, src, releasesOf = releaseCache(client)) {
   const name = src.image.replace(/^ghcr\.io\//, '');
   const base = {
     id: src.id,
@@ -360,6 +360,13 @@ export async function fetchImage(client, src) {
     image: src.image,
     identity: signingIdentity(src.repo, src.workflow, src.tagPrefix),
   };
+  // The GitHub release is looked up whatever the registry says: a release whose
+  // image cannot be pulled anonymously means the GHCR package is still private,
+  // and the page says exactly that instead of "not released yet".
+  const [rel0] = releasesWithPrefix(await releasesOf(src.repo), src.tagPrefix).filter(
+    ({ r }) => typeof r.html_url === 'string' && r.html_url.startsWith('https://'),
+  );
+  base.githubRelease = rel0 ? { tag: rel0.r.tag_name, url: rel0.r.html_url } : null;
   const none = { ...base, version: null, prerelease: false, digest: null, signed: false, attested: false, notesUrl: null };
 
   const bearer = await client.registryToken(name);
@@ -519,7 +526,7 @@ export async function buildReleaseData({ sources, client, now = new Date() }) {
   // anonymous registry limits, and an error names the image it came from.
   for (const src of sources.images) {
     try {
-      images.push(await fetchImage(client, src));
+      images.push(await fetchImage(client, src, releasesOf));
     } catch (e) {
       throw new FetchFailure(`${src.image}: ${e?.message ?? e}`);
     }

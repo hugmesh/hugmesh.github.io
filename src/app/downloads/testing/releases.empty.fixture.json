@@ -15,6 +15,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-generator/\\.github/workflows/mesh-node-release\\.yml@refs/tags/mesh-node-v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -32,6 +33,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-gateway/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -49,6 +51,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-be-gateway/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -66,6 +69,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-fe-gateway/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -83,6 +87,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-pki-gateway/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -100,6 +105,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-admin-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -117,6 +123,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-user-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -134,6 +141,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-federation-api/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -151,6 +159,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-mesh-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -168,6 +177,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-mod-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -185,6 +195,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-forum-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -202,6 +213,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-wiki-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -219,6 +231,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-tube-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -236,6 +249,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-owncast-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -253,6 +267,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-character-forge-bff-api/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -270,6 +285,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-actions/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -287,6 +303,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-forum-api/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -304,6 +321,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-remote-fragment/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -321,6 +339,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-remote-fragment/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -338,6 +357,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-host-shell/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -355,6 +375,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-login-ui/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -372,6 +393,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-admin-ui/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -389,6 +411,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-user-ui/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -406,6 +429,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-user-mesh-ui/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -423,6 +447,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-matrix-ui/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -440,6 +465,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-mastodon-ui/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -457,6 +483,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-forum-ui/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -474,6 +501,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-wiki-ui/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -491,6 +519,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-tube-ui/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -508,6 +537,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-owncast-ui/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -525,6 +555,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-mod-ui/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -542,6 +573,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-superadmin-service-catalog-ui/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -559,6 +591,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-character-studio-ui/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -576,6 +609,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-api-docs/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -593,6 +627,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-games/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -610,6 +645,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-games/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -627,6 +663,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-games/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -644,6 +681,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-games/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,
@@ -661,6 +699,7 @@
         "regexp": "^https://github\\.com/hugmesh/hugmesh-games/\\.github/workflows/release\\.yml@refs/tags/v",
         "issuer": "https://token.actions.githubusercontent.com"
       },
+      "githubRelease": null,
       "version": null,
       "prerelease": false,
       "digest": null,

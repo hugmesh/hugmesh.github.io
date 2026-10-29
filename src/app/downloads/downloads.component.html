@@ -329,8 +329,8 @@ flatpak run org.hugmesh.ImageStudio --generator-dir ~/hugmesh-generator</code></
         </div>
         @if (imagesPublished() === 0) {
           <p class="status" data-testid="images-status">
-            No container image is published yet. Each of the {{ imagesTotal() }} images below
-            will show its version, pull command and verify command here as soon as it is released
+            No container image can be pulled yet. Each of the {{ imagesTotal() }} images below
+            will show its version, pull command and verify command here as soon as it is public
             on GitHub Container Registry.
           </p>
         } @else {
@@ -392,7 +392,15 @@ flatpak run org.hugmesh.ImageStudio --generator-dir ~/hugmesh-generator</code></
                 @for (img of unpublishedImages(); track img.image) {
                   <tr [attr.data-image]="img.id">
                     <td><strong>{{ img.label }}</strong><br /><code>{{ img.image }}</code></td>
-                    <td class="muted">not released yet</td>
+                    <td>
+                      @if (img.githubRelease; as gr) {
+                        <span data-testid="image-private">released as
+                          <a [href]="gr.url" target="_blank" rel="noopener noreferrer">{{ gr.tag }}</a>,
+                          but the image is not public on GitHub Container Registry yet</span>
+                      } @else {
+                        <span class="muted">not released yet</span>
+                      }
+                    </td>
                     <td><a [href]="repoUrl(img.repo)" target="_blank" rel="noopener noreferrer">{{ img.repo }}</a></td>
                   </tr>
                 }

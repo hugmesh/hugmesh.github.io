@@ -14,7 +14,7 @@
  * pages, every section and every published document are written as
  * <route>/index.html and <route>.html with their own title, description and
  * canonical URL, so they are served with a 200 instead of through 404.html.
- * robots.txt and sitemap.xml are generated from the same list. 404.html is then
+ * sitemap.xml is generated from the same list, and robots.txt when src/ has none. 404.html is then
  * only what an unknown path gets, which is what a 404 status should mean.
  *
  * Also writes .nojekyll. Without it Pages runs Jekyll over the output and drops
@@ -77,11 +77,26 @@ for (const page of routes) {
 }
 const lastmod = new Date().toISOString().slice(0, 10);
 await writeFile(path.join(out, 'sitemap.xml'), sitemapXml(origin, routes, lastmod), 'utf8');
-await writeFile(path.join(out, 'robots.txt'), robotsTxt(origin), 'utf8');
+// robots.txt: a hand-written src/robots.txt (PR #33 adds one as an angular.json
+// asset) wins; it must then point at the sitemap generated above. Only when the
+// build has none is one written here, so the two can never both claim the file.
+const robots = path.join(out, 'robots.txt');
+let robotsNote;
+try {
+  const existing = await readFile(robots, 'utf8');
+  if (!/^Sitemap:\s*\S+\/sitemap\.xml\s*$/m.test(existing)) {
+    throw new Error('robots.txt from src/ has no "Sitemap: <origin>/sitemap.xml" line');
+  }
+  robotsNote = 'kept from src/';
+} catch (e) {
+  if (e?.code !== 'ENOENT') throw e;
+  await writeFile(robots, robotsTxt(origin), 'utf8');
+  robotsNote = 'written';
+}
 
 const files = await readdir(out, { recursive: true, withFileTypes: true });
 console.log(`  routes      ${routes.length} pages written as <route>/index.html and <route>.html`);
-console.log(`  sitemap.xml ${routes.length + 1} URLs · robots.txt written`);
+console.log(`  sitemap.xml ${routes.length + 1} URLs · robots.txt ${robotsNote}`);
 console.log(`  404.html    SPA fallback written`);
 console.log(`  .nojekyll   written`);
 console.log(`\n${files.filter((f) => f.isFile()).length} files in ${path.relative(ROOT, out)}`);
