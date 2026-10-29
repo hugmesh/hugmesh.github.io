@@ -81,7 +81,13 @@
     border: 1px solid var(--hug-border);
     border-radius: 0.3rem;
     color: #f0d8ff;
-    white-space: nowrap;
+    // Allowed to wrap. `nowrap` here made every long path or file name
+    // (specs/cluster/manifests/route-access/initdb/20-schema.sql) push its page
+    // sideways on a phone: 1048px wide at a 390px viewport on one page. Each
+    // wrapped piece keeps its own padding and border.
+    overflow-wrap: anywhere;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
   }
 
   kbd {

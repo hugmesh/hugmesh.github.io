@@ -6,6 +6,7 @@ import {
 import { provideRouter, withInMemoryScrolling, withRouterConfig } from '@angular/router';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { routes } from './app.routes';
+import { provideAnchorOffset } from './scroll-offset';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -29,5 +30,7 @@ export const appConfig: ApplicationConfig = {
       withRouterConfig({ paramsInheritanceStrategy: 'always' }),
     ),
     provideHttpClient(withFetch()),
+    // Anchors land below the sticky header, not under it (scroll-offset.ts).
+    provideAnchorOffset(),
   ],
 };

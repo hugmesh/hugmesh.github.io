@@ -1,21 +1,26 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
+  Injector,
+  afterNextRender,
   computed,
   effect,
   inject,
   signal,
+  untracked,
 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DomSanitizer, SafeHtml, Title, Meta } from '@angular/platform-browser';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { map, switchMap } from 'rxjs';
+import { map, of, switchMap } from 'rxjs';
 import { ContentService } from './content.service';
 import { DocPage, DocSummary } from './content.models';
 import { SidebarComponent } from '../layout/sidebar.component';
 import { sectionMeta } from './sections';
 import { loadMermaid } from './mermaid-loader';
+import { type AnchorSettle, settleOnAnchor } from './anchor-settle';
 
 /**
  * Renders one documentation page.
@@ -42,6 +47,14 @@ export class DocPageComponent {
   private readonly meta = inject(Meta);
   private readonly doc = inject(DOCUMENT);
   private readonly router = inject(Router);
+  private readonly injector = inject(Injector);
+  private readonly destroyRef = inject(DestroyRef);
+
+  /** The URL's #fragment. Read once the page body exists: the router's own
+   *  anchor scroll fires at NavigationEnd, before the document has been fetched,
+   *  so a cold-loaded /page#heading or a link from another page found nothing
+   *  to scroll to and stayed at the top. */
+  private readonly fragment = toSignal(this.route.fragment ?? of(null), { initialValue: null });
 
   protected readonly params = toSignal(
     this.route.paramMap.pipe(
@@ -87,11 +100,17 @@ export class DocPageComponent {
   readonly mermaidFailed = signal(false);
 
   constructor() {
+    this.destroyRef.onDestroy(() => this.settle?.stop());
     effect(() => {
       const page = this.page();
       if (!page) return;
 
       this.title.setTitle(`${page.title} — HugMesh Documentation`);
+
+      const fragment = untracked(this.fragment);
+      if (fragment) {
+        afterNextRender(() => this.jumpTo(fragment), { injector: this.injector });
+      }
       this.meta.updateTag({ name: 'description', content: page.summary });
 
       // Mermaid is fetched ONLY for pages that actually contain a diagram, and
@@ -123,10 +142,24 @@ export class DocPageComponent {
     const target = `${url.pathname}${url.search}${url.hash}`;
     const here = `${win.location.pathname}${win.location.search}${win.location.hash}`;
     if (target === here && url.hash) {
-      this.doc.getElementById(decodeURIComponent(url.hash.slice(1)))?.scrollIntoView();
+      // Already the current URL, so the router will not scroll: do it here, with
+      // the same header offset the router uses.
+      this.jumpTo(decodeURIComponent(url.hash.slice(1)));
       return;
     }
     void this.router.navigateByUrl(target);
+  }
+
+  /** The heading this page is holding in view while it settles, if any. */
+  private settle: AnchorSettle | null = null;
+
+  /**
+   * Jump to a heading when the page arrives with a #fragment, and keep it in
+   * view while fonts and diagrams change the layout (anchor-settle.ts).
+   */
+  private jumpTo(fragment: string): void {
+    this.settle?.stop();
+    this.settle = settleOnAnchor(this.doc, fragment, this.doc.querySelector('main.doc'));
   }
 
   private async renderDiagrams(): Promise<void> {
@@ -138,5 +171,8 @@ export class DocPageComponent {
     } catch {
       this.mermaidFailed.set(true);
     }
+    // Drawn diagrams are taller or shorter than their source blocks: keep a
+    // heading the page was opened at in view.
+    this.settle?.rejump();
   }
 }

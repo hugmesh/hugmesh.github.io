@@ -217,6 +217,74 @@ describe('DocPageComponent', () => {
     });
   });
 
+  describe('opened at a #fragment (cold load, or a link from another page)', () => {
+    // No <hug-header> in this fixture, so "just below the header" is the 16px gap.
+    const GAP = 16;
+    const html =
+      '<div id="pad" style="height:3000px"></div><h2 id="c">Third heading</h2><div style="height:3000px"></div>';
+    const frames = (n = 3) =>
+      new Promise<void>((done) => {
+        const step = (k: number) => (k ? requestAnimationFrame(() => step(k - 1)) : setTimeout(done, 30));
+        step(n);
+      });
+    const headingTop = () =>
+      (fixture.nativeElement.querySelector('#c') as HTMLElement).getBoundingClientRect().top;
+
+    beforeEach(async () => {
+      params = new BehaviorSubject(convertToParamMap({ section: 'tutorials', slug: 'two' }));
+      pageSubject = new BehaviorSubject<DocPage | null>(null);
+      TestBed.configureTestingModule({
+        imports: [DocPageComponent],
+        providers: [
+          provideRouter([]),
+          { provide: ActivatedRoute, useValue: { paramMap: params.asObservable(), fragment: of('c') } },
+          {
+            provide: ContentService,
+            useValue: {
+              index: () => of(index),
+              section: () => of(undefined),
+              page: () => pageSubject.asObservable(),
+              searchIndex: () => of([]),
+              indexFailed: () => false,
+            },
+          },
+        ],
+      });
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      fixture = TestBed.createComponent(DocPageComponent);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      // The body arrives after navigation, as it does on a real cold load.
+      pageSubject.next(page({ html }));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      await frames();
+    });
+
+    afterEach(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+
+    it('lands the heading just below the header once the body has rendered', () => {
+      expect(Math.abs(headingTop() - GAP)).withContext(`heading top ${headingTop()}`).toBeLessThanOrEqual(2);
+      expect(window.scrollX).toBe(0);
+    });
+
+    it('stays on the heading when the layout above it shifts afterwards (a font swap, a drawn diagram)', async () => {
+      (fixture.nativeElement.querySelector('#pad') as HTMLElement).style.height = '3700px';
+      await frames();
+      expect(Math.abs(headingTop() - GAP)).withContext(`heading top ${headingTop()} after a 700px shift`).toBeLessThanOrEqual(2);
+      (fixture.nativeElement.querySelector('#pad') as HTMLElement).style.height = '2500px';
+      await frames();
+      expect(Math.abs(headingTop() - GAP)).withContext(`heading top ${headingTop()} after a 1200px shrink`).toBeLessThanOrEqual(2);
+    });
+
+    it('leaves the page alone once the reader scrolls, even if the layout shifts later', async () => {
+      window.dispatchEvent(new WheelEvent('wheel', { deltaY: 100 }));
+      (fixture.nativeElement.querySelector('#pad') as HTMLElement).style.height = '3700px';
+      await frames();
+      expect(Math.round(headingTop() - GAP)).toBe(700);
+    });
+  });
+
   it('omits the contents rail for a short page', () => {
     setup(page({ toc: [{ id: 'a', level: 2, text: 'Only heading' }] }));
     expect(fixture.nativeElement.querySelector('.toc')).toBeNull();
