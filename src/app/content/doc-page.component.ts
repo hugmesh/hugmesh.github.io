@@ -1,16 +1,19 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  Injector,
+  afterNextRender,
   computed,
   effect,
   inject,
   signal,
+  untracked,
 } from '@angular/core';
-import { DOCUMENT } from '@angular/common';
+import { DOCUMENT, ViewportScroller } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DomSanitizer, SafeHtml, Title, Meta } from '@angular/platform-browser';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { map, switchMap } from 'rxjs';
+import { map, of, switchMap } from 'rxjs';
 import { ContentService } from './content.service';
 import { DocPage, DocSummary } from './content.models';
 import { SidebarComponent } from '../layout/sidebar.component';
@@ -42,6 +45,14 @@ export class DocPageComponent {
   private readonly meta = inject(Meta);
   private readonly doc = inject(DOCUMENT);
   private readonly router = inject(Router);
+  private readonly scroller = inject(ViewportScroller);
+  private readonly injector = inject(Injector);
+
+  /** The URL's #fragment. Read once the page body exists: the router's own
+   *  anchor scroll fires at NavigationEnd, before the document has been fetched,
+   *  so a cold-loaded /page#heading or a link from another page found nothing
+   *  to scroll to and stayed at the top. */
+  private readonly fragment = toSignal(this.route.fragment ?? of(null), { initialValue: null });
 
   protected readonly params = toSignal(
     this.route.paramMap.pipe(
@@ -92,6 +103,11 @@ export class DocPageComponent {
       if (!page) return;
 
       this.title.setTitle(`${page.title} — HugMesh Documentation`);
+
+      const fragment = untracked(this.fragment);
+      if (fragment) {
+        afterNextRender(() => this.jumpTo(fragment), { injector: this.injector });
+      }
       this.meta.updateTag({ name: 'description', content: page.summary });
 
       // Mermaid is fetched ONLY for pages that actually contain a diagram, and
@@ -123,10 +139,30 @@ export class DocPageComponent {
     const target = `${url.pathname}${url.search}${url.hash}`;
     const here = `${win.location.pathname}${win.location.search}${win.location.hash}`;
     if (target === here && url.hash) {
-      this.doc.getElementById(decodeURIComponent(url.hash.slice(1)))?.scrollIntoView();
+      // Already the current URL, so the router will not scroll: do it here, with
+      // the same header offset the router uses.
+      this.scroller.scrollToAnchor(decodeURIComponent(url.hash.slice(1)));
       return;
     }
     void this.router.navigateByUrl(target);
+  }
+
+  /**
+   * Jump to a heading when the page arrives with a #fragment. Instant, not
+   * smooth: animating from the top of a long page is no use to anyone. If the
+   * web fonts are still loading, their swap moves the heading (measured: 18px at
+   * 1440px), so jump once more when they are ready, but only if the reader has
+   * not scrolled away in the meantime.
+   */
+  private jumpTo(fragment: string): void {
+    const win = this.doc.defaultView;
+    this.scroller.scrollToAnchor(fragment, { behavior: 'instant' });
+    const fonts = (this.doc as Document & { fonts?: FontFaceSet }).fonts;
+    if (!win || !fonts || fonts.status === 'loaded') return;
+    const landed = win.scrollY;
+    void fonts.ready.then(() => {
+      if (Math.abs(win.scrollY - landed) < 2) this.scroller.scrollToAnchor(fragment, { behavior: 'instant' });
+    });
   }
 
   private async renderDiagrams(): Promise<void> {

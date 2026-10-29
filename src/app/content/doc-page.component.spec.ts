@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ViewportScroller } from '@angular/common';
 import { provideRouter, Router } from '@angular/router';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
@@ -215,6 +216,41 @@ describe('DocPageComponent', () => {
       expect(click('other', { ctrlKey: true })).toBeFalse();
       expect(navigate).not.toHaveBeenCalled();
     });
+  });
+
+  it('scrolls to the URL fragment once the page body has rendered (cold load, or a link from another page)', async () => {
+    // The router's own anchor scroll runs at NavigationEnd, before the document
+    // is fetched, so it finds no heading; the page must scroll when the body exists.
+    params = new BehaviorSubject(convertToParamMap({ section: 'tutorials', slug: 'two' }));
+    pageSubject = new BehaviorSubject<DocPage | null>(null);
+    TestBed.configureTestingModule({
+      imports: [DocPageComponent],
+      providers: [
+        provideRouter([]),
+        { provide: ActivatedRoute, useValue: { paramMap: params.asObservable(), fragment: of('c') } },
+        {
+          provide: ContentService,
+          useValue: {
+            index: () => of(index),
+            section: () => of(undefined),
+            page: () => pageSubject.asObservable(),
+            searchIndex: () => of([]),
+            indexFailed: () => false,
+          },
+        },
+      ],
+    });
+    const scrollToAnchor = spyOn(TestBed.inject(ViewportScroller), 'scrollToAnchor');
+    fixture = TestBed.createComponent(DocPageComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(scrollToAnchor).not.toHaveBeenCalled(); // nothing to scroll to yet
+
+    pageSubject.next(page({ html: '<h2 id="c">Third heading</h2>' }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(scrollToAnchor).toHaveBeenCalledWith('c', { behavior: 'instant' });
+    expect(fixture.nativeElement.querySelector('#c')).withContext('the heading exists when it is scrolled to').toBeTruthy();
   });
 
   it('omits the contents rail for a short page', () => {
