@@ -34,7 +34,7 @@ const sources = JSON.parse(await readFile(path.join(ROOT, 'release-sources.json'
 const NOW = new Date('2026-10-22T08:00:00Z');
 
 const hex = (c) => c.repeat(64);
-const SHA = { msi: hex('a'), flatpak: hex('b'), tar: hex('c') };
+const SHA = { msi: hex('a'), flatpak: hex('b'), tar: hex('c'), flatpakArm: hex('f') };
 const ADMIN_DIGEST = `sha256:${hex('d')}`;
 const NODE_DIGEST = `sha256:${hex('e')}`;
 const V = '0.3.0-beta.2';
@@ -69,6 +69,11 @@ const studioReleases = [
       asset(1, `hugmesh-studio-${V}-x64.msi`, 43_912_345, SHA.msi),
       asset(2, `hugmesh-studio-${V}-x86_64.flatpak`, 171_700_000),
       asset(3, `hugmesh-studio-${V}-linux-x86_64.tar.gz`, 96_400_000),
+      // The aarch64 bundle (2026-10-29), listed by GitHub between the others: the
+      // generator orders by kind and architecture, not by what the API returns.
+      asset(9, `hugmesh-studio-${V}-aarch64.flatpak`, 168_200_000),
+      // A kind the page knows with an architecture it does not: never listed.
+      asset(10, `hugmesh-studio-${V}-riscv64.flatpak`, 1_000),
       asset(4, 'SHA256SUMS', 300),
       asset(5, 'SHA256SUMS.sigstore.json', 4000),
       asset(6, `hugmesh-studio-${V}-windows-x64.spdx.json`, 52_000),
@@ -111,6 +116,7 @@ const studioReleases = [
 const sums =
   `${SHA.msi}  hugmesh-studio-${V}-x64.msi\n` +
   `${SHA.flatpak}  hugmesh-studio-${V}-x86_64.flatpak\n` +
+  `${SHA.flatpakArm}  hugmesh-studio-${V}-aarch64.flatpak\n` +
   `${SHA.tar} *hugmesh-studio-${V}-linux-x86_64.tar.gz\n`;
 
 const json = (body, status = 200, headers = {}) => ({ status, body: JSON.stringify(body), headers });
@@ -124,6 +130,9 @@ function publishedWorld() {
       attestations: [{ bundle: {} }],
     }),
     [`GET https://api.github.com/repos/hugmesh/hugmesh-generator/attestations/sha256:${SHA.flatpak}`]: json({
+      attestations: [{ bundle: {} }],
+    }),
+    [`GET https://api.github.com/repos/hugmesh/hugmesh-generator/attestations/sha256:${SHA.flatpakArm}`]: json({
       attestations: [{ bundle: {} }],
     }),
     // admin-ui: classic cosign .sig tag; attestation only in the API.
@@ -254,18 +263,25 @@ test('published world: newest Studio beta, its files, checksums and signing fact
   assert.equal(s.prerelease, true);
   assert.equal(s.published, '2026-10-22');
   assert.deepEqual(
-    s.installers.map((i) => [i.platform, i.kind, i.file, i.sha256, i.attested]),
+    s.installers.map((i) => [i.platform, i.kind, i.arch, i.file, i.sha256, i.attested]),
     [
-      ['windows', 'msi', `hugmesh-studio-${V}-x64.msi`, SHA.msi, true],
-      ['linux', 'flatpak', `hugmesh-studio-${V}-x86_64.flatpak`, SHA.flatpak, true],
-      ['linux', 'tarball', `hugmesh-studio-${V}-linux-x86_64.tar.gz`, SHA.tar, false],
+      ['windows', 'msi', 'x86_64', `hugmesh-studio-${V}-x64.msi`, SHA.msi, true],
+      ['linux', 'flatpak', 'x86_64', `hugmesh-studio-${V}-x86_64.flatpak`, SHA.flatpak, true],
+      ['linux', 'flatpak', 'aarch64', `hugmesh-studio-${V}-aarch64.flatpak`, SHA.flatpakArm, true],
+      ['linux', 'tarball', 'x86_64', `hugmesh-studio-${V}-linux-x86_64.tar.gz`, SHA.tar, false],
     ],
+    'both Flatpaks, x86_64 before aarch64, and never the riscv64 file',
+  );
+  assert.deepEqual(
+    s.installers.filter((i) => i.kind === 'flatpak').map((i) => i.label),
+    ['Linux Flatpak bundle (x86_64)', 'Linux Flatpak bundle (aarch64)'],
+    'the two Flatpaks must be told apart by their labels',
   );
   for (const i of s.installers) assert.ok(i.url.startsWith(`${DL}/`), `${i.file} must link to the release`);
   assert.deepEqual(
     s.installers.map((i) => i.sbom?.file ?? null),
-    [`hugmesh-studio-${V}-windows-x64.spdx.json`, null, `hugmesh-studio-${V}-linux-x86_64.spdx.json`],
-    'the Windows SBOM belongs to the MSI, the Linux one to the tarball; the Flatpak has none',
+    [`hugmesh-studio-${V}-windows-x64.spdx.json`, null, null, `hugmesh-studio-${V}-linux-x86_64.spdx.json`],
+    'the Windows SBOM belongs to the MSI, the Linux one to the tarball; the Flatpaks have none',
   );
   assert.deepEqual(s.checksums, { file: 'SHA256SUMS', url: `${DL}/SHA256SUMS` });
   assert.deepEqual(s.checksumsSignature, { file: 'SHA256SUMS.sigstore.json', url: `${DL}/SHA256SUMS.sigstore.json` });
@@ -438,7 +454,7 @@ test('a permission refusal on an attestation lookup is "not attested", not a fai
 
 test('the validator rejects what the page cannot render', () => {
   const ok = {
-    schema: 3,
+    schema: 4,
     generated: NOW.toISOString(),
     studioRepo: 'hugmesh/hugmesh-generator',
     studio: null,
@@ -449,6 +465,24 @@ test('the validator rejects what the page cannot render', () => {
   };
   assert.deepEqual(validateReleaseData(ok), []);
   assert.notDeepEqual(validateReleaseData({ ...ok, schema: 2 }), []);
+  assert.notDeepEqual(validateReleaseData({ ...ok, schema: 3 }), [], 'schema 3 installers have no arch');
+  // An installer without an architecture, or with one nobody builds for, cannot be
+  // handed to a Linux visitor, so the file is refused as a whole.
+  const flatpak = {
+    platform: 'linux', kind: 'flatpak', arch: 'aarch64', label: 'Linux Flatpak bundle (aarch64)',
+    file: 'hugmesh-studio-0.3.0-beta.2-aarch64.flatpak',
+    url: 'https://github.com/hugmesh/hugmesh-generator/releases/download/studio-v0.3.0-beta.2/hugmesh-studio-0.3.0-beta.2-aarch64.flatpak',
+    size: '168 MB', bytes: 168_200_000, sha256: hex('f'), attested: true, sbom: null,
+  };
+  const studio = {
+    repo: 'hugmesh/hugmesh-generator', tag: 'studio-v0.3.0-beta.2', version: '0.3.0-beta.2', prerelease: true,
+    published: '2026-10-22', notesUrl: 'https://github.com/hugmesh/hugmesh-generator/releases/tag/studio-v0.3.0-beta.2',
+    installers: [flatpak], checksums: null, checksumsSignature: null,
+    identity: { regexp: '^x$', issuer: 'https://token.actions.githubusercontent.com' }, authenticode: false,
+  };
+  assert.deepEqual(validateReleaseData({ ...ok, studio }), []);
+  assert.notDeepEqual(validateReleaseData({ ...ok, studio: { ...studio, installers: [{ ...flatpak, arch: undefined }] } }), []);
+  assert.notDeepEqual(validateReleaseData({ ...ok, studio: { ...studio, installers: [{ ...flatpak, arch: 'riscv64' }] } }), []);
   assert.notDeepEqual(validateReleaseData({ ...ok, packages: undefined }), [], 'packages is required');
   assert.notDeepEqual(validateReleaseData({ ...ok, repos: undefined }), [], 'repos is required');
   const pkg = {
@@ -488,6 +522,18 @@ test('asset classification and SHA256SUMS parsing', () => {
   assert.equal(classifyStudioAsset('hugmesh-studio-1.0.0-x64.msi', '0.3.0-beta.1'), null, 'another version');
   assert.equal(classifyStudioAsset('hugmesh-studio-0.3.0-beta.1-x64.msi.sha256', '0.3.0-beta.1'), null);
   assert.equal(classifyStudioAsset('hugmesh-studio-0.3.0-beta.1-x64.msi', '0.3.0-beta.1').kind, 'msi');
+  assert.equal(classifyStudioAsset('hugmesh-studio-0.3.0-beta.1-x64.msi', '0.3.0-beta.1').arch, 'x86_64');
+  // The architecture comes from the file name: one Flatpak per architecture.
+  for (const arch of ['x86_64', 'aarch64']) {
+    const fp = classifyStudioAsset(`hugmesh-studio-0.3.0-beta.1-${arch}.flatpak`, '0.3.0-beta.1');
+    assert.deepEqual([fp.platform, fp.kind, fp.arch, fp.label, fp.sbom], ['linux', 'flatpak', arch, `Linux Flatpak bundle (${arch})`, null]);
+    const tgz = classifyStudioAsset(`hugmesh-studio-0.3.0-beta.1-linux-${arch}.tar.gz`, '0.3.0-beta.1');
+    assert.deepEqual([tgz.kind, tgz.arch, tgz.sbom], ['tarball', arch, `hugmesh-studio-0.3.0-beta.1-linux-${arch}.spdx.json`]);
+  }
+  // A known kind of an unknown architecture is not a download the page can hand anyone.
+  assert.equal(classifyStudioAsset('hugmesh-studio-0.3.0-beta.1-riscv64.flatpak', '0.3.0-beta.1'), null);
+  assert.equal(classifyStudioAsset('hugmesh-studio-0.3.0-beta.1-linux-riscv64.tar.gz', '0.3.0-beta.1'), null);
+  assert.equal(classifyStudioAsset('hugmesh-studio-0.3.0-beta.1-arm64.msi', '0.3.0-beta.1'), null, 'no ARM MSI exists');
   const m = parseSha256Sums(`${hex('a')}  a.msi\r\n${hex('B')} *b.flatpak\nnot a line\n`);
   assert.equal(m.get('a.msi'), hex('a'));
   assert.equal(m.get('b.flatpak'), hex('b'));

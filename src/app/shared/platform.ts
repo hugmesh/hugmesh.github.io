@@ -51,16 +51,17 @@ export const PLATFORM_OFFERS: Readonly<Record<PlatformId, PlatformOffer>> = {
     id: 'linux',
     name: 'Linux',
     badge: 'Flatpak',
-    short: 'Flatpak · any distribution',
+    short: 'Flatpak · any distribution, x86_64 or ARM64',
     accent: '#caffbf',
     packaged: true,
     install: [
-      'flatpak install --user ./hugmesh-studio-<version>-x86_64.flatpak',
+      'flatpak install --user ./hugmesh-studio-<version>-<arch>.flatpak   # <arch>: x86_64 or aarch64',
       'flatpak run org.hugmesh.ImageStudio',
     ],
-    verify: 'sha256sum hugmesh-studio-<version>-x86_64.flatpak',
+    verify: 'sha256sum hugmesh-studio-<version>-<arch>.flatpak',
     note:
-      'Any distribution with Flatpak and the KDE 6.8 runtime. Wayland and X11 both ' +
+      'Any distribution with Flatpak and the KDE 6.11 runtime, on x86_64 or ARM64 ' +
+      '(aarch64; uname -m prints which). Wayland and X11 both ' +
       'work. It installs for your user, so it needs no root. It still needs a ' +
       'hugmesh-generator checkout: start it with --generator-dir <path>.',
   },
