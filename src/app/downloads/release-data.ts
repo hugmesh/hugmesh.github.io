@@ -18,13 +18,21 @@
  * number. They come from the release that was actually published.
  */
 
-export const RELEASE_DATA_SCHEMA = 3;
+export const RELEASE_DATA_SCHEMA = 4;
 
 /** GitHub's OIDC issuer: what a keyless signature made in Actions carries. */
 export const ACTIONS_OIDC_ISSUER = 'https://token.actions.githubusercontent.com';
 
 export type InstallerKind = 'msi' | 'flatpak' | 'tarball';
 export type InstallerPlatform = 'windows' | 'linux';
+/**
+ * The CPU architecture an installer is built for. Schema 4 (2026-10-29): the Studio
+ * Flatpak ships for aarch64 as well as x86_64, so a Linux visitor has to be handed
+ * the bundle for their machine, and the page cannot tell two Flatpaks apart by
+ * kind alone. The MSI and the tarball are x86_64 only today; they say so too.
+ */
+export type InstallerArch = 'x86_64' | 'aarch64';
+export const INSTALLER_ARCHES: readonly InstallerArch[] = ['x86_64', 'aarch64'];
 export type ImageGroup = 'node' | 'gateway' | 'service' | 'ui' | 'games';
 
 /** Who must have signed something for a verification to pass. */
@@ -44,6 +52,7 @@ export interface ReleaseFile {
 export interface Installer extends ReleaseFile {
   readonly platform: InstallerPlatform;
   readonly kind: InstallerKind;
+  readonly arch: InstallerArch;
   readonly label: string;
   /** Human size, e.g. "43.9 MB". */
   readonly size: string;
@@ -254,6 +263,9 @@ function installer(v: unknown, where: string, errors: string[]): void {
   }
   if (v['kind'] !== 'msi' && v['kind'] !== 'flatpak' && v['kind'] !== 'tarball') {
     errors.push(`${where}.kind must be "msi", "flatpak" or "tarball"`);
+  }
+  if (v['arch'] !== 'x86_64' && v['arch'] !== 'aarch64') {
+    errors.push(`${where}.arch must be "x86_64" or "aarch64"`);
   }
   str(v, 'label', where, errors);
   str(v, 'size', where, errors);

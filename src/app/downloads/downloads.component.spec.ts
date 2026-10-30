@@ -49,7 +49,13 @@ describe('DownloadsComponent', () => {
     (el.querySelector(`[data-testid="os-${os}"]`) as HTMLButtonElement).click();
     fixture.detectChanges();
   };
-  const installer = (kind: string) => published.studio!.installers.find((i) => i.kind === kind)!;
+  const installer = (kind: string, arch = 'x86_64') =>
+    published.studio!.installers.find((i) => i.kind === kind && i.arch === arch)!;
+  const pickArch = (el: HTMLElement, arch: string) => {
+    (el.querySelector(`[data-testid="arch-${arch}"]`) as HTMLButtonElement).click();
+    fixture.detectChanges();
+  };
+  const href = (el: HTMLElement, testid: string) => el.querySelector(`[data-testid="${testid}"]`)?.getAttribute('href') ?? null;
 
   describe('with a published Studio beta and two published images', () => {
     let el: HTMLElement;
@@ -76,32 +82,102 @@ describe('DownloadsComponent', () => {
       expect(t).toContain('Run anyway');
     });
 
-    it('lists the other platforms under the button', () => {
+    it('lists the other platforms under the button, both Flatpaks named by architecture', () => {
       const others = el.querySelector('[data-testid="other-platforms"]')!;
-      const hrefs = Array.from(others.querySelectorAll('a[href^="https"]')).map((a) => a.getAttribute('href'));
-      expect(hrefs).toEqual([installer('flatpak').url, installer('tarball').url]);
+      const links = Array.from(others.querySelectorAll('a[href^="https"]'));
+      expect(links.map((a) => a.getAttribute('href'))).toEqual([
+        installer('flatpak').url,
+        installer('flatpak', 'aarch64').url,
+        installer('tarball').url,
+      ]);
+      expect(links.map((a) => text(a))).toEqual([
+        'Linux · Flatpak (x86_64)',
+        'Linux · Flatpak (aarch64)',
+        'Linux · .tar.gz (x86_64)',
+      ]);
+      expect(el.querySelector('[data-testid="arch-switch"]')).withContext('no architecture switch on Windows').toBeNull();
     });
 
-    it('hands a Linux visitor the tar.gz first and the Flatpak second', () => {
+    it('hands an x86_64 Linux visitor the tar.gz first and the x86_64 Flatpak second, never the aarch64 one', () => {
+      fixture.componentRef.setInput('initialArch', 'x86_64');
       pick(el, 'linux');
-      expect(el.querySelector('[data-testid="primary-download"]')!.getAttribute('href')).toBe(installer('tarball').url);
-      expect(el.querySelector('[data-testid="secondary-download"]')!.getAttribute('href')).toBe(installer('flatpak').url);
+      expect(href(el, 'primary-download')).toBe(installer('tarball').url);
+      expect(href(el, 'secondary-download')).toBe(installer('flatpak').url);
+      expect(href(el, 'alternate-download')).toBeNull();
+      expect(text(el.querySelector('[data-testid="secondary-download"]'))).toContain('Flatpak bundle (x86_64)');
       expect(text(el.querySelector('#get'))).toContain(`sha256sum ${installer('tarball').file}`);
       expect(el.querySelector('[data-testid="smartscreen"]')).toBeNull();
-      expect(text(el.querySelector('[data-testid="get-for"]'))).toContain('Showing Linux');
+      expect(text(el.querySelector('[data-testid="get-for"]'))).toContain('Showing Linux x86_64 (Intel / AMD)');
+      expect(el.querySelector('[data-testid="arch-x86_64"]')!.getAttribute('aria-pressed')).toBe('true');
+      expect(el.querySelector('[data-testid="arch-aarch64"]')!.getAttribute('aria-pressed')).toBe('false');
+      const others = Array.from(el.querySelectorAll('[data-testid="other-platforms"] a[href^="https"]'));
+      expect(others.map((a) => a.getAttribute('href'))).toEqual([installer('msi').url, installer('flatpak', 'aarch64').url]);
+      expect(text(el.querySelector('#get'))).toContain('(x86_64, glibc 2.39 or newer)');
+    });
+
+    it('hands an ARM64 Linux visitor the aarch64 Flatpak as THE download, with its own install steps', () => {
+      fixture.componentRef.setInput('initialArch', 'aarch64');
+      pick(el, 'linux');
+      const arm = installer('flatpak', 'aarch64');
+      expect(href(el, 'primary-download')).toBe(arm.url);
+      expect(text(el.querySelector('[data-testid="primary-download"]'))).toContain('Download for Linux ARM64 (aarch64)');
+      expect(href(el, 'secondary-download')).withContext('there is no aarch64 tarball to offer second').toBeNull();
+      expect(href(el, 'alternate-download')).toBeNull();
+      expect(text(el.querySelector('[data-testid="primary-size"]'))).toBe(arm.size);
+      expect(text(el.querySelector('[data-testid="primary-sha"]'))).toBe(arm.sha256!);
+      const get = text(el.querySelector('#get'));
+      expect(get).toContain(`sha256sum ${arm.file}`);
+      expect(get).toContain(`flatpak install --user ./${arm.file}`);
+      expect(get).toContain('KDE 6.11 runtime; this bundle is for aarch64');
+      expect(get).not.toContain('KDE 6.8');
+      expect(el.querySelector('[data-testid="arch-aarch64"]')!.getAttribute('aria-pressed')).toBe('true');
+      const others = Array.from(el.querySelectorAll('[data-testid="other-platforms"] a[href^="https"]'));
+      expect(others.map((a) => a.getAttribute('href'))).toEqual([
+        installer('msi').url,
+        installer('flatpak').url,
+        installer('tarball').url,
+      ]);
+    });
+
+    it('offers BOTH Linux builds when the browser does not say which architecture the machine is', () => {
+      fixture.componentRef.setInput('initialArch', 'unknown');
+      pick(el, 'linux');
+      expect(href(el, 'primary-download')).toBe(installer('tarball').url);
+      expect(href(el, 'alternate-download')).toBe(installer('flatpak', 'aarch64').url);
+      expect(text(el.querySelector('[data-testid="alternate-download"]'))).toContain('Download for Linux ARM64 (aarch64)');
+      expect(href(el, 'secondary-download')).toBe(installer('flatpak').url);
+      expect(text(el.querySelector('[data-testid="get-for"]'))).toContain('both architectures');
+      expect(text(el.querySelector('[data-testid="get-for"]'))).toContain('uname -m');
+      for (const a of ['x86_64', 'aarch64']) {
+        expect(el.querySelector(`[data-testid="arch-${a}"]`)!.getAttribute('aria-pressed')).toBe('false');
+      }
+      const others = Array.from(el.querySelectorAll('[data-testid="other-platforms"] a[href^="https"]'));
+      expect(others.map((a) => a.getAttribute('href'))).toEqual([installer('msi').url]);
+      // A click on the switch settles it, and the alternate goes away.
+      pickArch(el, 'aarch64');
+      expect(href(el, 'primary-download')).toBe(installer('flatpak', 'aarch64').url);
+      expect(href(el, 'alternate-download')).toBeNull();
+      expect(text(el.querySelector('[data-testid="get-for"]'))).toContain('Showing Linux ARM64 (aarch64)');
     });
 
     it('never hands a macOS or phone visitor a wrong installer as theirs', () => {
       pick(el, 'other');
       expect(el.querySelector('[data-testid="primary-download"]')).toBeNull();
       expect(text(el.querySelector('[data-testid="no-build"]'))).toContain('no packaged Studio for macOS');
-      expect(el.querySelectorAll('[data-testid="other-platforms"] a[href^="https"]').length).toBe(3);
+      expect(el.querySelectorAll('[data-testid="other-platforms"] a[href^="https"]').length).toBe(4);
     });
 
     it('lists every installer with an absolute download link to the release', () => {
       const links = Array.from(el.querySelectorAll<HTMLAnchorElement>('#studio a.btn'));
       expect(links.map((a) => a.getAttribute('href'))).toEqual(published.studio!.installers.map((i) => i.url));
-      expect(links.length).toBe(3);
+      expect(links.length).toBe(4);
+      // The two Flatpaks are told apart in the heading and in the note under it.
+      const linux = text(el.querySelector('#studio'));
+      expect(linux).toContain('Linux Flatpak bundle (x86_64)');
+      expect(linux).toContain('Linux Flatpak bundle (aarch64)');
+      expect(linux).toContain('Any aarch64 distribution with Flatpak and the KDE 6.11 runtime');
+      expect(linux).toContain('Any x86_64 distribution with Flatpak and the KDE 6.11 runtime');
+      expect(linux).not.toContain('KDE 6.8');
       for (const a of links) {
         expect(a.getAttribute('href')).toMatch(
           /^https:\/\/github\.com\/hugmesh\/hugmesh-generator\/releases\/download\/studio-v0\.3\.0-beta\.2\//,
@@ -115,7 +191,7 @@ describe('DownloadsComponent', () => {
       const status = text(el.querySelector('[data-testid="studio-status"]'));
       expect(status).toContain('not Authenticode-signed yet');
       expect(status).toContain('SmartScreen will warn');
-      expect(status).toContain('Build provenance is attested for 2 of 3 files');
+      expect(status).toContain('Build provenance is attested for 3 of 4 files');
       expect(status).toContain('SHA256SUMS is signed with Sigstore');
     });
 

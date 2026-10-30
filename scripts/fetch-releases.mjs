@@ -102,23 +102,36 @@ export function parseSha256Sums(text) {
   return out;
 }
 
-/** What kind of Studio download a release asset is, or null when it is not one. */
+/**
+ * What kind of Studio download a release asset is, or null when it is not one.
+ *
+ * The architecture is read from the file name, which is where the release workflow
+ * puts it: `-x64.msi` (Windows, x86_64), `-<arch>.flatpak` and `-linux-<arch>.tar.gz`
+ * (both x86_64 or aarch64; the aarch64 Flatpak shipped first, 2026-10-29). A file of
+ * a known kind but an unknown architecture is NOT a download the page can hand
+ * anyone, so it is left unlisted rather than labelled by guesswork.
+ */
 export function classifyStudioAsset(name, version) {
   const stem = `hugmesh-studio-${version}-`;
   if (!name.startsWith(stem)) return null;
-  if (name.endsWith('.msi')) {
-    return { platform: 'windows', kind: 'msi', label: 'Windows installer (MSI, 64-bit)', sbom: `${stem}windows-x64.spdx.json` };
+  const rest = name.slice(stem.length);
+  if (rest === 'x64.msi') {
+    return { platform: 'windows', kind: 'msi', arch: 'x86_64', label: 'Windows installer (MSI, 64-bit)', sbom: `${stem}windows-x64.spdx.json` };
   }
-  if (name.endsWith('.flatpak')) {
-    return { platform: 'linux', kind: 'flatpak', label: 'Linux Flatpak bundle (x86_64)', sbom: null };
+  let m = /^(x86_64|aarch64)\.flatpak$/.exec(rest);
+  if (m) {
+    return { platform: 'linux', kind: 'flatpak', arch: m[1], label: `Linux Flatpak bundle (${m[1]})`, sbom: null };
   }
-  if (name.endsWith('.tar.gz')) {
-    return { platform: 'linux', kind: 'tarball', label: 'Linux portable archive (tar.gz, x86_64)', sbom: `${stem}linux-x86_64.spdx.json` };
+  m = /^linux-(x86_64|aarch64)\.tar\.gz$/.exec(rest);
+  if (m) {
+    return { platform: 'linux', kind: 'tarball', arch: m[1], label: `Linux portable archive (tar.gz, ${m[1]})`, sbom: `${stem}linux-${m[1]}.spdx.json` };
   }
   return null;
 }
 
 const KIND_ORDER = { msi: 0, flatpak: 1, tarball: 2 };
+/** Within a kind, the architecture most visitors have first. */
+const ARCH_ORDER = { x86_64: 0, aarch64: 1 };
 const SIGNATURE_NAMES = ['SHA256SUMS.sigstore.json', 'SHA256SUMS.bundle'];
 
 /**
@@ -319,6 +332,7 @@ export async function fetchStudio(client, src, releasesOf = releaseCache(client)
     installers.push({
       platform: kind.platform,
       kind: kind.kind,
+      arch: kind.arch,
       label: kind.label,
       file: a.name,
       url: a.browser_download_url,
@@ -329,7 +343,9 @@ export async function fetchStudio(client, src, releasesOf = releaseCache(client)
       sbom: sbomAsset ? { file: sbomAsset.name, url: sbomAsset.browser_download_url } : null,
     });
   }
-  installers.sort((x, y) => KIND_ORDER[x.kind] - KIND_ORDER[y.kind] || x.file.localeCompare(y.file));
+  installers.sort(
+    (x, y) => KIND_ORDER[x.kind] - KIND_ORDER[y.kind] || ARCH_ORDER[x.arch] - ARCH_ORDER[y.arch] || x.file.localeCompare(y.file),
+  );
 
   const file = (a) => (a ? { file: a.name, url: a.browser_download_url } : null);
   return {

@@ -1,5 +1,5 @@
 {
-  "schema": 3,
+  "schema": 4,
   "generated": "2026-10-22T08:00:00.000Z",
   "studioRepo": "hugmesh/hugmesh-generator",
   "studio": {
@@ -13,6 +13,7 @@
       {
         "platform": "windows",
         "kind": "msi",
+        "arch": "x86_64",
         "label": "Windows installer (MSI, 64-bit)",
         "file": "hugmesh-studio-0.3.0-beta.2-x64.msi",
         "url": "https://github.com/hugmesh/hugmesh-generator/releases/download/studio-v0.3.0-beta.2/hugmesh-studio-0.3.0-beta.2-x64.msi",
@@ -28,6 +29,7 @@
       {
         "platform": "linux",
         "kind": "flatpak",
+        "arch": "x86_64",
         "label": "Linux Flatpak bundle (x86_64)",
         "file": "hugmesh-studio-0.3.0-beta.2-x86_64.flatpak",
         "url": "https://github.com/hugmesh/hugmesh-generator/releases/download/studio-v0.3.0-beta.2/hugmesh-studio-0.3.0-beta.2-x86_64.flatpak",
@@ -39,7 +41,21 @@
       },
       {
         "platform": "linux",
+        "kind": "flatpak",
+        "arch": "aarch64",
+        "label": "Linux Flatpak bundle (aarch64)",
+        "file": "hugmesh-studio-0.3.0-beta.2-aarch64.flatpak",
+        "url": "https://github.com/hugmesh/hugmesh-generator/releases/download/studio-v0.3.0-beta.2/hugmesh-studio-0.3.0-beta.2-aarch64.flatpak",
+        "size": "168 MB",
+        "bytes": 168200000,
+        "sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "attested": true,
+        "sbom": null
+      },
+      {
+        "platform": "linux",
         "kind": "tarball",
+        "arch": "x86_64",
         "label": "Linux portable archive (tar.gz, x86_64)",
         "file": "hugmesh-studio-0.3.0-beta.2-linux-x86_64.tar.gz",
         "url": "https://github.com/hugmesh/hugmesh-generator/releases/download/studio-v0.3.0-beta.2/hugmesh-studio-0.3.0-beta.2-linux-x86_64.tar.gz",

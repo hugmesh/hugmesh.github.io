@@ -53,9 +53,26 @@
               }
             </div>
           </div>
+          @if (os() === 'linux') {
+            <div class="os-switch arch-switch" role="group" aria-label="Choose your Linux architecture" data-testid="arch-switch">
+              @for (a of archOrder; track a) {
+                <button
+                  type="button"
+                  [class.on]="arch() === a"
+                  [attr.aria-pressed]="arch() === a"
+                  [attr.data-testid]="'arch-' + a"
+                  (click)="chooseArch(a)"
+                >{{ archLabel[a] }}</button>
+              }
+            </div>
+          }
           <p class="get-for" data-testid="get-for">
-            @if (osIsGuess()) {
+            @if (osIsGuess() && (os() !== 'linux' || archIsGuess())) {
               {{ guessText() }} Not right? Pick the computer you will install it on.
+            } @else if (os() === 'linux' && arch(); as a) {
+              Showing <strong>Linux {{ archLabel[a] }}</strong>. Not sure which? <code>uname -m</code> prints it.
+            } @else if (os() === 'linux') {
+              Showing <strong>Linux</strong>, both architectures. <code>uname -m</code> prints yours.
             } @else {
               Showing <strong>{{ osLabel[os()] }}</strong>.
             }
@@ -69,13 +86,24 @@
                   <path fill="currentColor" d="M5 20h14v-2H5v2Zm7-3 6-6-1.41-1.41L13 13.17V4h-2v9.17L7.41 9.59 6 11l6 6Z" />
                 </svg>
                 <span>
-                  Download for {{ osLabel[os()] }}
+                  Download for {{ buttonTarget(p) }}
                   <small>{{ p.file }}</small>
                 </span>
               </a>
+              @if (c.alternate; as a) {
+                <a class="btn-download" [href]="a.url" [attr.download]="a.file" data-testid="alternate-download">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" width="22" height="22">
+                    <path fill="currentColor" d="M5 20h14v-2H5v2Zm7-3 6-6-1.41-1.41L13 13.17V4h-2v9.17L7.41 9.59 6 11l6 6Z" />
+                  </svg>
+                  <span>
+                    Download for {{ buttonTarget(a) }}
+                    <small>{{ a.file }} · {{ a.size }}</small>
+                  </span>
+                </a>
+              }
               @if (c.secondary; as f) {
                 <a class="btn-second" [href]="f.url" [attr.download]="f.file" data-testid="secondary-download">
-                  Or the Flatpak bundle <small>{{ f.size }}</small>
+                  Or the Flatpak bundle ({{ f.arch }}) <small>{{ f.size }}</small>
                 </a>
               }
             </div>
@@ -123,14 +151,14 @@
                   }
                   @case ('tarball') {
                     <li>
-                      Unpack it and start Studio (x86_64, glibc 2.39 or newer):
+                      Unpack it and start Studio ({{ p.arch }}, glibc 2.39 or newer):
                       <pre class="code-block" data-lang="bash"><code>tar -xzf {{ p.file }}
 ./{{ p.file.replace('.tar.gz', '') }}/hugmesh-studio --generator-dir ~/hugmesh-generator</code></pre>
                     </li>
                   }
                   @case ('flatpak') {
                     <li>
-                      Install and start it (needs Flatpak and the KDE 6.8 runtime):
+                      Install and start it (needs Flatpak and the KDE 6.11 runtime; this bundle is for {{ p.arch }}, which is what <code>uname -m</code> must print):
                       <pre class="code-block" data-lang="bash"><code>flatpak install --user ./{{ p.file }}
 flatpak run org.hugmesh.ImageStudio --generator-dir ~/hugmesh-generator</code></pre>
                     </li>
@@ -225,11 +253,12 @@ flatpak run org.hugmesh.ImageStudio --generator-dir ~/hugmesh-generator</code></
                             Adds a Start-menu entry and a tray launcher.
                           }
                           @case ('flatpak') {
-                            Any distribution with Flatpak and the KDE 6.8 runtime. Install with
+                            Any {{ item.arch }} distribution with Flatpak and the KDE 6.11 runtime
+                            (<code>uname -m</code> prints the architecture). Install with
                             <code>flatpak install --user ./{{ item.file }}</code>.
                           }
                           @case ('tarball') {
-                            For x86_64 distributions without Flatpak: unpack it and run
+                            For {{ item.arch }} distributions without Flatpak: unpack it and run
                             <code>hugmesh-studio</code>. Needs glibc 2.39 or newer.
                           }
                         }
