@@ -1207,6 +1207,13 @@
       "sha256": "e77372f1093f854b4a57201b5920d40acab7554afe5cadf73f2ae34f04b2d661"
     },
     {
+      "path": "content/operations/nvd-api-key.md",
+      "sourceRepo": "hugmesh-generator",
+      "sourcePath": "docs/NVD-API-KEY.md",
+      "sourceRef": "c20b9828",
+      "sha256": "2ceef540f80420de298db74ce2557786ae6e89b9610ecd8e27c8f44852d11060"
+    },
+    {
       "path": "content/operations/optional-services.md",
       "sourceRepo": "hugmesh-generator",
       "sourcePath": "docs/OPTIONAL-SERVICES.md",

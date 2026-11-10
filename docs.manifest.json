@@ -516,6 +516,15 @@
       "order": 28
     },
     {
+      "section": "operations",
+      "slug": "nvd-api-key",
+      "title": "NVD API key for OWASP Dependency-Check",
+      "summary": "Why every SCA lane needs a free NVD API key, how to request and activate it, verify it, store it in the Studio and set the GitHub org secret without storing an empty value.",
+      "repo": "hugmesh-generator",
+      "path": "docs/NVD-API-KEY.md",
+      "order": 29
+    },
+    {
       "section": "developer-guide",
       "slug": "archetype-gateway",
       "title": "gateway archetype",
