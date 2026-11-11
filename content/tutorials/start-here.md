@@ -22,7 +22,21 @@ local stack.
 The Studio is the front door: a wizard over the build scripts, plus a system tray
 controller for a local mesh.
 
-From a checkout, two ways:
+**Download it.** [Downloads](/downloads) hands you the package for your machine: a
+Windows MSI, a Flatpak bundle for x86_64 or ARM64 Linux, or an x86_64 Linux tarball. It
+is the same application in each, with no Python environment to set up.
+
+- **The Flatpak** carries the HugMesh build scripts (`hugmesh-generator`) and sets
+  them up on first start. There is nothing to clone.
+- **The MSI and the tarball** do not include the build scripts yet. On first start
+  Studio asks for the folder you cloned `hugmesh-generator` into, and the Downloads page
+  gives you the clone line.
+
+[Studio installers](/studio/installers) has the details for each package.
+
+**Developer: from a checkout.** Use a checkout to change the Studio or the build
+scripts, for native (sudo) builds and writing images to devices, or on a system with no
+package. There are two ways to start it:
 
 ```bash
 # Linux: the guided launcher offers a venv if you lack one.
@@ -35,9 +49,6 @@ python3 -m venv .venv && . .venv/bin/activate
 pip install -r requirements.txt
 ./hugmesh-studio                    # Windows: hugmesh-studio.bat
 ```
-
-Or install the [Windows MSI or Linux Flatpak](/downloads). Same application, no Python
-environment.
 
 `scripts/studio-launch.sh` runs an **idempotent, advisory-only** first-run bootstrap. It
 symlinks `hugmesh-studio` and `hugmesh-build-menu` into `~/.local/bin` (no sudo; it never

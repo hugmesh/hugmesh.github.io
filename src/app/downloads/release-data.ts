@@ -18,7 +18,7 @@
  * number. They come from the release that was actually published.
  */
 
-export const RELEASE_DATA_SCHEMA = 4;
+export const RELEASE_DATA_SCHEMA = 5;
 
 /** GitHub's OIDC issuer: what a keyless signature made in Actions carries. */
 export const ACTIONS_OIDC_ISSUER = 'https://token.actions.githubusercontent.com';
@@ -63,6 +63,15 @@ export interface Installer extends ReleaseFile {
   readonly attested: boolean;
   /** SPDX software bill of materials for this file, when the release has one. */
   readonly sbom: ReleaseFile | null;
+  /**
+   * Schema 5 (2026-11-11): true when this file carries the hugmesh-generator build
+   * scripts and places them on first start, so the page tells its user there is
+   * nothing to clone. False means the page keeps its clone step. Since 0.4.4-beta.1
+   * the Flatpaks carry them and the MSI and the tarball do not yet
+   * (hugmesh-generator#977). `scripts/fetch-releases.mjs` reads it from the release's
+   * own manifest and never infers it from the kind; see `generatorCarried` there.
+   */
+  readonly generator: boolean;
 }
 
 export interface StudioRelease {
@@ -277,6 +286,7 @@ function installer(v: unknown, where: string, errors: string[]): void {
   }
   bool(v, 'attested', where, errors);
   releaseFile(v['sbom'], `${where}.sbom`, errors, true);
+  bool(v, 'generator', where, errors);
 }
 
 function studio(v: unknown, errors: string[]): void {

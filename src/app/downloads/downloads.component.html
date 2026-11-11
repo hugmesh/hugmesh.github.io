@@ -153,25 +153,50 @@
                     <li>
                       Unpack it and start Studio ({{ p.arch }}, glibc 2.39 or newer):
                       <pre class="code-block" data-lang="bash"><code>tar -xzf {{ p.file }}
-./{{ p.file.replace('.tar.gz', '') }}/hugmesh-studio --generator-dir ~/hugmesh-generator</code></pre>
+./{{ p.file.replace('.tar.gz', '') }}/hugmesh-studio</code></pre>
                     </li>
                   }
                   @case ('flatpak') {
                     <li>
                       Install and start it (needs Flatpak and the KDE 6.11 runtime; this bundle is for {{ p.arch }}, which is what <code>uname -m</code> must print):
                       <pre class="code-block" data-lang="bash"><code>flatpak install --user ./{{ p.file }}
-flatpak run org.hugmesh.ImageStudio --generator-dir ~/hugmesh-generator</code></pre>
+flatpak run org.hugmesh.ImageStudio</code></pre>
                     </li>
                   }
                 }
-                <li>
-                  Studio drives the build scripts in a <code>hugmesh-generator</code> checkout, which
-                  the installer does not include. Clone it once and point Studio at it with
-                  <code>--generator-dir</code>:
-                  <pre class="code-block" data-lang="bash"><code>git clone https://github.com/hugmesh/hugmesh-generator ~/hugmesh-generator</code></pre>
-                  Building images also needs Docker. See
-                  <a routerLink="/studio/installers">the installer notes</a>.
-                </li>
+                <!-- Studio runs the hugmesh-generator build scripts. Whether THIS file carries
+                     them is release data (generator), read from the release's own manifest by
+                     scripts/fetch-releases.mjs and never guessed from the kind, so the clone step
+                     disappears by itself for every package that ships them. -->
+                @if (p.generator) {
+                  <li data-testid="generator-bundled">
+                    <strong>Nothing to clone.</strong> This package carries the HugMesh build
+                    scripts (<code>hugmesh-generator</code>) of this release. On first start Studio
+                    places them in <code>{{ managedGeneratorPath(p) }}</code> and uses them. Each
+                    upgrade refreshes them and keeps your <code>out/</code>, <code>keys-out/</code> and
+                    <code>tests/stack/.env</code>.
+                    @if (p.kind === 'flatpak') {
+                      <code>flatpak run org.hugmesh.ImageStudio --self-check</code> confirms it.
+                    }
+                    A clone you name with <code>--generator-dir</code>, or picked in an earlier start,
+                    still takes precedence. Building images needs Docker on the host. See
+                    <a routerLink="/studio/installers">the installer notes</a>.
+                  </li>
+                } @else {
+                  <li data-testid="generator-clone">
+                    This package does not include the HugMesh build scripts
+                    (<code>hugmesh-generator</code>) yet. On first start Studio asks for their folder:
+                    clone them once, pick that folder, and Studio remembers it.
+                    <pre class="code-block" [attr.data-lang]="p.platform === 'windows' ? 'powershell' : 'bash'"><code>{{ cloneLine(p) }}</code></pre>
+                    @if (c.secondary?.generator) {
+                      <span data-testid="generator-elsewhere">
+                        Or take the Flatpak bundle above: it carries them, so there is nothing to clone.
+                      </span>
+                    }
+                    Building images also needs Docker. See
+                    <a routerLink="/studio/installers">the installer notes</a>.
+                  </li>
+                }
               </ol>
             </div>
           } @else {
@@ -212,7 +237,7 @@ flatpak run org.hugmesh.ImageStudio --generator-dir ~/hugmesh-generator</code></
         <a [routerLink]="[]" fragment="images">Container images</a>
         <a [routerLink]="[]" fragment="packages">Maven packages</a>
         <a [routerLink]="[]" fragment="repos">Every release page</a>
-        <a [routerLink]="[]" fragment="from-source">From source</a>
+        <a [routerLink]="[]" fragment="from-source">Developer: from a checkout</a>
       </nav>
 
       <!-- ── Studio: every file ─────────────────────────────────────────── -->
@@ -529,10 +554,12 @@ flatpak run org.hugmesh.ImageStudio --generator-dir ~/hugmesh-generator</code></
     }
   }
 
-  <section class="from-source" id="from-source">
-    <h2>Or run Studio from a checkout</h2>
+  <section class="from-source" id="from-source" data-testid="developer-checkout">
+    <h2>Developer: run Studio from a checkout</h2>
     <p>
-      Studio needs no installer to run, and this is the way to run it on macOS or BSD:
+      A packaged Studio needs none of this. Run it from a checkout to change Studio or the
+      build scripts, for native (sudo) Gentoo builds and writing images to devices (the
+      Flatpak refuses both), and on systems that have no package (macOS, BSD):
     </p>
     <pre class="code-block" data-lang="bash"><code>git clone https://github.com/hugmesh/hugmesh-generator
 cd hugmesh-generator/studio
@@ -540,11 +567,10 @@ python3 -m venv .venv &amp;&amp; . .venv/bin/activate
 pip install -r requirements.txt
 ./hugmesh-studio            # Windows: hugmesh-studio.bat</code></pre>
     <p class="field-help">
-      The installers exist for people who do not want a Python environment. They
-      package the same code. They do not package a <code>hugmesh-generator</code>
-      checkout: start an installed Studio with <code>--generator-dir &lt;path&gt;</code>.
-      Building images needs Docker, or a Gentoo host for a native build. See
-      <a routerLink="/studio">the Studio documentation</a>.
+      A Studio run from a checkout drives that same checkout, with no flag. Building images
+      needs Docker, or a Gentoo host for a native build. See
+      <a routerLink="/studio">the Studio documentation</a> and
+      <a routerLink="/studio/installers">the installer notes</a>.
     </p>
   </section>
 </main>

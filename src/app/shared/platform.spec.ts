@@ -94,6 +94,18 @@ describe('PLATFORM_OFFERS', () => {
     expect(packaged.sort()).toEqual(['linux', 'windows']);
   });
 
+  // The Flatpak carries the build scripts (hugmesh-generator#936): its offer must not
+  // send a visitor to clone them or to pass --generator-dir. The MSI does not carry
+  // them yet (hugmesh-generator#977), and its note must say what first start asks for.
+  it('tells a Flatpak visitor there is nothing to clone, and a Windows visitor what to pick', () => {
+    const linux = [PLATFORM_OFFERS.linux.note, ...PLATFORM_OFFERS.linux.install].join('\n');
+    expect(linux).not.toContain('--generator-dir');
+    expect(linux).not.toContain('git clone');
+    expect(PLATFORM_OFFERS.linux.note).toContain('nothing to clone');
+    expect(PLATFORM_OFFERS.windows.note).not.toContain('--generator-dir');
+    expect(PLATFORM_OFFERS.windows.note).toContain('on first start it asks for the folder you cloned them into');
+  });
+
   it('routes every unpackaged platform through a source checkout', () => {
     for (const id of PLATFORM_ORDER) {
       const o = PLATFORM_OFFERS[id];

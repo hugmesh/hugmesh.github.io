@@ -62,8 +62,8 @@ export const PLATFORM_OFFERS: Readonly<Record<PlatformId, PlatformOffer>> = {
     note:
       'Any distribution with Flatpak and the KDE 6.11 runtime, on x86_64 or ARM64 ' +
       '(aarch64; uname -m prints which). Wayland and X11 both ' +
-      'work. It installs for your user, so it needs no root. It still needs a ' +
-      'hugmesh-generator checkout: start it with --generator-dir <path>.',
+      'work. It installs for your user, so it needs no root. It carries the ' +
+      'hugmesh-generator build scripts it runs, so there is nothing to clone.',
   },
   windows: {
     id: 'windows',
@@ -77,8 +77,9 @@ export const PLATFORM_OFFERS: Readonly<Record<PlatformId, PlatformOffer>> = {
     note:
       'A per-user install on 64-bit Windows 10 or later, with no administrator ' +
       'rights. Until the MSI is Authenticode-signed, SmartScreen warns the first ' +
-      'time you run it; the Downloads page says which builds are. It still needs a ' +
-      'hugmesh-generator checkout.',
+      'time you run it; the Downloads page says which builds are. It does not ' +
+      'include the hugmesh-generator build scripts yet: on first start it asks for ' +
+      'the folder you cloned them into.',
   },
   macos: {
     id: 'macos',

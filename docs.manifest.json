@@ -17,8 +17,8 @@
     {
       "section": "studio",
       "slug": "installers",
-      "title": "Studio installers \u2014 Windows MSI and Linux Flatpak",
-      "summary": "What the installers package, what they still need from the host, and how a release is cut.",
+      "title": "Studio installers \u2014 Windows MSI, Linux Flatpak and Linux tarball",
+      "summary": "What each package includes, what it still needs from the host, and how a release is cut.",
       "order": -50,
       "repo": "hugmesh-generator",
       "path": "docs/STUDIO-INSTALLERS.md"
