@@ -9,18 +9,18 @@ A mesh goes from a build on your computer to a cluster of nodes serving your com
 This page follows that path once, from start to finish.
 
 ```mermaid
-flowchart LR
-  studio["Studio or build scripts"] --> images["One image per node"]
-  studio --> keys["One KEYS stick per node"]
-  images --> boot["First boot"]
+flowchart TD
+  studio["1. Studio or build scripts"] --> images["One image per node"]
+  studio --> keys["2. One KEYS stick per node"]
+  images --> boot["3. First boot"]
   keys --> boot
   boot --> net["Private network (headscale)"]
   boot --> k8s["Kubernetes cluster (kubeadm)"]
-  k8s --> argo["ArgoCD installs the services"]
-  argo --> gw["Gateways and sign-in (Casdoor)"]
-  gw --> web["Host shell and web apps"]
-  web --> live["Go live: local, Tor, dynamic DNS or tunnel"]
-  clients["Laptops, desktops, phones"] --> net
+  k8s --> argo["4. ArgoCD installs the services"]
+  argo --> gw["5. Gateways and one sign-in"]
+  gw --> web["6. Host shell and web apps"]
+  web --> live["7. Go live: local, Tor, DNS or tunnel"]
+  clients["8. Laptops, desktops, phones"] --> net
 ```
 
 ## 1. Build one image per node
