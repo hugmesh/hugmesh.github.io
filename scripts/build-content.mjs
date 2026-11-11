@@ -19,7 +19,7 @@ import { Marked } from 'marked';
 import GithubSlugger from 'github-slugger';
 import sanitizeHtml from 'sanitize-html';
 import hljs from 'highlight.js';
-import { loadManifest, groupBySection, SECTIONS, STANDALONE_ROUTES } from './lib/manifest.mjs';
+import { loadManifest, groupBySection, fragmentProblems, SECTIONS, STANDALONE_ROUTES } from './lib/manifest.mjs';
 import { parseFrontMatter } from './lib/frontmatter.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -498,21 +498,10 @@ async function main() {
     });
   }
 
-  // ── links INTO pages: every '#fragment' a group, start link or redirect names
-  // must be a heading the target page really has, or the reader lands at the top
-  // of the page wondering where the promised section went.
+  // Every '#fragment' a start link, a group or a redirect names must be a real
+  // heading on the target page (lib/manifest.mjs fragmentProblems).
   const tocByRoute = new Map(pages.map((p) => [p.route, new Set(p.toc.map((t) => t.id))]));
-  const checkFragment = (where, ref) => {
-    const [route, frag] = String(ref).split('#');
-    if (!frag) return;
-    const ids = tocByRoute.get(route);
-    if (!ids || !ids.has(frag)) broken.push(`${where}: BROKEN LINK -> ${ref} (no heading "${frag}" on ${route})`);
-  };
-  for (const s of manifest.sections) {
-    if (s.start) checkFragment(`sections.${s.id}.start`, s.start);
-    for (const g of s.groups) for (const r of g.pages) checkFragment(`sections.${s.id}.${g.id}`, r);
-  }
-  for (const r of manifest.redirects) checkFragment(`redirect ${r.from}`, r.to);
+  broken.push(...fragmentProblems(manifest, tocByRoute));
 
   // ── the tab intros (landings/<id>.md), site-authored, so a link to anything this
   // site does not serve fails the build exactly as it does on an authored page.

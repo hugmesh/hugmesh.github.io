@@ -11,7 +11,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SECTIONS, lintSummary, lintTitle, loadManifest, validateManifest } from './lib/manifest.mjs';
+import { SECTIONS, fragmentProblems, lintSummary, lintTitle, loadManifest, validateManifest } from './lib/manifest.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -195,4 +195,20 @@ test('every tab has an intro file', async () => {
     const text = await readFile(path.join(ROOT, 'landings', `${s.id}.md`), 'utf8');
     assert.ok(text.trim().length > 40, `landings/${s.id}.md is empty`);
   }
+});
+
+test('rule: a #fragment in a group, start link or redirect must be a heading on the target page', () => {
+  const f = fixture();
+  f.sections.overview.start = '/overview/first#install';
+  f.redirects = [{ from: '/overview/old', to: '/games/first#rules' }];
+  const m = ok(f);
+  const toc = new Map([
+    ['/overview/first', new Set(['install'])],
+    ['/games/first', new Set(['setup'])],
+  ]);
+  const problems = fragmentProblems(m, toc);
+  assert.equal(problems.length, 1, problems.join('\n'));
+  assert.match(problems[0], /redirect \/overview\/old: BROKEN LINK -> \/games\/first#rules/);
+  toc.get('/games/first').add('rules');
+  assert.deepEqual(fragmentProblems(m, toc), []);
 });

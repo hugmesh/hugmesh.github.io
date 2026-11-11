@@ -287,6 +287,28 @@ export function validateManifest(parsed) {
   };
 }
 
+/**
+ * Links INTO pages: every '#fragment' a start link, a group or a redirect names
+ * must be a heading the target page really has, or the reader lands at the top of
+ * the page wondering where the promised section went. `tocByRoute` maps a route to
+ * the set of heading ids its rendered page has. Returns one message per problem.
+ */
+export function fragmentProblems(manifest, tocByRoute) {
+  const problems = [];
+  const check = (where, ref) => {
+    const [route, frag] = String(ref).split('#');
+    if (frag === undefined) return;
+    const ids = tocByRoute.get(route);
+    if (!ids || !ids.has(frag)) problems.push(`${where}: BROKEN LINK -> ${ref} (no heading "${frag}" on ${route})`);
+  };
+  for (const s of manifest.sections) {
+    if (s.start) check(`sections.${s.id}.start`, s.start);
+    for (const g of s.groups) for (const r of g.pages) check(`sections.${s.id}.${g.id}`, r);
+  }
+  for (const r of manifest.redirects) check(`redirect ${r.from}`, r.to);
+  return problems;
+}
+
 /** Every doc in nav order: tab by tab in header order, group by group. */
 export function navOrder(manifest) {
   const byRoute = new Map(manifest.docs.map((d) => [d.route, d]));
