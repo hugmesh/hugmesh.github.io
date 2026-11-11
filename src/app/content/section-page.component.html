@@ -1,5 +1,6 @@
 <main id="maincontent" class="section-page">
   @let meta = this.meta();
+  @let sec = section();
 
   <header class="head">
     <nav class="crumbs" aria-label="Breadcrumb">
@@ -16,25 +17,73 @@
       }
       {{ meta?.title ?? id() }}
     </h1>
+  </header>
+
+  @if (sec && groups().length) {
+    @if (intro(); as html) {
+      <div class="intro prose" [innerHTML]="html" data-testid="section-intro"></div>
+    }
+
+    @if (sec.start; as start) {
+      <p class="start">
+        <a class="start-link" [routerLink]="start.route" data-testid="section-start">
+          <span class="start-label">Start here</span>
+          <span class="start-title">{{ start.title }}</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M5 12h13M12 5.5 18.5 12 12 18.5" fill="none" stroke="currentColor"
+                  stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </a>
+      </p>
+    }
+
+    @if (showJumps()) {
+      <nav class="jumps" aria-label="Groups on this page">
+        <ul>
+          @for (g of groups(); track g.id) {
+            <li><a [routerLink]="['/', id()]" [fragment]="'group-' + g.id">{{ g.title }}</a></li>
+          }
+        </ul>
+      </nav>
+    }
+
+    @if (sec.index; as idx) {
+      <section class="group symptoms" aria-labelledby="group-symptoms" data-testid="symptom-index">
+        <h2 id="group-symptoms">Find your symptom</h2>
+        <ul class="symptom-list">
+          @for (e of idx.entries; track e.id) {
+            <li [class.sub]="e.level === 3">
+              <a [routerLink]="idx.route" [fragment]="e.id">{{ e.text }}</a>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    @for (g of groups(); track g.id) {
+      <section class="group" [attr.aria-labelledby]="'group-' + g.id" [attr.data-testid]="'group-' + g.id">
+        <h2 [id]="'group-' + g.id">{{ g.title }}</h2>
+        @if (g.blurb) {
+          <p class="group-blurb">{{ g.blurb }}</p>
+        }
+        <ol class="rows">
+          @for (doc of g.docs; track doc.route) {
+            <li>
+              <a class="row" [routerLink]="doc.route" [attr.data-testid]="'row-' + doc.slug">
+                <span class="row-title">{{ doc.title }}</span>
+                @if (doc.summary) {
+                  <span class="row-summary">{{ doc.summary }}</span>
+                }
+              </a>
+            </li>
+          }
+        </ol>
+      </section>
+    }
+  } @else if (indexLoaded()) {
     @if (meta) {
       <p class="blurb">{{ meta.blurb }}</p>
     }
-  </header>
-
-  @let sec = section();
-  @if (sec && sec.docs.length) {
-    <ul class="cards">
-      @for (doc of sec.docs; track doc.route) {
-        <li>
-          <a class="card" [routerLink]="doc.route" [attr.data-testid]="'card-' + doc.slug">
-            <h2>{{ doc.title }}</h2>
-            <p class="summary">{{ doc.summary }}</p>
-            <p class="card-meta">{{ doc.readingMinutes }} min read</p>
-          </a>
-        </li>
-      }
-    </ul>
-  } @else if (indexLoaded()) {
     <p class="empty">
       Nothing is published in this section yet. The pages that will live here are
       still in the code repositories — see

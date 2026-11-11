@@ -14,6 +14,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = path.join(ROOT, 'src/assets/content');
+const manifest = JSON.parse(await readFile(path.join(ROOT, 'docs.manifest.json'), 'utf8'));
 const index = JSON.parse(await readFile(path.join(OUT, 'index.json'), 'utf8'));
 const pages = [];
 for (const s of index.sections) {
@@ -21,10 +22,40 @@ for (const s of index.sections) {
 }
 const hrefs = (html) => [...html.matchAll(/<a\b[^>]*?\bhref="([^"]*)"/g)].map((m) => m[1]);
 
-test('the payload has every page of the index', async () => {
+test('the payload has every page of the manifest, and nothing else', async () => {
   const files = (await readdir(OUT, { recursive: true })).filter((f) => f.endsWith('.json'));
-  assert.ok(pages.length > 200, `only ${pages.length} pages`);
+  assert.equal(pages.length, manifest.docs.length, 'one page per manifest entry');
   assert.equal(files.length, pages.length + 2, 'one file per page, plus index.json and search.json');
+});
+
+test('every page is listed in exactly one group of exactly one tab, and every listed route resolves', () => {
+  const byRoute = new Map(index.sections.flatMap((s) => s.docs).map((d) => [d.route, d]));
+  const seen = new Map();
+  for (const s of index.sections) {
+    for (const g of s.groups) {
+      for (const r of g.routes) {
+        assert.ok(!seen.has(r), `${r} is listed in ${seen.get(r)} and ${s.id}/${g.id}`);
+        seen.set(r, `${s.id}/${g.id}`);
+        if (r === '/downloads') continue;
+        const d = byRoute.get(r);
+        assert.ok(d, `${s.id}/${g.id} lists ${r}, which is not a page`);
+        assert.equal(d.navSection, s.id, `${r}: navSection`);
+        assert.equal(d.navGroup, g.id, `${r}: navGroup`);
+      }
+    }
+  }
+  for (const r of byRoute.keys()) assert.ok(seen.has(r), `${r} is in no group`);
+});
+
+test('every tab has its intro rendered, and redirects point at live pages', () => {
+  for (const s of index.sections) assert.match(s.introHtml, /<p>/, `${s.id} intro`);
+  const live = new Set(index.sections.flatMap((s) => s.docs.map((d) => d.route)));
+  for (const s of index.sections) live.add(`/${s.id}`);
+  for (const [from, to] of Object.entries(index.redirects)) {
+    assert.ok(!live.has(from), `${from} is redirected but still served`);
+    assert.ok(live.has(to.split('#')[0]), `${from} -> ${to}, which is not a page`);
+  }
+  assert.equal(Object.keys(index.redirects).length, manifest.redirects.length);
 });
 
 test('no link is a bare #fragment: with <base href="/"> that resolves to the home page', () => {
@@ -40,7 +71,7 @@ test('every heading permalink names its own page', () => {
       assert.ok(m[1].startsWith(`${p.route}#`), `${p.route}: ${m[1]}`);
     }
   }
-  assert.ok(n > 500, `only ${n} permalinks: is the renderer still emitting them?`);
+  assert.ok(n > 400, `only ${n} permalinks: is the renderer still emitting them?`);
 });
 
 test('no link points at an org or repository name that does not exist', () => {
@@ -51,7 +82,8 @@ test('no link points at an org or repository name that does not exist', () => {
 
 test('the repositories are public, so every page links its source file', () => {
   const vendored = pages.filter((p) => p.source);
-  assert.ok(vendored.length > 200);
+  assert.equal(vendored.length, manifest.docs.filter((d) => d.repo).length);
+  assert.ok(vendored.length > 100, `only ${vendored.length} vendored pages`);
   for (const p of vendored) {
     assert.equal(p.source.url, `https://github.com/hugmesh/${p.source.repo}/blob/main/${p.source.path}`, p.route);
   }

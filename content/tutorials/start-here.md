@@ -1,235 +1,239 @@
 ---
-title: "Start here — the tutorial track"
+title: "Your first mesh, step by step"
 section: "tutorials"
 slug: "start-here"
-summary: "An ordered path from installing the Studio to a branded, federated mesh serving its own domain. Each step ends with something that works."
+summary: "The whole path in order, from installing the Studio to your devices joining the mesh. Each step ends with a check."
 ---
 
-"Run HugMesh" means three different things, and each needs its own path. Pick yours
-first. The quickest way to get stuck is to follow the cluster steps when you wanted the
-local stack.
+This is the path from nothing to a mesh running on your own hardware, in the order you
+do it. Each step ends with a "Done when" line, so you know it worked before you move on.
 
-| I want to… | Start at | Roughly |
+If you only want to see the platform first, do step 2 and stop there. If you want to
+change a service rather than run a mesh, the [Developer guide](/developer-guide) is the
+better start.
+
+| You want to | Do | Roughly |
 |---|---|---|
-| See the whole platform on one machine | [Step 2](#2-bring-up-the-whole-stack-locally) | an evening (the first build compiles ~28 images) |
-| Run a real cluster on real hardware | [Step 5](#5-build-your-first-image) | a weekend |
-| Contribute to a service | [Step 2](#2-bring-up-the-whole-stack-locally), then the [Developer Guide](/developer-guide) | an afternoon |
+| See every service on one computer | steps 1 and 2 | an evening; the first build compiles about 28 container images |
+| Run a mesh on your own hardware | steps 1 to 8 | a weekend |
+| Add services to a running mesh | step 9 | an hour per service |
 
 ---
 
 ## 1. Install the Studio
 
-The Studio is the front door: a wizard over the build scripts, plus a system tray
-controller for a local mesh.
+The Studio is a desktop app that puts the build scripts behind a wizard and runs a local
+mesh from the system tray.
 
-**Download it.** [Downloads](/downloads) hands you the package for your machine: a
-Windows MSI, a Flatpak bundle for x86_64 or ARM64 Linux, or an x86_64 Linux tarball. It
-is the same application in each, with no Python environment to set up.
+[Download it](/downloads). There is a Windows MSI, a Flatpak for x86_64 or ARM64 Linux,
+and an x86_64 Linux tarball. The Flatpak carries the build scripts of its own release and
+sets them up on first start. The MSI and the tarball do not carry them yet: on first start
+they ask for the folder you cloned `hugmesh-generator` into, and the Downloads page gives
+you the clone line.
 
-- **The Flatpak** carries the HugMesh build scripts (`hugmesh-generator`) and sets
-  them up on first start. There is nothing to clone.
-- **The MSI and the tarball** do not include the build scripts yet. On first start
-  Studio asks for the folder you cloned `hugmesh-generator` into, and the Downloads page
-  gives you the clone line.
+What a package can and cannot do:
 
-[Studio installers](/studio/installers) has the details for each package.
+- It builds images, using Docker on the same machine.
+- Writing an image or a KEYS stick to a USB device, and native (sudo) Gentoo builds, need
+  the Studio run from a checkout. The Flatpak refuses them.
 
-**Developer: from a checkout.** Use a checkout to change the Studio or the build
-scripts, for native (sudo) builds and writing images to devices, or on a system with no
-package. There are two ways to start it:
-
-```bash
-# Linux: the guided launcher offers a venv if you lack one.
-cd hugmesh-generator
-./scripts/studio-launch.sh
-
-# Or by hand, from the studio directory (all platforms)
-cd hugmesh-generator/studio
-python3 -m venv .venv && . .venv/bin/activate
-pip install -r requirements.txt
-./hugmesh-studio                    # Windows: hugmesh-studio.bat
-```
-
-`scripts/studio-launch.sh` runs an **idempotent, advisory-only** first-run bootstrap. It
-symlinks `hugmesh-studio` and `hugmesh-build-menu` into `~/.local/bin` (no sudo; it never
-overwrites a file it did not create) and writes `~/.hugmesh/studio/properties.json`.
-`studio/hugmesh-studio` skips it. See [first-run bootstrap](/tutorials/first-run-bootstrap).
-
-**Set your resource limits now**, before the first build: tray → **Resource limits**.
-The Studio already caps a dockerized build, at every CPU core but one. Set your own
-numbers if you plan to use the machine while it works. See
-[resource limits](/operations/resource-limits).
+[Install the Studio](/studio/installers) covers each package and the checkout. If you
+plan to keep using the machine while it builds, set your limits first: tray, then
+**Resource limits** ([Limit CPU, memory and GPU for builds](/operations/resource-limits)).
+A Docker build is already capped at every CPU core but one.
 
 **Done when:** the Studio opens on its Welcome screen, and **Start building** leads to the
-mode picker (ten choices).
+build menu with ten cards.
 
 ---
 
-## 2. Bring up the whole stack locally
+## 2. Try it locally first (optional)
 
-This is the fastest way to see the platform. It builds no OS images.
+The quickest way to see the platform is the **Local Docker mesh** card. It runs every
+service on this machine in Docker and builds no OS images. From a terminal in the
+`hugmesh-generator` checkout, the same thing is:
 
 ```bash
-make stack-m2-bootstrap   # FIRST, on a cold checkout — see below
+make stack-m2-bootstrap   # first time only: builds the shared Java libraries into a local cache
 make stack-up
-make stack-seed SEED_COMPLETE_REGISTRATION=1   # REQUIRED — without it, login does not work
+make stack-seed SEED_COMPLETE_REGISTRATION=1
 ```
 
-Then open **<http://localhost:8088>**.
+Then open <http://localhost:8088>.
 
-Three things people get wrong:
+Three things catch people out:
 
-- **`stack-m2-bootstrap` is not optional on a cold build.** It clones four org-private
-  library repos at pinned SHAs, `mvn install`s them into a persistent cache and serves them from a
-  local registry container. Without it, four Java services cannot resolve their
-  dependencies at image-build time.
-- **`stack-up` alone does not make login work.** `stack-seed` creates the OAuth2 client
-  and the org, roles and personas. Without it the stack looks up and rejects every login.
-  Without `SEED_COMPLETE_REGISTRATION=1` you can sign in, but every service route
-  answers 403 and the `mesh-operator` account does not exist. (The Studio's bring-up
-  passes the flag.)
-- **The first build compiles about 28 images.** It is not hung. The Studio's Local Mesh
-  page streams the output and has a Cancel that stops the whole process group.
+- On a fresh checkout, `stack-m2-bootstrap` is needed. Without it four Java services
+  cannot resolve their dependencies while their images build.
+- `stack-up` alone does not make sign-in work. `stack-seed` creates the sign-in client,
+  the organisation, the roles and the test accounts, and without
+  `SEED_COMPLETE_REGISTRATION=1` every service answers 403 and the `mesh-operator`
+  account does not exist. The Studio passes the flag for you.
+- The first build compiles about 28 images and takes a while. It has not hung; the
+  Studio streams its output and its Cancel stops the whole build.
 
-From the Studio instead of the terminal: **Local Docker mesh** → *Check readiness* →
-*Build maven prereqs (m2)* → *Generate && start* → *Open web UI*.
+[Run the whole stack on one computer](/tutorials/local-docker-stack) has the details and
+the known failures.
 
-**Done when:** you can sign in at `localhost:8088` as `mesh-operator`. The shared
-password is in `.e2e-credentials` at the repo root.
+**Mesh emulation** is the other way to try it: it boots the images of a finished build as
+virtual machines on this computer, with a console, SSH and disk saves for each. It needs a
+build, so come back to it after step 3.
 
----
-
-## 3. Run it on Kubernetes
-
-```bash
-make kind-images   # build from ./.stack-src and load into the node
-make kind-up       # bootstrap-kind.sh
-```
-
-**No GitHub token is needed.** The checkout is bind-mounted read-only into the kind
-node and served by an in-cluster `git daemon`. That daemon serves **committed objects
-only**. ArgoCD cannot see an uncommitted edit, so commit and wait for the poll.
-
-> **Know what you are getting.** The kind cluster is a **slice**, not a small production
-> cluster. It deploys the native-login path (Cassandra, Vault, Casdoor, the gateway, the
-> admin and user BFFs, the host shell, a few UIs). Other routes answer 503. Specs
-> `01-frontpage` and `27-native-login` passed against it on 2026-08-06, and the blockers
-> this page once named (the Cassandra keyspace bootstrap, the gateway probes) are fixed on
-> `main`. But spec 27 only
-> checks that `POST /bff/login` mints the session cookie. On a fresh cluster on
-> 2026-10-07, `GET /bff/session` answered 500: the BFFs fetch Casdoor's signing keys from
-> `id.hugmesh.net`, which does not resolve inside the cluster (issue 693; fix open as
-> PR 709). Use this step to explore the GitOps layout, not as a production path. See
-> [kind-local bring-up](/operations/kind-local-bringup) and the
-> [kind SSO findings](/troubleshooting/kind-sso-e2e-findings).
-
-**Done when:** `kubectl get applications -n devops` lists the Applications that
-`bootstrap-kind.sh` applied.
+**Done when:** you can sign in at `localhost:8088` as `mesh-operator`. The password is in
+`.e2e-credentials` at the root of the checkout.
 
 ---
 
-## 4. Run an emulated mesh under QEMU
+## 3. Build your images
 
-A whole multi-node mesh on one machine, with no hardware.
+In the Studio, pick **Mesh node**. The wizard walks you through the domains, the users
+and the images to build, one per node, then shows the exact build command on its Review
+page before anything runs. [Every screen of the Studio wizard](/studio/walkthrough)
+describes each step.
 
-You need a finished build session first (step 5). In the Studio pick **Mesh emulation**.
-It boots every image of that session and keeps the guests up, with per-device status, ssh
-logins, the QEMU console, disk saves, USB provisioning keys and the mesh's web front door.
-The **Run e2e tests** card leads to the test lane, which boots, asserts and powers off.
-Each guest gets 2 vCPUs by default; the emulation CLI
-(`python3 -m hugmesh_studio.core.emulation`, with `PYTHONPATH=studio`) takes `--smp N`.
+The nodes are Raspberry Pi 5 boards or x86_64 computers. A small mesh is a `pki` node,
+which runs the cluster's control plane, plus a `backend` and a `frontend` node. The
+[build matrix](/reference/build-matrix) lists every role and platform.
 
-**Done when:** a device row reaches `running` and its shell opens.
-
----
-
-## 5. Build your first image
-
-Start with `--print-plan`. Every builder supports it. It resolves and validates every
-flag, prints greppable `PLAN_KEY=VALUE` lines, and exits 0 with **no root, no writes and
-no network**. Secrets print as `REDACTED`.
+From the command line, every builder takes `--print-plan`. It checks every flag, prints
+what it would do, and exits without root, writes or network:
 
 ```bash
 ./build-x86-host-stage4.sh --print-plan -r pki
 ```
 
-The Studio's equivalent is the command preview on the Review page. It shows the exact
-argv, including the resource caps in force.
+Defaults worth knowing:
 
-ARM boards (rpi5, frite, jetson, orangepi) cross-build. They need the builder image from
-`make docker-image` (cross-toolchain and a static `qemu-aarch64` included) and a
-`--privileged` container. See [troubleshooting builds](/troubleshooting/build-failures).
+- Wi-Fi and Bluetooth are off on the x86_64 and Raspberry Pi node images. Turn them on
+  with `--enable-wifi` and `--enable-bluetooth`.
+- Root cannot log in over SSH.
 
-Defaults worth knowing before you build:
+[Build, key, flash and boot from the command line](/tutorials/run-a-mesh) is the same
+path with the scripts and `make` targets.
 
-- **Wi-Fi and Bluetooth are disabled** on the x86 and rpi5 node builders: a first-boot
-  rfkill block plus blacklisted modules. Opt in with `--enable-wifi` /
-  `--enable-bluetooth`.
-- **Root SSH login is off** (`--permit-root-login no` is the default).
-
-**Done when:** an `.img` (or `.img.xz` with `--compress`) or an `.iso` appears under
-`out/`. Before you trust it, grep the log for `skipped` and `dropped`.
-[Troubleshooting builds](/troubleshooting/build-failures) says why.
+**Done when:** an `.img` (or `.img.xz`) or an `.iso` appears under `out/`. Search the build
+log for `skipped` and `dropped` before you trust it;
+[Build failures by symptom](/troubleshooting/build-failures) explains why.
 
 ---
 
-## 6. Write the KEYS USB and first boot
+## 4. Write the KEYS sticks
 
-The image contains **no keys**. Everything secret arrives from a FAT32 `KEYS` partition
-at first boot, which is what lets you publish the same image safely.
+An image carries no secrets. Each node gets its own USB stick, formatted FAT32 and
+labelled `KEYS`, with its keys, certificates and settings. That is what makes it safe to
+build one image and use it on many nodes. [The KEYS stick](/operations/keys-usb) lists
+everything a stick can hold.
 
-`scripts/gen-provision-keys.sh` generates the keys; `scripts/make-keys-usb.sh` writes the
-stick (one per node). Two defaults of the key generator:
+The stick is written from a checkout, as root, because it formats a whole disk:
 
-- **No root password is generated**, and provisioning runs `passwd -l root`. Opt in
-  with `--root-password`.
-- **The privileged user's sudo is password-gated.** `--sudo-nopasswd` relaxes it.
+```bash
+./scripts/gen-cluster-secrets.sh
+./scripts/gen-provision-keys.sh -r pki      -o keys-pki
+./scripts/gen-provision-keys.sh -r backend  -o keys-backend
+./scripts/gen-provision-keys.sh -r frontend -o keys-frontend
+sudo ./scripts/make-keys-usb.sh /dev/sdY keys-pki    # one stick per node
+```
 
-This catches people: **worker KEYS sticks carry no `users.json`**. Copy
-`certs/cluster-ca.crt` and `keystores/truststore.jks` from the pki output onto each
-worker stick. Then fill in the kubeadm join token, the CA cert hash and the mesh authkey.
-A worker stick missing those joins nothing.
+Two defaults of the key generator: no root password is set (root is locked), and the
+admin user's `sudo` asks for a password. `--root-password` and `--sudo-nopasswd` change
+them.
 
-**Done when:** the node boots and appears in the cluster.
+A worker stick does not carry the user accounts. It does need `certs/cluster-ca.crt` and
+`keystores/truststore.jks` copied from the `pki` keys, and the cluster join token, the CA
+certificate hash and the private-network key filled in. A worker stick without them joins
+nothing.
 
----
-
-## 7. Brand it
-
-Boot screen, login theme, wallpaper and accent colour. The web login theme applies
-**at container start**, with no rebuild. The Studio previews the captured login page in a
-real browser before you commit.
-
-**Done when:** the login page carries your colours.
-
----
-
-## 8. Set up your domain and go live
-
-Domain, identity provider, then the Go-Live wizard. A mesh can serve locally, or be
-exposed over a Tor `.onion`, a Dynamic-DNS host, or a tunnel. Each is opt-in; none is
-required. See the [go-live wizard](/operations/go-live-wizard) and
-[Tor hidden service](/operations/tor-hidden-service).
-
-**Done when:** your login page answers on your own domain.
+**Done when:** each node has a stick, and `provision.json` on each one names the right
+hostname and role.
 
 ---
 
-## 9. Add an optional service
+## 5. Flash and boot the first node
 
-Games, video (`tube`) and live streaming (`owncast`) are **off by default**. The fediverse
-server (`akkoma`), Matrix (`tuwunel`) and the forum (`phpbb`) are **on by default** and
-can be excluded. The Studio asks for a selection per domain, but it only records it: the
-cluster does not yet enforce a per-domain choice (issue 496). See
-[optional services](/operations/optional-services). Adding a *new*
-service is a different job: the
-[Developer Guide](/developer-guide/expanding-the-mesh) covers it.
+Write the `pki` image to its SD card or disk. The Studio can do this right after a build:
+on the Review page, assign an attached device as the flash target for an image, and it is
+written when the build succeeds. Each write checks the device again first. From the
+command line, `scripts/flash-disk.sh` (or `make flash`) does the same, and `--list` shows
+what it would write without root.
+
+Insert the node's KEYS stick and power it on. At first boot it reads the stick: users,
+SSH keys, hostname, certificates, the private network and, on the `pki` node, the
+Kubernetes control plane. A node booted without a stick still starts, with a console
+user, so you are never locked out.
+
+**Done when:** you can log in to the node over SSH with the key from its stick, for
+example `ssh -i keys-pki/ssh/admin_ed25519 admin@<node>`.
+
+---
+
+## 6. Bring up the cluster
+
+When the `pki` stick's `provision.json` turns GitOps on, the first boot runs
+`kubeadm init` and installs ArgoCD, which then installs every service from the
+configuration baked into the image. Watch it settle from the `pki` node:
+
+```bash
+export KUBECONFIG=/etc/kubernetes/admin.conf
+kubectl -n devops get applications
+kubectl get pods -A
+```
+
+[What the cluster deploys](/operations/gitops-payload) describes that configuration.
+
+**Done when:** `kubectl -n devops get applications` lists the platform's applications.
+
+---
+
+## 7. Join the other nodes and your own devices
+
+Flash and boot the `backend` and `frontend` nodes the same way, each with its own stick.
+They join the cluster by themselves at first boot, because the join token rides on their
+sticks.
+
+Your own computers and phones join as clients, not cluster nodes:
+
+- Laptops, Chromebooks and desktops use a
+  [mesh desktop image](/devices/client-images).
+- A Linux or Windows computer that already runs Docker can
+  [join with Docker](/operations/docker-mesh-node), without reinstalling.
+- Phones and headsets are enrolled with [MDM](/devices/mobile-device-management).
+
+**Done when:** `kubectl get nodes` lists every node as Ready.
+
+---
+
+## 8. Brand it and go live
+
+Set the boot screen, the sign-in page theme, the wallpaper and the accent colour. The
+sign-in theme applies when its container starts, with no rebuild, and the Studio shows the
+captured sign-in page in a real browser before you commit.
+
+Then choose how people reach the mesh. It can stay local, or be served as a
+[Tor onion service](/operations/tor-hidden-service), on a dynamic DNS name, or through a
+tunnel. Each is opt-in. [Go live with the wizard](/operations/go-live-wizard) walks
+through the choice, and [Put your mesh online](/tutorials/serve-your-mesh) covers the
+whole path from a local sign-in page to a public one.
+
+**Done when:** your sign-in page answers at the address you chose.
+
+---
+
+## 9. Add optional services
+
+Games, video (LocalTube) and live streaming (Owncast) are off by default. The fediverse
+server (Akkoma), Matrix (tuwunel) and the forum (phpBB) are on by default and can be left
+out. The Studio asks for a choice per domain, but for now it only records it: the cluster
+does not yet enforce a different choice per domain.
+[Choose which services run](/operations/optional-services) has the details.
+
+Adding a service that does not exist yet is a different job;
+[Add a service to the mesh](/developer-guide/expanding-the-mesh) covers it.
 
 ---
 
 ## If a step does not work
 
-Nearly every failure in the build lane has a known signature and a known fix. Look up
-what you **see** in [troubleshooting builds](/troubleshooting/build-failures), not what you
-think went wrong. One root cause shows up as three different symptoms, depending on which
-gate catches it.
+Most build failures have a known signature and a known fix. Look up the error text you
+see in [Build failures by symptom](/troubleshooting/build-failures). To explore the
+cluster's GitOps layout on Kubernetes without any hardware, see
+[Run the cluster locally with kind](/operations/kind-local-bringup) in the Developer guide.

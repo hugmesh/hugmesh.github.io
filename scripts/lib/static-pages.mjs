@@ -109,6 +109,56 @@ export function filesForRoute(route) {
   return [`${rel}/index.html`, `${rel}.html`];
 }
 
+/**
+ * The page a retired URL serves: a meta refresh to the page that replaced it,
+ * a canonical link to that page, noindex, and a plain link for anyone whose
+ * browser does not follow the refresh. Written as <from>/index.html and
+ * <from>.html like any route, and left out of sitemap.xml: a redirect is not a
+ * page. The app follows the same redirect itself (index.json "redirects") when it
+ * is already running, so this file only matters for a cold load or a crawler.
+ */
+export function redirectHtml(origin, from, to) {
+  const [route, frag] = String(to).split('#');
+  const hash = frag ? `#${frag}` : '';
+  // The refresh and the visible link stay on this host (the trailing-slash form,
+  // which Pages answers with a 200), so a preview or a mirror redirects to itself;
+  // the canonical link names the published URL.
+  const local = escapeAttr(`${route === '/' ? '/' : `${route}/`}${hash}`);
+  const canonical = escapeAttr(`${canonicalUrl(origin, route)}${hash}`);
+  return [
+    '<!doctype html>',
+    '<html lang="en">',
+    '<head>',
+    '<meta charset="utf-8" />',
+    '<meta name="viewport" content="width=device-width, initial-scale=1" />',
+    `<title>Moved — HugMesh Documentation</title>`,
+    '<meta name="robots" content="noindex" />',
+    `<link rel="canonical" href="${canonical}" />`,
+    `<meta http-equiv="refresh" content="0; url=${local}" />`,
+    '</head>',
+    '<body>',
+    `<p>This page moved to <a href="${local}">${escapeText(`${route}${hash}`)}</a>.</p>`,
+    '</body>',
+    '</html>',
+    '',
+  ].join('\n');
+}
+
+/** Every redirect from the content index, checked the way routes are. */
+export function redirectsFromIndex(index) {
+  const out = [];
+  for (const [from, to] of Object.entries(index.redirects ?? {})) {
+    if (!/^\/[a-z0-9][a-z0-9/_-]*$/i.test(from) || from.endsWith('/') || from.includes('..')) {
+      throw new Error(`refusing to write a redirect page for ${JSON.stringify(from)}`);
+    }
+    if (!/^\/[a-z0-9/_-]*(#[a-z0-9_-]+)?$/i.test(to)) {
+      throw new Error(`refusing a redirect target ${JSON.stringify(to)}`);
+    }
+    out.push({ from, to });
+  }
+  return out;
+}
+
 export function sitemapXml(origin, routes, lastmod) {
   const urls = ['/', ...routes.map((r) => r.route)].map(
     (route) => `  <url><loc>${escapeText(canonicalUrl(origin, route))}</loc><lastmod>${lastmod}</lastmod></url>`,

@@ -1,8 +1,8 @@
 ---
-title: "Troubleshooting builds"
+title: "Build failures by symptom"
 section: "troubleshooting"
 slug: "build-failures"
-summary: "A symptom-first index of real HugMesh build failures — the exact error text, what actually caused it, and the fix."
+summary: "Find the error text you see, then the cause and the fix."
 ---
 
 Look up what you **see**, not what you think went wrong. One root cause shows up as three
@@ -124,7 +124,7 @@ packages were built with. Derive it from the seed at build time; never freeze it
 literal. All ten builders now do this (`scripts/_python-targets-lib.sh`). If you hit these
 walls on a tree with a `PYTHON_TARGETS="python3_NN"` literal in `make.conf.tmpl`, that
 literal is the cause. The root-cause analysis is in the generator's
-[`docs/PYTHON-TARGETS-SEED-DRIFT.md`](/troubleshooting/python-targets-seed-drift).
+[`docs/PYTHON-TARGETS-SEED-DRIFT.md`](https://github.com/hugmesh/hugmesh-generator/blob/main/docs/PYTHON-TARGETS-SEED-DRIFT.md).
 
 ### `masked by: ~amd64 keyword` on a cross build, but only the host half
 

@@ -4,21 +4,24 @@
       <a [routerLink]="['/', section()]">{{ meta()?.title ?? section() }}</a>
     </p>
 
-    @if (docs().length) {
-      <ul>
-        @for (doc of docs(); track doc.route) {
+    @for (g of groups(); track g.id) {
+      @if (groups().length > 1) {
+        <p class="rail-group" [id]="'rail-group-' + g.id">{{ g.title }}</p>
+      }
+      <ul [attr.aria-labelledby]="groups().length > 1 ? 'rail-group-' + g.id : null">
+        @for (doc of g.docs; track doc.route) {
           <li>
             <a
               [routerLink]="doc.route"
-              routerLinkActive="active"
-              [routerLinkActiveOptions]="{ exact: true }"
+              [class.active]="doc.route === current()"
+              [attr.aria-current]="doc.route === current() ? 'page' : null"
               [attr.data-testid]="'rail-' + doc.slug"
               >{{ doc.title }}</a
             >
           </li>
         }
       </ul>
-    } @else {
+    } @empty {
       <p class="field-help">This section has no published pages yet.</p>
     }
   </nav>

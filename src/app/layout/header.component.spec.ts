@@ -1,7 +1,27 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
+import { of } from 'rxjs';
 import { HeaderComponent } from './header.component';
 import { SECTIONS } from '../content/sections';
+import { ContentService } from '../content/content.service';
+import { ContentIndex } from '../content/content.models';
+
+const index: ContentIndex = {
+  generatedFrom: 'test',
+  sectionOrder: SECTIONS.map((s) => s.id),
+  sections: [
+    {
+      id: 'operations',
+      title: 'Run a mesh',
+      blurb: 'b',
+      docs: [
+        { slug: 'resource-limits', route: '/operations/resource-limits', title: 'Limit builds', summary: '', readingMinutes: 1, navSection: 'studio', navGroup: 'use' },
+        { slug: 'keys-usb', route: '/operations/keys-usb', title: 'The KEYS stick', summary: '', readingMinutes: 1, navSection: 'operations', navGroup: 'keys' },
+      ],
+    },
+  ],
+  totals: { sections: 1, pages: 2 },
+};
 
 describe('HeaderComponent', () => {
   let fixture: ComponentFixture<HeaderComponent>;
@@ -10,7 +30,10 @@ describe('HeaderComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [HeaderComponent],
-      providers: [provideRouter([])],
+      providers: [
+        provideRouter([{ path: '**', children: [] }]),
+        { provide: ContentService, useValue: { index: () => of(index) } },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(HeaderComponent);
@@ -28,6 +51,35 @@ describe('HeaderComponent', () => {
         .withContext(`nav entry for ${section.id}`)
         .toBeTruthy();
     }
+  });
+
+  it('lists the tabs in newcomer order, in four clusters', () => {
+    const labels = (Array.from(fixture.nativeElement.querySelectorAll('#primary-nav a')) as HTMLElement[]).map((a) =>
+      a.textContent!.trim(),
+    );
+    expect(labels).toEqual([
+      'Overview', 'Get started', 'Studio', 'Run a mesh', 'Troubleshooting',
+      'Devices', 'Security', 'Architecture', 'Reference', 'Games', 'Developers',
+    ]);
+    const clusters = Array.from(fixture.nativeElement.querySelectorAll('#primary-nav .cluster-name')) as HTMLElement[];
+    expect(clusters.map((c) => c.textContent!.trim())).toEqual(['Learn', 'Use', 'Reference', 'Build on it']);
+  });
+
+  it('marks the tab that lists the current page, not the URL prefix', async () => {
+    await router.navigateByUrl('/operations/resource-limits');
+    fixture.detectChanges();
+    expect(el('[data-testid="nav-studio"]').classList).toContain('active');
+    expect(el('[data-testid="nav-studio"]').getAttribute('aria-current')).toBe('page');
+    expect(el('[data-testid="nav-operations"]').classList).not.toContain('active');
+
+    await router.navigateByUrl('/operations/keys-usb');
+    fixture.detectChanges();
+    expect(el('[data-testid="nav-operations"]').classList).toContain('active');
+
+    await router.navigateByUrl('/games');
+    fixture.detectChanges();
+    expect(el('[data-testid="nav-games"]').classList).toContain('active');
+    expect(fixture.nativeElement.querySelectorAll('#primary-nav a.active').length).toBe(1);
   });
 
   it('offers a Download button that goes to /downloads and is not inside the collapsible menu', () => {

@@ -11,7 +11,7 @@ import contentIndex from '../../assets/content/index.json';
 describe('section metadata', () => {
   const generated = contentIndex as {
     sectionOrder: string[];
-    sections: { id: string; title: string; blurb: string }[];
+    sections: { id: string; title: string; blurb: string; cluster?: string }[];
   };
 
   it('covers every section the content build emitted', () => {
@@ -33,7 +33,18 @@ describe('section metadata', () => {
       expect(meta).withContext(`no metadata for section ${s.id}`).toBeDefined();
       expect(meta!.title).withContext(`title for ${s.id}`).toBe(s.title);
       expect(meta!.blurb).withContext(`blurb for ${s.id}`).toBe(s.blurb);
+      expect(meta!.cluster as string).withContext(`header group for ${s.id}`).toBe(s.cluster as string);
     }
+  });
+
+  it('lists the tabs in newcomer order, grouped into the four header clusters', () => {
+    expect(SECTION_IDS).toEqual([
+      'overview', 'tutorials', 'studio', 'operations', 'troubleshooting',
+      'devices', 'security', 'architecture', 'reference', 'games', 'developer-guide',
+    ]);
+    // Clusters are contiguous, so the header can draw one divider between each.
+    const clusters = SECTIONS.map((s) => s.cluster);
+    expect(clusters.filter((c, i) => i === 0 || c !== clusters[i - 1])).toEqual(['learn', 'use', 'reference', 'build']);
   });
 
   it('gives every section a non-empty nav label, blurb and icon', () => {

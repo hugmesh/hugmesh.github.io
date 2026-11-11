@@ -24,7 +24,7 @@
                 stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       </a>
-      <a class="btn btn-ghost" routerLink="/architecture">See how it works</a>
+      <a class="btn btn-ghost" routerLink="/overview/how-it-works">See how it works</a>
     </div>
     @if (studio(); as s) {
       <p class="hero-note" data-testid="home-download-note">
@@ -88,7 +88,8 @@
         <span class="kicker">Your metal</span>
         <p>
           Three Raspberry Pis and an x86 host. Or one box under a desk. The Studio
-          writes the images and the keys; the cluster brings itself up.
+          builds the images, a KEYS stick carries each node's keys, and the cluster
+          brings itself up.
         </p>
       </article>
       <article>
@@ -112,14 +113,11 @@
   @if (firstSteps().length) {
     <section class="start" aria-labelledby="start-here">
       <h2 id="start-here">Start here</h2>
-      <p class="section-lede">
-        The tutorial track goes from installing the Studio to a branded, federated mesh
-        serving its own domain. Each step ends with something that works.
-      </p>
+      <p class="section-lede">Four steps from the download to a mesh you can sign in to.</p>
       <ol class="steps">
         @for (doc of firstSteps(); track doc.route; let i = $index) {
           <li>
-            <a [routerLink]="doc.route">
+            <a [routerLink]="doc.route" [attr.data-testid]="'home-step-' + (i + 1)">
               <span class="step-num" aria-hidden="true">{{ i + 1 }}</span>
               <span class="step-body">
                 <strong>{{ doc.title }}</strong>
@@ -132,47 +130,30 @@
     </section>
   }
 
-  <!-- ── docs strip ─────────────────────────────────────────────────────
-       Both numbers come from the built index, so neither can drift from what
-       the site actually serves. -->
-  @if (totalPages()) {
-    <section class="strip" aria-labelledby="strip-title">
-      <h2 id="strip-title" class="visually-hidden">Documentation</h2>
-      <p class="stat"><span class="stat-n">{{ totalPages() }}</span><span class="stat-l">documentation pages</span></p>
-      @if (totalDiagrams()) {
-        <p class="stat"><span class="stat-n">{{ totalDiagrams() }}</span><span class="stat-l">architecture diagrams</span></p>
-      }
-      <p class="strip-note">
-        Written beside the code and copied from it. Each page names its source. Pages
-        that describe a plan say so.
-      </p>
-      <a class="btn btn-ghost" routerLink="/overview">Read the docs</a>
-    </section>
-  }
-
   <section class="sections" aria-labelledby="all-sections">
     <h2 id="all-sections">Browse the documentation</h2>
-    @if (totalPages()) {
-      <p class="section-lede">{{ totalPages() }} pages, generated from the Markdown that lives beside the code.</p>
-    }
-    <ul>
-      @for (section of sections; track section.id) {
-        <li>
-          <a [routerLink]="['/', section.id]" [attr.data-testid]="'home-' + section.id">
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path fill="currentColor" [attr.d]="section.icon" />
-            </svg>
-            <span class="card-body">
-              <strong>{{ section.title }}</strong>
-              <em>{{ section.blurb }}</em>
-            </span>
-            @if (counts().get(section.id); as n) {
-              <span class="count">{{ n }}</span>
+    <div class="cluster-grid">
+      @for (cluster of clusters; track cluster.id) {
+        <div class="cluster-col">
+          <h3>{{ cluster.title }}</h3>
+          <ul>
+            @for (section of cluster.sections; track section.id) {
+              <li>
+                <a [routerLink]="['/', section.id]" [attr.data-testid]="'home-' + section.id">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path fill="currentColor" [attr.d]="section.icon" />
+                  </svg>
+                  <span class="card-body">
+                    <strong>{{ section.title }}</strong>
+                    <em>{{ section.blurb }}</em>
+                  </span>
+                </a>
+              </li>
             }
-          </a>
-        </li>
+          </ul>
+        </div>
       }
-    </ul>
+    </div>
   </section>
 
   <section class="repos" aria-labelledby="repos-title">
@@ -193,8 +174,8 @@
       }
     </ul>
     <p class="field-help">
-      The repositories are currently private. The documentation on this site is
-      generated from the Markdown inside them.
+      The documentation on this site is generated from the Markdown inside these
+      repositories, and each page links the file it came from.
     </p>
   </section>
 

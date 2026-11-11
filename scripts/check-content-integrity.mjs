@@ -214,7 +214,11 @@ async function main() {
   if (denylist.error) {
     failures.push(denylist.error);
   } else if (denylist.entries) {
-    for (const rel of [...onDisk, 'docs.manifest.json']) {
+    // The tab intros are written here, outside content/, and published all the same.
+    const landings = (await readdir(path.join(ROOT, 'landings')).catch(() => []))
+      .filter((f) => f.endsWith('.md'))
+      .map((f) => `landings/${f}`);
+    for (const rel of [...onDisk, ...landings, 'docs.manifest.json']) {
       const text = (await readFile(path.join(ROOT, rel), 'utf8')).toLowerCase();
       for (const { word, line } of denylist.entries) {
         if (text.includes(word)) {

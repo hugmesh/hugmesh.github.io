@@ -45,12 +45,40 @@ export interface DocSummary {
   readonly title: string;
   readonly summary: string;
   readonly readingMinutes: number;
+  /** The tab that lists this page (its "nav home"). Usually the URL section, but
+   *  not always: /operations/resource-limits is listed under Studio. Breadcrumbs,
+   *  the sidebar, prev/next and the active header tab all follow this, never the
+   *  URL prefix. Optional only so a hand-built fixture can leave it out. */
+  readonly navSection?: string;
+  /** The id of the group inside that tab. */
+  readonly navGroup?: string;
+}
+
+/** One group of pages on a tab, in reading order. Routes only: resolve each
+ *  through the route -> DocSummary map (navMap in content/nav.ts). */
+export interface NavGroup {
+  readonly id: string;
+  readonly title: string;
+  readonly blurb: string | null;
+  readonly routes: readonly string[];
 }
 
 export interface SectionIndex {
   readonly id: string;
   readonly title: string;
   readonly blurb: string;
+  readonly cluster?: string;
+  /** The tab's intro, rendered and sanitised at build time from landings/<id>.md. */
+  readonly introHtml?: string;
+  /** The obvious first page of the tab, when it has one. */
+  readonly start?: { readonly route: string; readonly title: string } | null;
+  /** A page whose headings make a useful index on the tab (Troubleshooting). */
+  readonly index?: {
+    readonly route: string;
+    readonly entries: readonly { readonly id: string; readonly text: string; readonly level?: number }[];
+  };
+  readonly groups?: readonly NavGroup[];
+  /** Every page whose URL starts /<id>/, wherever it is listed. */
   readonly docs: readonly DocSummary[];
 }
 
@@ -59,6 +87,8 @@ export interface ContentIndex {
   readonly generatedFrom: string;
   readonly sectionOrder: readonly string[];
   readonly sections: readonly SectionIndex[];
+  /** Retired URL -> where its content went (route, optionally with #fragment). */
+  readonly redirects?: Readonly<Record<string, string>>;
   readonly totals: {
     readonly sections: number;
     readonly pages: number;
@@ -73,6 +103,8 @@ export interface ContentIndex {
 export interface SearchDoc {
   readonly route: string;
   readonly section: string;
+  /** The tab that lists the page, when it differs from the URL section. */
+  readonly navSection?: string;
   readonly title: string;
   readonly summary: string;
   readonly headings: readonly string[];

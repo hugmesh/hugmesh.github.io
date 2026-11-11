@@ -2,7 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ContentService } from '../content/content.service';
-import { SECTIONS } from '../content/sections';
+import { CLUSTERS, SECTIONS } from '../content/sections';
+import { navMap, resolveGroups } from '../content/nav';
 import { PlatformRailComponent } from '../shared/platform-rail.component';
 import { MachinesComponent } from '../shared/machines.component';
 import { ReleasesService } from '../downloads/releases.service';
@@ -56,7 +57,6 @@ export class HomeComponent {
     return l.state === 'ready' ? l.data.studio : null;
   });
 
-  readonly sections = SECTIONS;
   readonly indexFailed = this.content.indexFailed;
 
   // ── the services ──────────────────────────────────────────────────────────
@@ -66,7 +66,7 @@ export class HomeComponent {
       icon: 'M20 12.4c0 3.9-3.6 7-8 7a9 9 0 0 1-2.6-.4L5 20.5l1.2-3.4A6.6 6.6 0 0 1 4 12.4c0-3.9 3.6-7 8-7s8 3.1 8 7Z',
       blurb: 'Matrix, federating with the wider network.',
       accent: '#ffc8dd',
-      route: '/architecture',
+      route: '/reference/matrix-ui',
       shot: 'assets/img/captures/card-chat.jpg',
       shotAlt: 'Two people talking in a Matrix room',
     },
@@ -75,7 +75,7 @@ export class HomeComponent {
       icon: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM3.6 9h16.8M3.6 15h16.8M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18',
       blurb: 'An Akkoma instance under your domain, following anyone on the fediverse.',
       accent: '#bde0fe',
-      route: '/architecture',
+      route: '/reference/mastodon-ui',
       shot: 'assets/img/captures/card-fedi.jpg',
       shotAlt: 'An Akkoma home timeline with a compose box and a published post',
     },
@@ -84,7 +84,7 @@ export class HomeComponent {
       icon: 'M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5v-13ZM20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5v-13Z',
       blurb: 'A shared wiki, versioned, behind the same single sign-on as everything else.',
       accent: '#caffbf',
-      route: '/architecture',
+      route: '/reference/wiki-ui',
       shot: 'assets/img/captures/card-wiki.jpg',
       shotAlt: 'A wiki page — First boot: what the KEYS stick does — open in the wiki, with Edit and Publish',
     },
@@ -93,7 +93,7 @@ export class HomeComponent {
       icon: 'M4 6.5A1.5 1.5 0 0 1 5.5 5h10A1.5 1.5 0 0 1 17 6.5v6A1.5 1.5 0 0 1 15.5 14H9l-4 3.5V14H5.5A1.5 1.5 0 0 1 4 12.5v-6ZM20 9.5v6A1.5 1.5 0 0 1 18.5 17H18v3l-3.5-3',
       blurb: 'Threaded discussion for the conversations chat is the wrong shape for.',
       accent: '#d0b4f5',
-      route: '/architecture',
+      route: '/reference/forum-ui',
       shot: 'assets/img/captures/card-forum.jpg',
       shotAlt: 'A forum thread — First boot on a Pi 5 — with three replies and the reply box',
     },
@@ -102,7 +102,7 @@ export class HomeComponent {
       icon: 'M4 7.5A1.5 1.5 0 0 1 5.5 6h9A1.5 1.5 0 0 1 16 7.5v9A1.5 1.5 0 0 1 14.5 18h-9A1.5 1.5 0 0 1 4 16.5v-9ZM16 10.5l4-2.5v8l-4-2.5',
       blurb: 'Live broadcast through Owncast, as yourself or as your own 2D avatar. A personal video archive is under construction.',
       accent: '#ffd6a5',
-      route: '/architecture',
+      route: '/reference/tube-ui',
       shot: 'assets/img/captures/card-video.jpg',
       shotAlt: 'A live Owncast stream — carol, live as her 2D avatar, the mic driving its mouth — with chat, and the Avatar cam console inset showing the avatar on a green screen with its mouth open',
     },
@@ -133,23 +133,17 @@ export class HomeComponent {
 
   private readonly index = toSignal(this.content.index());
 
-  /** Page counts per section, so a section card can say how much is behind it
-   *  instead of making the reader click to find out. */
-  readonly counts = computed(() => {
-    const map = new Map<string, number>();
-    for (const s of this.index()?.sections ?? []) map.set(s.id, s.docs.length);
-    return map;
+  /** The four header clusters, each with its tabs, for "Browse the documentation". */
+  readonly clusters = CLUSTERS.map((c) => ({ ...c, sections: SECTIONS.filter((s) => s.cluster === c.id) }));
+
+  /** Get started's main group, in order: the curated path from the download to a
+   *  mesh you can sign in to. */
+  readonly firstSteps = computed(() => {
+    const index = this.index();
+    const main = resolveGroups(
+      index?.sections.find((s) => s.id === 'tutorials'),
+      navMap(index),
+    ).find((g) => g.id === 'main');
+    return main?.docs ?? [];
   });
-
-  readonly totalPages = computed(() => this.index()?.totals.pages ?? 0);
-
-  /** Diagrams across the whole corpus. Derived from the index rather than typed
-   *  in, because a hand-written number on the front door goes stale silently —
-   *  build-content.mjs counts them at render time. */
-  readonly totalDiagrams = computed(() => this.index()?.totals.diagrams ?? 0);
-
-  /** The first few tutorials, in curriculum order — the "start here" path. */
-  readonly firstSteps = computed(
-    () => this.index()?.sections.find((s) => s.id === 'tutorials')?.docs.slice(0, 4) ?? [],
-  );
 }

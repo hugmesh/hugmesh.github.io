@@ -23,17 +23,25 @@
   </button>
 
   <nav id="primary-nav" class="primary" [class.open]="menuOpen()" aria-label="Documentation sections">
-    <ul>
-      @for (section of sections; track section.id) {
-        <li>
-          <a
-            class="nav-link"
-            [routerLink]="['/', section.id]"
-            routerLinkActive="active"
-            [attr.data-testid]="'nav-' + section.id"
-            (click)="closeMenu()"
-            >{{ section.navLabel }}</a
-          >
+    <ul class="clusters">
+      @for (cluster of clusters; track cluster.id) {
+        <li class="cluster" [attr.data-testid]="'cluster-' + cluster.id">
+          <span class="cluster-name" [id]="'cluster-' + cluster.id">{{ cluster.title }}</span>
+          <ul [attr.aria-labelledby]="'cluster-' + cluster.id">
+            @for (section of cluster.sections; track section.id) {
+              <li>
+                <a
+                  class="nav-link"
+                  [routerLink]="['/', section.id]"
+                  [class.active]="activeSection() === section.id"
+                  [attr.aria-current]="activeSection() === section.id ? 'page' : null"
+                  [attr.data-testid]="'nav-' + section.id"
+                  (click)="closeMenu()"
+                  >{{ section.navLabel }}</a
+                >
+              </li>
+            }
+          </ul>
         </li>
       }
     </ul>

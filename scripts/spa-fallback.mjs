@@ -22,7 +22,15 @@
  * some emitted chunks.
  */
 import { readFile, writeFile, copyFile, access, readdir, mkdir } from 'node:fs/promises';
-import { filesForRoute, pageHtml, robotsTxt, routesFromIndex, sitemapXml } from './lib/static-pages.mjs';
+import {
+  filesForRoute,
+  pageHtml,
+  redirectHtml,
+  redirectsFromIndex,
+  robotsTxt,
+  routesFromIndex,
+  sitemapXml,
+} from './lib/static-pages.mjs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -75,6 +83,19 @@ for (const page of routes) {
     await writeFile(dest, html, 'utf8');
   }
 }
+// Retired URLs: a small page that sends the reader on to where the content went.
+// Not in the sitemap, and never written over a live route.
+const redirects = redirectsFromIndex(contentIndex);
+const live = new Set(routes.map((r) => r.route));
+for (const { from, to } of redirects) {
+  if (live.has(from)) throw new Error(`redirect ${from} would overwrite a live page`);
+  for (const rel of filesForRoute(from)) {
+    const dest = path.join(out, rel);
+    if (!dest.startsWith(out + path.sep)) throw new Error(`${rel} escapes ${out}`);
+    await mkdir(path.dirname(dest), { recursive: true });
+    await writeFile(dest, redirectHtml(origin, from, to), 'utf8');
+  }
+}
 const lastmod = new Date().toISOString().slice(0, 10);
 await writeFile(path.join(out, 'sitemap.xml'), sitemapXml(origin, routes, lastmod), 'utf8');
 // robots.txt: a hand-written src/robots.txt (PR #33 adds one as an angular.json
@@ -96,6 +117,7 @@ try {
 
 const files = await readdir(out, { recursive: true, withFileTypes: true });
 console.log(`  routes      ${routes.length} pages written as <route>/index.html and <route>.html`);
+console.log(`  redirects   ${redirects.length} retired URLs written as redirect pages`);
 console.log(`  sitemap.xml ${routes.length + 1} URLs · robots.txt ${robotsNote}`);
 console.log(`  404.html    SPA fallback written`);
 console.log(`  .nojekyll   written`);

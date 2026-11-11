@@ -1,21 +1,22 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ContentService } from '../content/content.service';
 import { SECTIONS } from '../content/sections';
+import { navMap, resolveGroups } from '../content/nav';
 
 /**
- * The per-section page rail, shown beside a document.
+ * The per-tab page rail, shown beside a document.
  *
- * It lists ONLY the current section's pages, not the whole corpus. A flat list of
- * every page across nine sections is 100+ entries — long enough that the rail
- * stops being navigation and becomes another thing to scroll past. Cross-section
- * movement is the header's job.
+ * It lists ONLY the current tab's pages, under the same group headings and in the
+ * same order as the tab's landing page. The tab is the page's nav home, not its
+ * URL prefix, so a page Studio lists shows the Studio rail. Cross-tab movement is
+ * the header's job.
  */
 @Component({
   selector: 'hug-sidebar',
-  imports: [RouterLink, RouterLinkActive, AsyncPipe],
+  imports: [RouterLink, AsyncPipe],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,14 +24,21 @@ import { SECTIONS } from '../content/sections';
 export class SidebarComponent {
   private readonly content = inject(ContentService);
 
+  /** The tab whose pages to list. */
   readonly section = input.required<string>();
+  /** The route of the page being read, marked as current. */
+  readonly current = input<string>('');
 
   readonly index$ = this.content.index();
   private readonly index = toSignal(this.index$);
 
   readonly meta = computed(() => SECTIONS.find((s) => s.id === this.section()));
 
-  readonly docs = computed(
-    () => this.index()?.sections.find((s) => s.id === this.section())?.docs ?? [],
-  );
+  readonly groups = computed(() => {
+    const index = this.index();
+    return resolveGroups(
+      index?.sections.find((s) => s.id === this.section()),
+      navMap(index),
+    );
+  });
 }

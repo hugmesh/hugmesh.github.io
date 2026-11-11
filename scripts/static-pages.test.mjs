@@ -15,6 +15,8 @@ import {
   canonicalUrl,
   filesForRoute,
   pageHtml,
+  redirectHtml,
+  redirectsFromIndex,
   robotsTxt,
   routesFromIndex,
   sitemapXml,
@@ -98,4 +100,27 @@ test('sitemap lists the home page and every route at its canonical URL; robots p
   ]);
   assert.equal(canonicalUrl(ORIGIN, '/'), 'https://docs.example/');
   assert.equal(robotsTxt(ORIGIN), 'User-agent: *\nAllow: /\n\nSitemap: https://docs.example/sitemap.xml\n');
+});
+
+test('a retired URL gets a redirect page: refresh, canonical to the target, noindex, a visible link', () => {
+  const html = redirectHtml(ORIGIN, '/tutorials/old-page', '/studio/overview');
+  assert.match(html, /<meta http-equiv="refresh" content="0; url=\/studio\/overview\/" \/>/);
+  assert.match(html, /<link rel="canonical" href="https:\/\/docs\.example\/studio\/overview\/" \/>/);
+  assert.match(html, /<meta name="robots" content="noindex" \/>/);
+  assert.match(html, /This page moved to <a href="\/studio\/overview\/">\/studio\/overview<\/a>/);
+  // A redirect to a section index, and one that keeps a heading anchor.
+  assert.match(redirectHtml(ORIGIN, '/games/old', '/games'), /url=\/games\/"/);
+  assert.match(redirectHtml(ORIGIN, '/a/b', '/c/d#e'), /url=\/c\/d\/#e"/);
+  assert.doesNotMatch(html, /<hug-root>/, 'a redirect page does not boot the app');
+});
+
+test('redirects come from the index, are checked, and never reach the sitemap', () => {
+  const withRedirects = { ...index, redirects: { '/tutorials/old-page': '/tutorials/start-here' } };
+  assert.deepEqual(redirectsFromIndex(withRedirects), [{ from: '/tutorials/old-page', to: '/tutorials/start-here' }]);
+  assert.deepEqual(redirectsFromIndex(index), []);
+  assert.throws(() => redirectsFromIndex({ redirects: { '/../etc': '/x' } }), /refusing/);
+  assert.throws(() => redirectsFromIndex({ redirects: { '/a/b': 'https://elsewhere.example/' } }), /refusing/);
+  const xml = sitemapXml(ORIGIN, routesFromIndex(withRedirects), '2026-11-11');
+  assert.doesNotMatch(xml, /old-page/);
+  assert.deepEqual(filesForRoute('/tutorials/old-page'), ['tutorials/old-page/index.html', 'tutorials/old-page.html']);
 });
