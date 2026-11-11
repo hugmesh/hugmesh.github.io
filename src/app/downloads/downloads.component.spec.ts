@@ -160,6 +160,62 @@ describe('DownloadsComponent', () => {
       expect(text(el.querySelector('[data-testid="get-for"]'))).toContain('Showing Linux ARM64 (aarch64)');
     });
 
+    // ── the build scripts: clone only for a file that does not carry them ──────────
+    // `.get-steps` only: the developer section below the fold legitimately clones.
+    const steps = () => text(el.querySelector('.get-steps'));
+
+    it('tells an ARM64 Flatpak visitor there is nothing to clone and drops --generator-dir', () => {
+      fixture.componentRef.setInput('initialArch', 'aarch64');
+      pick(el, 'linux');
+      expect(installer('flatpak', 'aarch64').generator).withContext('the fixture says this file carries them').toBeTrue();
+      const t = steps();
+      expect(t).not.toContain('git clone');
+      expect(t).not.toContain('--generator-dir ~');
+      expect(t).toContain('flatpak run org.hugmesh.ImageStudio');
+      expect(el.querySelector('[data-testid="generator-clone"]')).toBeNull();
+      const bundled = text(el.querySelector('[data-testid="generator-bundled"]'));
+      expect(bundled).toContain('Nothing to clone.');
+      expect(bundled).toContain('~/.local/share/hugmesh-studio/generator');
+      expect(bundled).toContain('flatpak run org.hugmesh.ImageStudio --self-check');
+      expect(bundled).withContext('a clone the user names or picked still wins').toContain('still takes precedence');
+    });
+
+    it('keeps the clone step for the MSI, which does not carry the build scripts yet', () => {
+      expect(installer('msi').generator).toBeFalse();
+      expect(el.querySelector('[data-testid="generator-bundled"]')).toBeNull();
+      const clone = el.querySelector('[data-testid="generator-clone"]')!;
+      expect(text(clone)).toContain('does not include the HugMesh build scripts');
+      expect(text(clone)).toContain('git clone https://github.com/hugmesh/hugmesh-generator $HOME\\hugmesh-generator');
+      expect(clone.querySelector('pre')!.getAttribute('data-lang')).toBe('powershell');
+      // The Start Menu shortcut passes no flags: the first-start chooser is the way in.
+      expect(steps()).not.toContain('--generator-dir');
+      expect(el.querySelector('[data-testid="generator-elsewhere"]')).toBeNull();
+    });
+
+    it('keeps the clone step for the x86_64 tarball and points at the Flatpak beside it, which carries them', () => {
+      fixture.componentRef.setInput('initialArch', 'x86_64');
+      pick(el, 'linux');
+      expect(installer('tarball').generator).toBeFalse();
+      expect(installer('flatpak').generator).toBeTrue();
+      const t = steps();
+      expect(t).toContain(`./${installer('tarball').file.replace('.tar.gz', '')}/hugmesh-studio`);
+      expect(t).not.toContain('--generator-dir');
+      expect(text(el.querySelector('[data-testid="generator-clone"]'))).toContain(
+        'git clone https://github.com/hugmesh/hugmesh-generator ~/hugmesh-generator',
+      );
+      expect(text(el.querySelector('[data-testid="generator-elsewhere"]'))).toContain('Flatpak bundle above: it carries them');
+    });
+
+    it('keeps the developer checkout section separate, below every release page', () => {
+      const dev = el.querySelector('[data-testid="developer-checkout"]')!;
+      expect(dev.id).toBe('from-source');
+      expect(text(dev.querySelector('h2'))).toBe('Developer: run Studio from a checkout');
+      expect(text(dev)).toContain('A packaged Studio needs none of this.');
+      expect(text(dev)).not.toContain('--generator-dir');
+      const repos = el.querySelector('#repos')!;
+      expect(repos.compareDocumentPosition(dev) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
     it('never hands a macOS or phone visitor a wrong installer as theirs', () => {
       pick(el, 'other');
       expect(el.querySelector('[data-testid="primary-download"]')).toBeNull();
@@ -319,6 +375,26 @@ describe('DownloadsComponent', () => {
       for (const p of sources.packages) {
         expect(el.querySelector(`#packages [data-package="${p.id}"]`)).withContext(p.id).toBeTruthy();
       }
+    });
+  });
+
+  describe('when the release data says no file carries the build scripts', () => {
+    // What fetch-releases writes for a release whose manifest is missing the field and
+    // whose bytes were never inspected: generator false everywhere (it fails closed).
+    let el: HTMLElement;
+    beforeEach(() => {
+      const data = structuredClone(published);
+      for (const i of data.studio!.installers) i.generator = false;
+      el = serve(data);
+    });
+
+    it('shows the clone step even for a Flatpak, and offers no Flatpak as the way around it', () => {
+      fixture.componentRef.setInput('initialArch', 'aarch64');
+      pick(el, 'linux');
+      expect(el.querySelector('[data-testid="generator-bundled"]')).toBeNull();
+      expect(text(el.querySelector('[data-testid="generator-clone"]'))).toContain('git clone https://github.com/hugmesh/hugmesh-generator');
+      pickArch(el, 'x86_64');
+      expect(el.querySelector('[data-testid="generator-elsewhere"]')).toBeNull();
     });
   });
 

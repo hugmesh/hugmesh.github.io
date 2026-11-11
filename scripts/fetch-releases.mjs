@@ -12,8 +12,9 @@
  *   Studio  newest non-draft GitHub Release of hugmesh-generator whose tag starts
  *           `studio-v` (SemVer order, betas included); its installers, sizes and
  *           SHA-256 values (from the release's own SHA256SUMS), the Sigstore bundle
- *           that signs SHA256SUMS, and whether GitHub holds a provenance
- *           attestation for each installer.
+ *           that signs SHA256SUMS, whether GitHub holds a provenance
+ *           attestation for each installer, and whether each installer carries the
+ *           hugmesh-generator build scripts (generatorCarried).
  *           Every older `studio-v*` release too (studioArchive), so nothing that was
  *           ever published becomes unreachable from the page.
  *   Images  for each image in release-sources.json, the newest SemVer tag in the
@@ -133,6 +134,41 @@ const KIND_ORDER = { msi: 0, flatpak: 1, tarball: 2 };
 /** Within a kind, the architecture most visitors have first. */
 const ARCH_ORDER = { x86_64: 0, aarch64: 1 };
 const SIGNATURE_NAMES = ['SHA256SUMS.sigstore.json', 'SHA256SUMS.bundle'];
+
+/**
+ * Studio files that were OPENED and found to carry the hugmesh-generator seed
+ * (share/hugmesh-studio/generator-seed.tar.gz + generator-seed.json), by SHA-256.
+ *
+ * WHY A LIST OF DIGESTS. The release manifest says per file whether it carries the
+ * generator ("generatorSeed", written by studio-release.yml from each build job's own
+ * --self-check; hugmesh-generator#979). Releases cut before that field existed say
+ * nothing, and 0.4.4-beta.1 is the first that carried a seed at all. Its two Flatpaks
+ * were imported into a scratch ostree repo on 2026-11-11 (`flatpak
+ * build-import-bundle`): both hold the seed of commit 267f1a0a, 3302 files. Its MSI
+ * (7z, 854 files) and tarball (tar -tzf, 1020 entries) hold none. Pinning the exact
+ * bytes inspected, rather than "a Flatpak from 0.4.4 on", means a later release whose
+ * manifest lacks the field is never assumed to carry a seed: it gets the clone step.
+ */
+export const INSPECTED_GENERATOR_SEED = new Set([
+  '5d713cc4a096cd4298283ac4f79725d9671bc092441092dbb99d1d9d83ce5366', // hugmesh-studio-0.4.4-beta.1-x86_64.flatpak
+  'a225910b5174fab15ae9edd43c3bcb33acd6219cc162f6390f4f0f34b4ac6387', // hugmesh-studio-0.4.4-beta.1-aarch64.flatpak
+]);
+
+/**
+ * Does this Studio file carry the hugmesh-generator build scripts? Fails closed.
+ *
+ * The release manifest's own entry for the file decides when it has a
+ * "generatorSeed" field, and only a literal true counts. With no manifest, no entry
+ * for the file, or no field on the entry, the answer is true only for bytes listed in
+ * INSPECTED_GENERATOR_SEED. Everything else is false, and the page keeps its clone
+ * step: a wrong "nothing to clone" strands a user, a needless clone step costs a minute.
+ */
+export function generatorCarried(file, sha256, manifest) {
+  const entries = Array.isArray(manifest?.installers) ? manifest.installers : [];
+  const entry = entries.find((i) => i && typeof i === 'object' && i.file === file);
+  if (entry && Object.hasOwn(entry, 'generatorSeed')) return entry.generatorSeed === true;
+  return typeof sha256 === 'string' && INSPECTED_GENERATOR_SEED.has(sha256);
+}
 
 /**
  * An HTTP client with retries over an injectable fetch, so the tests can serve
@@ -300,20 +336,23 @@ export async function fetchStudio(client, src, releasesOf = releaseCache(client)
   const sumsAsset = byName.get('SHA256SUMS');
   const sums = sumsAsset ? parseSha256Sums(await client.asset(sumsAsset.url)) : new Map();
   const sigAsset = SIGNATURE_NAMES.map((n) => byName.get(n)).find(Boolean);
-  // Whether the MSI was Authenticode-signed cannot be read from the API: the
-  // release workflow says so in a small JSON file it attaches (release-manifest.json,
-  // or the releases.json studio-release.yml writes). Absent, unreadable, or
-  // anything but literally true means "not signed": never claim what we cannot see.
-  let authenticode = false;
+  // Whether the MSI was Authenticode-signed, and which files carry the generator,
+  // cannot be read from the API: the release workflow says so in a small JSON file it
+  // attaches (release-manifest.json, or the releases.json studio-release.yml writes).
+  // Read once for both. Absent, unreadable, or anything but literally true means "not
+  // signed": never claim what we cannot see. The generator claim fails closed the same
+  // way (generatorCarried).
+  let manifest = null;
   const manifestAsset = byName.get('release-manifest.json') ?? byName.get('releases.json');
   if (manifestAsset) {
     try {
-      authenticode = JSON.parse(await client.asset(manifestAsset.url))?.authenticode === true;
+      manifest = JSON.parse(await client.asset(manifestAsset.url));
     } catch (e) {
       if (e instanceof FetchFailure) throw e;
-      authenticode = false;
+      manifest = null;
     }
   }
+  const authenticode = manifest?.authenticode === true;
 
   const installers = [];
   for (const a of assets) {
@@ -341,6 +380,7 @@ export async function fetchStudio(client, src, releasesOf = releaseCache(client)
       sha256,
       attested: sha256 ? await hasAttestation(client, src.repo, `sha256:${sha256}`) : false,
       sbom: sbomAsset ? { file: sbomAsset.name, url: sbomAsset.browser_download_url } : null,
+      generator: generatorCarried(a.name, sha256, manifest),
     });
   }
   installers.sort(

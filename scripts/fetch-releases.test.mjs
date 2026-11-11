@@ -21,6 +21,8 @@ import { fileURLToPath } from 'node:url';
 import {
   buildReleaseData,
   classifyStudioAsset,
+  generatorCarried,
+  INSPECTED_GENERATOR_SEED,
   makeClient,
   parseSha256Sums,
   signingIdentity,
@@ -78,6 +80,9 @@ const studioReleases = [
       asset(5, 'SHA256SUMS.sigstore.json', 4000),
       asset(6, `hugmesh-studio-${V}-windows-x64.spdx.json`, 52_000),
       asset(8, `hugmesh-studio-${V}-linux-x86_64.spdx.json`, 61_000),
+      // The manifest studio-release.yml attaches (hugmesh-generator#979): which files
+      // carry the hugmesh-generator build scripts, each proved by its own build job.
+      asset(11, 'releases.json', 3_000),
     ],
   },
   {
@@ -121,11 +126,24 @@ const sums =
 
 const json = (body, status = 200, headers = {}) => ({ status, body: JSON.stringify(body), headers });
 
+/** The release manifest of the published beta: the Flatpaks carry the generator, the rest not yet. */
+const manifest = {
+  version: V,
+  authenticode: false,
+  installers: [
+    { file: `hugmesh-studio-${V}-aarch64.flatpak`, kind: 'flatpak', generatorSeed: true },
+    { file: `hugmesh-studio-${V}-linux-x86_64.tar.gz`, kind: 'tarball', generatorSeed: false },
+    { file: `hugmesh-studio-${V}-x64.msi`, kind: 'msi', generatorSeed: false },
+    { file: `hugmesh-studio-${V}-x86_64.flatpak`, kind: 'flatpak', generatorSeed: true },
+  ],
+};
+
 /** Answers for a world where Studio beta.2, admin-ui and mesh-node are published. */
 function publishedWorld() {
   return {
     'GET https://api.github.com/repos/hugmesh/hugmesh-generator/releases?per_page=100': json(studioReleases),
     [`GET ${ASSET_API}/4`]: { status: 200, body: sums },
+    [`GET ${ASSET_API}/11`]: json(manifest),
     [`GET https://api.github.com/repos/hugmesh/hugmesh-generator/attestations/sha256:${SHA.msi}`]: json({
       attestations: [{ bundle: {} }],
     }),
@@ -285,7 +303,17 @@ test('published world: newest Studio beta, its files, checksums and signing fact
   );
   assert.deepEqual(s.checksums, { file: 'SHA256SUMS', url: `${DL}/SHA256SUMS` });
   assert.deepEqual(s.checksumsSignature, { file: 'SHA256SUMS.sigstore.json', url: `${DL}/SHA256SUMS.sigstore.json` });
-  assert.equal(s.authenticode, false, 'no manifest file at all: the MSI must not be called signed');
+  assert.equal(s.authenticode, false, 'the manifest says authenticode:false: the MSI must not be called signed');
+  assert.deepEqual(
+    s.installers.map((i) => [i.kind, i.arch, i.generator]),
+    [
+      ['msi', 'x86_64', false],
+      ['flatpak', 'x86_64', true],
+      ['flatpak', 'aarch64', true],
+      ['tarball', 'x86_64', false],
+    ],
+    'each file says what its own manifest entry says about the generator',
+  );
   assert.match(
     'https://github.com/hugmesh/hugmesh-generator/.github/workflows/studio-release.yml@refs/tags/studio-v0.3.0-beta.2',
     new RegExp(s.identity.regexp),
@@ -427,6 +455,7 @@ test('the release workflow saying authenticode:true is the only way the MSI is c
   const world = publishedWorld();
   const rel = structuredClone(studioReleases);
   // studio-release.yml (feat/signed-studio-release) attaches releases.json with this field.
+  rel[1].assets = rel[1].assets.filter((a) => a.name !== 'releases.json');
   rel[1].assets.push(asset(7, 'releases.json', 900));
   world['GET https://api.github.com/repos/hugmesh/hugmesh-generator/releases?per_page=100'] = json(rel);
   world[`GET ${ASSET_API}/7`] = json({ version: V, authenticode: true });
@@ -454,7 +483,7 @@ test('a permission refusal on an attestation lookup is "not attested", not a fai
 
 test('the validator rejects what the page cannot render', () => {
   const ok = {
-    schema: 4,
+    schema: 5,
     generated: NOW.toISOString(),
     studioRepo: 'hugmesh/hugmesh-generator',
     studio: null,
@@ -466,13 +495,14 @@ test('the validator rejects what the page cannot render', () => {
   assert.deepEqual(validateReleaseData(ok), []);
   assert.notDeepEqual(validateReleaseData({ ...ok, schema: 2 }), []);
   assert.notDeepEqual(validateReleaseData({ ...ok, schema: 3 }), [], 'schema 3 installers have no arch');
+  assert.notDeepEqual(validateReleaseData({ ...ok, schema: 4 }), [], 'schema 4 installers do not say whether they carry the generator');
   // An installer without an architecture, or with one nobody builds for, cannot be
   // handed to a Linux visitor, so the file is refused as a whole.
   const flatpak = {
     platform: 'linux', kind: 'flatpak', arch: 'aarch64', label: 'Linux Flatpak bundle (aarch64)',
     file: 'hugmesh-studio-0.3.0-beta.2-aarch64.flatpak',
     url: 'https://github.com/hugmesh/hugmesh-generator/releases/download/studio-v0.3.0-beta.2/hugmesh-studio-0.3.0-beta.2-aarch64.flatpak',
-    size: '168 MB', bytes: 168_200_000, sha256: hex('f'), attested: true, sbom: null,
+    size: '168 MB', bytes: 168_200_000, sha256: hex('f'), attested: true, sbom: null, generator: true,
   };
   const studio = {
     repo: 'hugmesh/hugmesh-generator', tag: 'studio-v0.3.0-beta.2', version: '0.3.0-beta.2', prerelease: true,
@@ -483,6 +513,10 @@ test('the validator rejects what the page cannot render', () => {
   assert.deepEqual(validateReleaseData({ ...ok, studio }), []);
   assert.notDeepEqual(validateReleaseData({ ...ok, studio: { ...studio, installers: [{ ...flatpak, arch: undefined }] } }), []);
   assert.notDeepEqual(validateReleaseData({ ...ok, studio: { ...studio, installers: [{ ...flatpak, arch: 'riscv64' }] } }), []);
+  // Whether a file carries the generator decides whether the page tells its user to
+  // clone: a file that does not say is refused, never read as either answer.
+  assert.notDeepEqual(validateReleaseData({ ...ok, studio: { ...studio, installers: [{ ...flatpak, generator: undefined }] } }), []);
+  assert.notDeepEqual(validateReleaseData({ ...ok, studio: { ...studio, installers: [{ ...flatpak, generator: 'true' }] } }), []);
   assert.notDeepEqual(validateReleaseData({ ...ok, packages: undefined }), [], 'packages is required');
   assert.notDeepEqual(validateReleaseData({ ...ok, repos: undefined }), [], 'repos is required');
   const pkg = {
@@ -538,4 +572,83 @@ test('asset classification and SHA256SUMS parsing', () => {
   assert.equal(m.get('a.msi'), hex('a'));
   assert.equal(m.get('b.flatpak'), hex('b'));
   assert.equal(m.size, 2);
+});
+
+// ── which files carry the hugmesh-generator build scripts ─────────────────────────
+const SEEDED_X86 = '5d713cc4a096cd4298283ac4f79725d9671bc092441092dbb99d1d9d83ce5366';
+const SEEDED_ARM = 'a225910b5174fab15ae9edd43c3bcb33acd6219cc162f6390f4f0f34b4ac6387';
+
+test('generatorCarried: the manifest entry decides, only literal true counts, and it fails closed', () => {
+  const f = 'hugmesh-studio-9.9.9-x86_64.flatpak';
+  const entry = (generatorSeed) => ({ installers: [{ file: f, generatorSeed }] });
+  assert.equal(generatorCarried(f, hex('b'), entry(true)), true);
+  assert.equal(generatorCarried(f, hex('b'), entry(false)), false);
+  assert.equal(generatorCarried(f, hex('b'), entry('yes')), false, 'only literal true counts');
+  assert.equal(generatorCarried(f, hex('b'), entry(1)), false, 'only literal true counts');
+  // An explicit false beats the inspected-digest pin: the manifest is the newer word.
+  assert.equal(generatorCarried(f, SEEDED_X86, entry(false)), false);
+  // Another file's entry says nothing about this one.
+  assert.equal(generatorCarried(f, hex('b'), { installers: [{ file: 'other.flatpak', generatorSeed: true }] }), false);
+  // No manifest, no entry, no field: only the inspected bytes count, never the kind.
+  for (const m of [null, undefined, {}, { installers: 'x' }, { installers: [null, 3] }, { installers: [{ file: f }] }]) {
+    assert.equal(generatorCarried(f, hex('b'), m), false, JSON.stringify(m));
+    assert.equal(generatorCarried(f, SEEDED_X86, m), true, JSON.stringify(m));
+  }
+  assert.equal(generatorCarried(f, null, null), false, 'a file with no known digest is never assumed');
+  // The pin is exactly the two 0.4.4-beta.1 Flatpaks that were opened, and nothing else.
+  assert.deepEqual([...INSPECTED_GENERATOR_SEED].sort(), [SEEDED_X86, SEEDED_ARM].sort());
+});
+
+test('a release whose manifest predates generatorSeed: only the inspected Flatpak bytes carry it', async () => {
+  // 0.4.4-beta.1 as published: its releases.json has no generatorSeed field anywhere.
+  const v = '0.4.4-beta.1';
+  const dl = `https://github.com/hugmesh/hugmesh-generator/releases/download/studio-v${v}`;
+  const a = (id, name, size) => ({ id, name, size, url: `${ASSET_API}/${id}`, browser_download_url: `${dl}/${name}` });
+  const files = {
+    msi: `hugmesh-studio-${v}-x64.msi`,
+    x86: `hugmesh-studio-${v}-x86_64.flatpak`,
+    arm: `hugmesh-studio-${v}-aarch64.flatpak`,
+    tar: `hugmesh-studio-${v}-linux-x86_64.tar.gz`,
+  };
+  const digests = { msi: hex('a'), x86: SEEDED_X86, arm: SEEDED_ARM, tar: hex('c') };
+  const world = publishedWorld();
+  world['GET https://api.github.com/repos/hugmesh/hugmesh-generator/releases?per_page=100'] = json([
+    {
+      tag_name: `studio-v${v}`, draft: false, prerelease: true, published_at: '2026-11-10T19:17:23Z',
+      html_url: `https://github.com/hugmesh/hugmesh-generator/releases/tag/studio-v${v}`,
+      assets: [a(31, files.msi, 49_000_000), a(32, files.x86, 180_000_000), a(33, files.arm, 176_000_000),
+        a(34, files.tar, 98_000_000), a(35, 'SHA256SUMS', 600), a(36, 'releases.json', 4_000)],
+    },
+  ]);
+  world[`GET ${ASSET_API}/35`] = {
+    status: 200,
+    body: Object.entries(files).map(([k, name]) => `${digests[k]}  ${name}`).join('\n') + '\n',
+  };
+  world[`GET ${ASSET_API}/36`] = json({
+    version: v, authenticode: false,
+    installers: Object.values(files).map((file) => ({ file, notes: 'Point it at a hugmesh-generator checkout on first run' })),
+  });
+  const data = await buildReleaseData({ sources, client: client(fakeFetch(world)), now: NOW });
+  assert.deepEqual(validateReleaseData(data), []);
+  assert.deepEqual(
+    data.studio.installers.map((i) => [i.file, i.generator]),
+    [[files.msi, false], [files.x86, true], [files.arm, true], [files.tar, false]],
+  );
+
+  // The same release with other Flatpak bytes (a rebuild, a republish): no claim.
+  world[`GET ${ASSET_API}/35`] = {
+    status: 200,
+    body: Object.entries(files).map(([k, name]) => `${k === 'x86' ? hex('9') : digests[k]}  ${name}`).join('\n') + '\n',
+  };
+  const rebuilt = await buildReleaseData({ sources, client: client(fakeFetch(world)), now: NOW });
+  assert.deepEqual(rebuilt.studio.installers.map((i) => i.generator), [false, false, true, false]);
+
+  // An unreadable manifest is no manifest: the pin still decides, nothing more.
+  world[`GET ${ASSET_API}/35`] = {
+    status: 200,
+    body: Object.entries(files).map(([k, name]) => `${digests[k]}  ${name}`).join('\n') + '\n',
+  };
+  world[`GET ${ASSET_API}/36`] = { status: 200, body: 'not json' };
+  const unreadable = await buildReleaseData({ sources, client: client(fakeFetch(world)), now: NOW });
+  assert.deepEqual(unreadable.studio.installers.map((i) => i.generator), [false, true, true, false]);
 });

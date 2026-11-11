@@ -183,6 +183,24 @@ export class DownloadsComponent {
       : `sha256sum ${i.file}`;
   }
 
+  /**
+   * Where a package that carries the build scripts places them on first start
+   * (hugmesh-generator core/managed_generator.py: `~/.local/share/hugmesh-studio/generator`,
+   * expanded from the home folder on every system, never from $XDG_DATA_HOME).
+   */
+  managedGeneratorPath(i: Installer): string {
+    return i.platform === 'windows'
+      ? '%USERPROFILE%\\.local\\share\\hugmesh-studio\\generator'
+      : '~/.local/share/hugmesh-studio/generator';
+  }
+
+  /** The one clone line for a package that does not carry the build scripts yet. */
+  cloneLine(i: Installer): string {
+    return i.platform === 'windows'
+      ? 'git clone https://github.com/hugmesh/hugmesh-generator $HOME\\hugmesh-generator'
+      : 'git clone https://github.com/hugmesh/hugmesh-generator ~/hugmesh-generator';
+  }
+
   repoUrl(repo: string): string {
     return `https://github.com/${repo}`;
   }
