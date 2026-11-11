@@ -13,7 +13,8 @@ sign-in sessions, media and notifications, including a live notification stream.
 It also runs sign-in itself. The [sign-in web app](/reference/login-ui) posts the
 member's username and password to `/bff/login`. This service signs them in with Casdoor
 on the server, keeps the resulting token on the server, and gives the browser only a
-session cookie. It also creates a member's Matrix and fediverse accounts.
+session cookie. When a web app needs the member's Matrix or fediverse token, this service
+gets it and keeps it on the server; the browser never receives it.
 
 It reads the member's cards from the federation API, and account data from the
 [admin API](/reference/admin-bff) over an internal, mutually authenticated connection.
@@ -26,8 +27,8 @@ directly.
 ## Who can use it
 
 Any signed-in member, for their own data. Paths under `/bff/user/internal/` are for other
-services only. Creating a Matrix account needs the Matrix role, and a fediverse account
-the fediverse role.
+services only. Matrix access needs the Matrix role, and fediverse access the fediverse
+role.
 
 ## Settings
 

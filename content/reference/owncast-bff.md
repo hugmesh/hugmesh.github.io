@@ -19,7 +19,7 @@ In the backend namespace, behind the gateway, at `/bff/owncast/`.
 | Path | Who | What |
 |---|---|---|
 | `/bff/owncast/user/stream` | members with the `owncast` role | their own stream's details and visibility |
-| `/bff/owncast/mod` | moderators | list, hide, ban and restore streams |
+| `/bff/owncast/mod` | `mod`, `admin`, `superadmin` | list, hide, ban and restore streams |
 | `/bff/owncast/admin/access` | `admin`, `superadmin` | grant, time out, ban, restore |
 | `/bff/owncast/superadmin/access` | `superadmin` | every grant, with its history |
 
