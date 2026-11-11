@@ -33,9 +33,10 @@ you the clone line.
 
 What a package can and cannot do:
 
-- It builds images, using Docker on the same machine.
-- Writing an image or a KEYS stick to a USB device, and native (sudo) Gentoo builds, need
-  the Studio run from a checkout. The Flatpak refuses them.
+- It builds images, using Docker on the same machine, and can generate each node's keys.
+- Writing an image to a USB device, and native (sudo) Gentoo builds, need the Studio run
+  from a checkout. The Flatpak refuses them.
+- A KEYS stick is written with a script from a checkout (step 4).
 
 [Install the Studio](/studio/installers) covers each package and the checkout. If you
 plan to keep using the machine while it builds, set your limits first: tray, then
@@ -124,7 +125,9 @@ labelled `KEYS`, with its keys, certificates and settings. That is what makes it
 build one image and use it on many nodes. [The KEYS stick](/operations/keys-usb) lists
 everything a stick can hold.
 
-The stick is written from a checkout, as root, because it formats a whole disk:
+A mesh build in the Studio can generate each node's keys folder for you. The stick itself
+is written with `make-keys-usb.sh` from a checkout, as root, because it formats a whole
+disk. From the command line, the whole step is:
 
 ```bash
 ./scripts/gen-cluster-secrets.sh
@@ -137,6 +140,10 @@ sudo ./scripts/make-keys-usb.sh /dev/sdY keys-pki    # one stick per node
 Two defaults of the key generator: no root password is set (root is locked), and the
 admin user's `sudo` asks for a password. `--root-password` and `--sudo-nopasswd` change
 them.
+
+`make-keys-usb.sh` runs on Linux only. On Windows, format a USB stick of 32 GB or less as
+FAT32 (not exFAT or NTFS, which some nodes cannot mount) with the label `KEYS`, and copy
+the node's keys folder onto it, leaving out its `vault-seed` folder.
 
 A worker stick does not carry the user accounts. It does need `certs/cluster-ca.crt` and
 `keystores/truststore.jks` copied from the `pki` keys, and the cluster join token, the CA
