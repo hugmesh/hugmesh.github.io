@@ -47,21 +47,21 @@
 
       <section class="filters" aria-labelledby="filters-title">
         <h2 id="filters-title" class="visually-hidden">Filter the list</h2>
+        <div class="field field-find">
+          <label for="board-find">Find</label>
+          <input
+            #find
+            id="board-find"
+            type="search"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="A word from a title, a repository or a label"
+            [value]="filters().q"
+            (input)="setFilter('q', find.value)"
+            data-testid="board-find"
+          />
+        </div>
         <div class="filter-grid">
-          <div class="field field-find">
-            <label for="board-find">Find</label>
-            <input
-              #find
-              id="board-find"
-              type="search"
-              autocomplete="off"
-              spellcheck="false"
-              placeholder="A word from a title, a repository or a label"
-              [value]="filters().q"
-              (input)="setFilter('q', find.value)"
-              data-testid="board-find"
-            />
-          </div>
           <div class="field">
             <label for="board-status">Status</label>
             <select #status id="board-status" (change)="setFilter('status', status.value)" data-testid="board-status">
@@ -135,6 +135,9 @@
                       <span class="ref">{{ row.ref }}</span>
                       @if (row.item.type === 'pull') {
                         <span class="kind">pull request</span>
+                      }
+                      @if (row.item.state !== 'open') {
+                        <span class="kind" data-testid="row-state">{{ row.item.state }}</span>
                       }
                       @if (row.item.priority; as p) {
                         <span class="tag"><span class="visually-hidden">Priority: </span>{{ p }}</span>

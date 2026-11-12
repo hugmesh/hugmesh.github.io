@@ -153,6 +153,12 @@ describe('BoardComponent', () => {
       expect(meta).toContain(`Wave ${item.wave}`);
     });
 
+    it('says when an item is closed or merged, and nothing when it is open', () => {
+      const states = Array.from(el.querySelectorAll('[data-testid="row-state"]')).map((n) => text(n));
+      const shownOpen = board.items.filter((i) => !['Done testing', 'Accepted'].includes(i.status ?? ''));
+      expect(states.sort()).toEqual(shownOpen.filter((i) => i.state !== 'open').map((i) => i.state).sort());
+    });
+
     it('shows a hostile title as the text it is: no element is created from it', () => {
       const row = Array.from(el.querySelectorAll<HTMLAnchorElement>('.row-title')).find((a) => a.textContent === HOSTILE.title);
       expect(row).withContext('the title is rendered character for character').toBeDefined();
