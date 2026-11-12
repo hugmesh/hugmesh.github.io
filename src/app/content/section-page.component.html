@@ -80,11 +80,27 @@
         </ol>
       </section>
     }
-  } @else if (indexLoaded()) {
+  } @else if (payload() === 'reloading') {
+    <p class="empty" role="status" aria-live="polite" data-testid="section-updating">
+      The site was just updated. Reloading to pick up the new version…
+    </p>
+  } @else if (indexLoaded() && payload() === 'other-build') {
+    <!-- An index from another build that lacks this tab's pages says nothing about
+         whether the tab is empty, so the page must not claim it is (hugmesh.github.io#42). -->
+    <p class="empty" role="status" data-testid="section-other-build">
+      The site was just updated, and this page is out of step with it.
+      <a href="" (click)="reload($event)">Reload the page</a> to see this section.
+    </p>
+  } @else if (payload() === 'failed') {
+    <p class="empty" role="alert" data-testid="section-failed">
+      The documentation index could not be loaded.
+      <a href="" (click)="reload($event)">Reload the page</a> to try again.
+    </p>
+  } @else if (indexLoaded() && payload() === 'current') {
     @if (meta) {
       <p class="blurb">{{ meta.blurb }}</p>
     }
-    <p class="empty">
+    <p class="empty" data-testid="section-empty">
       Nothing is published in this section yet. The pages that will live here are
       still in the code repositories — see
       <a href="https://github.com/hugmesh" target="_blank" rel="noopener noreferrer"
