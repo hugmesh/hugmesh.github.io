@@ -169,17 +169,14 @@ section {
   color: var(--hug-accent-soft);
 }
 
+// No line clamp: a summary is at most 160 characters (the manifest lint), and one
+// cut off mid-sentence reads as a bug. home.component.spec.ts measures the fit.
 .step-body em {
   display: block;
   margin-top: 0.15rem;
   color: var(--hug-text-muted);
   font-size: 0.85rem;
   font-style: normal;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 // ── Browse: four columns, one per header cluster ────────────────────────────
