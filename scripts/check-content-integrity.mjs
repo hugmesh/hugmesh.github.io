@@ -46,11 +46,11 @@
  */
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
-import { homedir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadManifest } from './lib/manifest.mjs';
 import { BASIS_LOCK_PATH, basisLockProblems } from './lib/basis.mjs';
+import { DENYLIST_ENV, denylistLines, loadDenylist } from './lib/denylist.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LOCK = path.join(ROOT, 'content', '.sync.lock.json');
@@ -58,51 +58,9 @@ const CONTENT = path.join(ROOT, 'content');
 
 const sha256 = (text) => createHash('sha256').update(text, 'utf8').digest('hex');
 
-/**
- * Check 5 reads its denylist from a file OUTSIDE this repository, never from the tree.
- * An earlier version kept sha256 hashes of the words here; an unsalted hash of a
- * dictionary word is reversed in under a second from a word list, so that published
- * the very words it was meant to keep out. Any committed form of a short word (hash,
- * salted hash, encoding) has the same flaw, so the words live only on the machines
- * that run a re-sync.
- *
- * File: $HUGMESH_PRIVATE_DENYLIST_FILE, else ~/.config/hugmesh/private-denylist.txt.
- * One word or phrase per line, matched case-insensitively anywhere in the text (so
- * glued or CamelCase forms are caught too). Blank lines and lines starting with # are
- * ignored.
- *
- * THE ONE DELIBERATE SKIP in this script: when no file exists at the default path,
- * check 5 prints a WARNING and is skipped, because a public CI runner and a stranger's
- * clone can never have the file, and failing there would only break every build. If
- * the variable is set but names a missing or empty file, that is a misconfiguration
- * and FAILS. Failure messages name the denylist line number, never the word, so a CI
- * log does not publish it either.
- */
-const DENYLIST_ENV = 'HUGMESH_PRIVATE_DENYLIST_FILE';
-const DEFAULT_DENYLIST = path.join(homedir(), '.config', 'hugmesh', 'private-denylist.txt');
-
-async function loadDenylist() {
-  const explicit = process.env[DENYLIST_ENV];
-  const file = explicit || DEFAULT_DENYLIST;
-  let raw;
-  try {
-    raw = await readFile(file, 'utf8');
-  } catch (err) {
-    if (err.code !== 'ENOENT' || explicit) {
-      return { error: `${DENYLIST_ENV}=${file}: cannot read the private denylist (${err.code ?? err.message})` };
-    }
-    return { skipped: file };
-  }
-  const entries = [];
-  raw.split(/\r?\n/).forEach((line, i) => {
-    const word = line.trim().toLowerCase();
-    if (word && !word.startsWith('#')) entries.push({ word, line: i + 1 });
-  });
-  if (!entries.length) {
-    return { error: `${file}: the private denylist has no entries; a check with nothing to look for is not a check` };
-  }
-  return { entries };
-}
+// Check 5 reads its denylist from a file OUTSIDE this repository, never from the tree:
+// see lib/denylist.mjs for where, for why no hashed copy is kept here, and for the one
+// deliberate skip (no file at the default path, as on a public CI runner).
 
 /** Every .md under content/, as repo-relative POSIX paths. */
 async function walk(dir) {
@@ -222,15 +180,13 @@ async function main() {
       .filter((f) => f.endsWith('.md'))
       .map((f) => `landings/${f}`);
     for (const rel of [...onDisk, ...landings, 'docs.manifest.json']) {
-      const text = (await readFile(path.join(ROOT, rel), 'utf8')).toLowerCase();
-      for (const { word, line } of denylist.entries) {
-        if (text.includes(word)) {
-          failures.push(
-            `${rel}: contains private denylist entry on line ${line} of the denylist file.\n` +
-              '    Remove it at the SOURCE repository and re-sync, or withhold the document\n' +
-              '    from docs.manifest.json. Never hand-edit a vendored file.',
-          );
-        }
+      const text = await readFile(path.join(ROOT, rel), 'utf8');
+      for (const line of denylistLines(text, denylist.entries)) {
+        failures.push(
+          `${rel}: contains private denylist entry on line ${line} of the denylist file.\n` +
+            '    Remove it at the SOURCE repository and re-sync, or withhold the document\n' +
+            '    from docs.manifest.json. Never hand-edit a vendored file.',
+        );
       }
     }
   }

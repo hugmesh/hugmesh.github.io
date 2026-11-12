@@ -28,6 +28,7 @@ describe('app routes', () => {
   it('exposes the standalone pages the header and footer link to', () => {
     expect(find('search')).toBeDefined();
     expect(find('downloads')).toBeDefined();
+    expect(find('board')).toBeDefined();
   });
 
   it('matches a section index only for a known section', () => {

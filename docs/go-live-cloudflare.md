@@ -362,6 +362,7 @@ longer — and if you do, add **both** of these, in this order, under Rules → 
 or (http.request.uri.path eq "/index.html")
 or (http.request.uri.path eq "/404.html")
 or (starts_with(http.request.uri.path, "/assets/content/"))
+or (http.request.uri.path eq "/assets/board.json")
 ```
 → Cache eligibility: **Bypass cache**
 
@@ -384,6 +385,17 @@ Why each entry is in that list:
   file as `<file>?v=<build id>`. The query does not make these files immutable: the path
   is the same on every build, and an old cached shell still asks for the bare path. Never
   give this path a cache key that ignores the query string.
+- `/assets/board.json` is the Project board page's data (`scripts/fetch-board.mjs`). It
+  keeps the same name in every build and changes on most hourly runs. It is **not** part
+  of the content build id below: it lives outside `/assets/content/`, is not in the hash,
+  and is requested at its bare path with no `?v=`. A content id would not tell two boards
+  apart, since an hourly run that changes only the board rebuilds the same content and so
+  the same id. Its guard is revalidation instead. The page asks for it with `cache: 'no-cache'`
+  (`src/app/board/board.service.ts`), so a browser revalidates its copy every time, but
+  that only helps if the edge does not answer from a stale copy of its own: keep it
+  **bypassed**. The file also carries a `schema` number: a page that loads a file in a
+  shape it was not written for says "this page is out of date, reload" instead of
+  rendering it, so a page and a file from two different deploys never show a wrong list.
 
 **What keeps a new app off an old index is the build id, not the edge.** The edge was
 never the whole story. On 2026-11-12, right after the restructure deploy (#39), Pages'

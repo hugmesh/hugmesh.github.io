@@ -39,7 +39,7 @@ const index = {
 test('every standalone page, section and document gets a route', () => {
   assert.deepEqual(
     routesFromIndex(index).map((r) => r.route),
-    ['/downloads', '/search', '/tutorials', '/tutorials/start-here'],
+    ['/downloads', '/board', '/search', '/tutorials', '/tutorials/start-here'],
   );
 });
 
@@ -48,7 +48,7 @@ test('each route is written as <route>/index.html and <route>.html', () => {
 });
 
 test('a page carries its own title, description, canonical and og tags, escaped', () => {
-  const [, , , doc] = routesFromIndex(index);
+  const doc = routesFromIndex(index).find((r) => r.route === '/tutorials/start-here');
   const html = pageHtml(indexHtml, doc, ORIGIN);
   assert.match(html, /<title>Start here — HugMesh Documentation<\/title>/);
   assert.match(html, /<meta name="description" content="An ordered &quot;path&quot; &lt;first&gt;\." \/>/);
@@ -67,7 +67,7 @@ test('the head as the Angular build re-serialises it (content="…"/> on one lin
     .replace(/\s*\n\s*/g, ' ')
     .replace(/"\s+\/>/g, '"/>');
   assert.match(built, /<meta property="og:title" content="HugMesh Documentation"\/>/, 'the fixture really is the built shape');
-  const [, , , doc] = routesFromIndex(index);
+  const doc = routesFromIndex(index).find((r) => r.route === '/tutorials/start-here');
   const html = pageHtml(built, doc, ORIGIN);
   assert.match(html, /<link rel="canonical" href="https:\/\/docs\.example\/tutorials\/start-here\/" \/>/);
   assert.match(html, /<meta property="og:title" content="Start here — HugMesh Documentation" \/>/);
@@ -94,6 +94,7 @@ test('sitemap lists the home page and every route at its canonical URL; robots p
   assert.deepEqual(locs, [
     'https://docs.example/',
     'https://docs.example/downloads/',
+    'https://docs.example/board/',
     'https://docs.example/search/',
     'https://docs.example/tutorials/',
     'https://docs.example/tutorials/start-here/',

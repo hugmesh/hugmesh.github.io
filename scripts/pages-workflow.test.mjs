@@ -12,6 +12,11 @@
  * dispatch receiver and the hourly fallback being present: without them a release
  * never reaches the page.
  *
+ * THE ONE SECRET. The build job is also handed BOARD_READ_TOKEN, to read the
+ * project board. It may reach exactly one step, in that step's environment, before
+ * `npm ci` has put any third-party code on the runner; it may never be an argument,
+ * never be echoed, and no other secret may appear in the file at all.
+ *
  * The workflow is read with a deliberately small YAML reader (block mappings,
  * `{}`, `[a, b]`, block scalars skipped) so the guard needs no dependency that
  * package.json does not declare.
@@ -113,8 +118,19 @@ export function parseWorkflow(text) {
   return tidy(root);
 }
 
-const wf = parseWorkflow(readFileSync(FILE, 'utf8'));
+const TEXT = readFileSync(FILE, 'utf8');
+const wf = parseWorkflow(TEXT);
 const WRITE_ONLY_FOR_DEPLOY = ['pages', 'id-token'];
+/** The file without its comments: a comment that mentions a command must never satisfy a check. */
+const CODE_LINES = TEXT.split('\n').map((l) => stripComment(l).trimEnd()).filter((l) => l.trim() !== '');
+const CODE = CODE_LINES.join('\n');
+const buildSteps = () => wf.jobs.build.steps;
+const stepIndex = (pred, what) => {
+  const hits = buildSteps().map((s, i) => (pred(s) ? i : -1)).filter((i) => i !== -1);
+  assert.equal(hits.length, 1, `expected exactly one build step that ${what}, found ${hits.length}`);
+  return hits[0];
+};
+const BOARD_SECRET = 'BOARD_READ_TOKEN';
 
 test('no token scope is granted at workflow level', () => {
   assert.ok('permissions' in wf, 'pages.yml must set a top-level permissions block (an absent one inherits the repository default)');
@@ -165,13 +181,78 @@ test('both jobs run on GitHub-hosted runners, written literally', () => {
 });
 
 test('the release data is fetched and validated before the site is built', () => {
-  const steps = wf.jobs.build.steps;
-  assert.ok(Array.isArray(steps));
-  const text = readFileSync(FILE, 'utf8');
-  const fetchAt = text.indexOf('npm run fetch:releases');
-  const buildAt = text.indexOf('npm run build');
-  assert.ok(fetchAt > 0 && buildAt > fetchAt, 'npm run fetch:releases must run before npm run build');
-  assert.ok(text.includes('validateReleaseData'), 'the Pages artifact step must validate assets/releases.json');
+  assert.ok(Array.isArray(buildSteps()));
+  // Steps, not text: a comment that names the command must not pass for the step.
+  const fetchAt = stepIndex((s) => s.run === 'npm run fetch:releases', 'runs npm run fetch:releases');
+  const buildAt = stepIndex((s) => s.run === 'npm run build', 'runs npm run build');
+  assert.ok(buildAt > fetchAt, 'npm run fetch:releases must run before npm run build');
+  assert.ok(CODE.includes('validateReleaseData'), 'the Pages artifact step must validate assets/releases.json');
+});
+
+test('the project board is fetched before any dependency is installed, and before the build', () => {
+  const boardAt = stepIndex((s) => s.env && BOARD_SECRET in s.env, `is handed ${BOARD_SECRET}`);
+  const installAt = stepIndex((s) => s.run === 'npm ci', 'runs npm ci');
+  const buildAt = stepIndex((s) => s.run === 'npm run build', 'runs npm run build');
+  assert.ok(boardAt < installAt, 'the step that holds the board token must run BEFORE npm ci: no third-party code may be on the runner yet');
+  assert.ok(boardAt < buildAt, 'the board must be fetched before the site is built');
+  // Everything before it is an action, never a command: nothing has run that could
+  // have changed the script the token is about to be handed to.
+  for (const s of buildSteps().slice(0, boardAt)) {
+    assert.ok(typeof s.uses === 'string' && s.run === undefined, `only actions may come before the board step, found: ${JSON.stringify(s)}`);
+  }
+});
+
+test('the board step is one fixed command: the token is in its environment, never on a command line', () => {
+  const step = buildSteps()[stepIndex((s) => s.env && BOARD_SECRET in s.env, `is handed ${BOARD_SECRET}`)];
+  assert.deepEqual(step.env, { [BOARD_SECRET]: '${{ secrets.BOARD_READ_TOKEN }}' }, 'the step environment holds the token and nothing else');
+  assert.equal(step.run, 'node scripts/fetch-board.mjs', 'no arguments, no shell around it, and not a multi-line script');
+  assert.equal(step.uses, undefined);
+  // It must run on every build and must be able to fail it (it only does when the
+  // file cannot be written): a skipped or forgiven step would publish no file at all.
+  assert.equal(step.if, undefined, 'the board step must not be conditional');
+  assert.equal(step['continue-on-error'], undefined, 'the board step must not be allowed to fail quietly');
+});
+
+test('BOARD_READ_TOKEN is the only secret in the workflow, named on one line', () => {
+  const secretLines = CODE_LINES.filter((l) => /\bsecrets\b/.test(l));
+  assert.deepEqual(
+    secretLines.map((l) => l.trim()),
+    ['BOARD_READ_TOKEN: ${{ secrets.BOARD_READ_TOKEN }}'],
+    'exactly one line may read a secret, and it must be the board step\'s environment',
+  );
+  // The name itself appears nowhere else in what runs: not in a `run:` block (which
+  // would be an echo or an argument), not at job or workflow level.
+  assert.deepEqual(CODE_LINES.filter((l) => l.includes(BOARD_SECRET)).map((l) => l.trim()), ['BOARD_READ_TOKEN: ${{ secrets.BOARD_READ_TOKEN }}']);
+  assert.equal(wf.env, undefined, 'no workflow-level env: it would reach every step of every job');
+  for (const [name, job] of Object.entries(wf.jobs)) {
+    assert.equal(job.env, undefined, `job ${name} must not set a job-level env`);
+    assert.equal(job.secrets, undefined, `job ${name} must not inherit or pass secrets`);
+  }
+});
+
+test('no other step, and nothing in the deploy job, is handed the board token', () => {
+  for (const [name, job] of Object.entries(wf.jobs)) {
+    for (const step of job.steps) {
+      const holds = JSON.stringify(step).includes('secrets.');
+      const isBoardStep = name === 'build' && step.run === 'node scripts/fetch-board.mjs';
+      assert.equal(holds, isBoardStep, `job ${name}: ${JSON.stringify(step).slice(0, 120)}`);
+    }
+  }
+  assert.ok(!JSON.stringify(wf.jobs.deploy).includes('BOARD'), 'the deploy job never sees the board token');
+});
+
+test('the artifact is refused without a board file the page can read', () => {
+  assert.ok(CODE.includes('validateBoardData'), 'the Pages artifact step must validate assets/board.json');
+  assert.match(CODE, /\[ -f assets\/board\.json \] \|\| \{ echo "::error::assets\/board\.json missing from the Pages artifact"; exit 1; \}/);
+});
+
+test('the hourly run compares the board as well as the release data, through the tested script', () => {
+  assert.match(CODE, /for f in releases\.json board\.json; do/);
+  assert.match(CODE, /if node scripts\/published-data-changed\.mjs "\$live" dist\/browser\/assets; then/);
+  // The decision still reaches the deploy job.
+  assert.equal(wf.jobs.build.outputs.data_changed, '${{ steps.changed.outputs.changed }}');
+  assert.match(wf.jobs.deploy.if, /needs\.build\.outputs\.data_changed != 'false'/);
+  assert.match(wf.jobs.deploy.if, /needs\.build\.outputs\.pages_ready == 'true'/);
 });
 
 test('the reader itself: flow {} and block maps are told apart', () => {

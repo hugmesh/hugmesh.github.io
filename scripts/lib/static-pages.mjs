@@ -37,6 +37,12 @@ export function routesFromIndex(index, { siteName = 'HugMesh Documentation' } = 
         'Download HugMesh Studio for Windows or Linux, with checksums and verification steps, plus every container image and Maven package the HugMesh repositories publish.',
     },
     {
+      route: '/board',
+      title: `Project board — ${siteName}`,
+      description:
+        'What is being worked on across the HugMesh repositories, and what is done: a list made from the project board on GitHub each time this site is built.',
+    },
+    {
       route: '/search',
       title: `Search — ${siteName}`,
       description: 'Search the HugMesh documentation.',

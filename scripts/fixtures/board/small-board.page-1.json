@@ -1,0 +1,339 @@
+{
+  "data": {
+    "organization": {
+      "projectV2": {
+        "title": "Example work tracker",
+        "url": "https://github.com/orgs/hugmesh/projects/1",
+        "public": true,
+        "statusField": {
+          "options": [
+            {
+              "name": "Proposed"
+            },
+            {
+              "name": "Todo"
+            },
+            {
+              "name": "In progress"
+            },
+            {
+              "name": "Ready for testing"
+            },
+            {
+              "name": "Done testing"
+            },
+            {
+              "name": "Accepted"
+            }
+          ]
+        },
+        "priorityField": {
+          "options": [
+            {
+              "name": "P0 Release blocker"
+            },
+            {
+              "name": "P1 High"
+            },
+            {
+              "name": "P2 Medium"
+            },
+            {
+              "name": "P3 Post-release"
+            }
+          ]
+        },
+        "sizeField": {
+          "options": [
+            {
+              "name": "XS"
+            },
+            {
+              "name": "S"
+            },
+            {
+              "name": "M"
+            },
+            {
+              "name": "L"
+            },
+            {
+              "name": "XL"
+            }
+          ]
+        },
+        "waveField": {
+          "options": [
+            {
+              "name": "W1"
+            },
+            {
+              "name": "W2"
+            },
+            {
+              "name": "W3"
+            }
+          ]
+        },
+        "items": {
+          "totalCount": 14,
+          "pageInfo": {
+            "hasNextPage": true,
+            "endCursor": "Y3Vyc29yOmV4YW1wbGUwOA=="
+          },
+          "nodes": [
+            {
+              "id": "PVTI_example01",
+              "type": "ISSUE",
+              "isArchived": false,
+              "updatedAt": "2026-10-11T09:00:00Z",
+              "status": {
+                "name": "In progress"
+              },
+              "priority": {
+                "name": "P1 High"
+              },
+              "size": {
+                "name": "M"
+              },
+              "wave": {
+                "name": "W2"
+              },
+              "content": {
+                "__typename": "Issue",
+                "title": "Sign-in page forgets the chosen language",
+                "number": 12,
+                "url": "https://github.com/hugmesh/example-api/issues/12",
+                "state": "OPEN",
+                "updatedAt": "2026-10-11T08:00:00Z",
+                "repository": {
+                  "nameWithOwner": "hugmesh/example-api",
+                  "visibility": "PUBLIC",
+                  "isPrivate": false
+                },
+                "labels": {
+                  "nodes": [
+                    {
+                      "name": "bug"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "id": "PVTI_example02",
+              "type": "ISSUE",
+              "isArchived": false,
+              "updatedAt": "2026-10-12T09:00:00Z",
+              "status": {
+                "name": "Todo"
+              },
+              "priority": {
+                "name": "P2 Medium"
+              },
+              "size": {
+                "name": "S"
+              },
+              "wave": {
+                "name": "W2"
+              },
+              "content": {
+                "__typename": "Issue",
+                "title": "Add a health endpoint for the gateway",
+                "number": 7,
+                "url": "https://github.com/hugmesh/example-api/issues/7",
+                "state": "OPEN",
+                "updatedAt": "2026-10-12T08:00:00Z",
+                "repository": {
+                  "nameWithOwner": "hugmesh/example-api",
+                  "visibility": "PUBLIC",
+                  "isPrivate": false
+                },
+                "labels": {
+                  "nodes": [
+                    {
+                      "name": "enhancement"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "id": "PVTI_example03",
+              "type": "PULL_REQUEST",
+              "isArchived": false,
+              "updatedAt": "2026-10-13T09:00:00Z",
+              "status": {
+                "name": "Ready for testing"
+              },
+              "priority": {
+                "name": "P2 Medium"
+              },
+              "size": {
+                "name": "XS"
+              },
+              "wave": {
+                "name": "W1"
+              },
+              "content": {
+                "__typename": "PullRequest",
+                "title": "Show the build time in the footer",
+                "number": 31,
+                "url": "https://github.com/hugmesh/example-ui/pull/31",
+                "state": "MERGED",
+                "updatedAt": "2026-10-13T08:00:00Z",
+                "repository": {
+                  "nameWithOwner": "hugmesh/example-ui",
+                  "visibility": "PUBLIC",
+                  "isPrivate": false
+                },
+                "labels": {
+                  "nodes": []
+                }
+              }
+            },
+            {
+              "id": "PVTI_example04",
+              "type": "ISSUE",
+              "isArchived": false,
+              "updatedAt": "2026-10-14T09:00:00Z",
+              "status": {
+                "name": "Todo"
+              },
+              "priority": {
+                "name": "P0 Release blocker"
+              },
+              "size": {
+                "name": "S"
+              },
+              "wave": {
+                "name": "W1"
+              },
+              "content": {
+                "__typename": "Issue",
+                "title": "<img src=x onerror=\"alert(1)\"> in a room name must be shown as text",
+                "number": 28,
+                "url": "https://github.com/hugmesh/example-ui/issues/28",
+                "state": "OPEN",
+                "updatedAt": "2026-10-14T08:00:00Z",
+                "repository": {
+                  "nameWithOwner": "hugmesh/example-ui",
+                  "visibility": "PUBLIC",
+                  "isPrivate": false
+                },
+                "labels": {
+                  "nodes": [
+                    {
+                      "name": "bug"
+                    },
+                    {
+                      "name": "help wanted"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "id": "PVTI_example05",
+              "type": "DRAFT_ISSUE",
+              "isArchived": false,
+              "updatedAt": "2026-10-15T09:00:00Z",
+              "status": {
+                "name": "Todo"
+              },
+              "priority": null,
+              "size": null,
+              "wave": null,
+              "content": {
+                "__typename": "DraftIssue"
+              }
+            },
+            {
+              "id": "PVTI_example06",
+              "type": "ISSUE",
+              "isArchived": false,
+              "updatedAt": "2026-10-16T09:00:00Z",
+              "status": {
+                "name": "In progress"
+              },
+              "priority": {
+                "name": "P1 High"
+              },
+              "size": {
+                "name": "L"
+              },
+              "wave": {
+                "name": "W2"
+              },
+              "content": {
+                "__typename": "Issue",
+                "title": "A title from a private repository that must never be published",
+                "number": 5,
+                "url": "https://github.com/hugmesh/example-private/issues/5",
+                "state": "OPEN",
+                "updatedAt": "2026-10-16T08:00:00Z",
+                "repository": {
+                  "nameWithOwner": "hugmesh/example-private",
+                  "visibility": "PRIVATE",
+                  "isPrivate": true
+                },
+                "labels": {
+                  "nodes": []
+                }
+              }
+            },
+            {
+              "id": "PVTI_example07",
+              "type": "REDACTED",
+              "isArchived": false,
+              "updatedAt": "2026-10-17T09:00:00Z",
+              "status": null,
+              "priority": null,
+              "size": null,
+              "wave": null,
+              "content": null
+            },
+            {
+              "id": "PVTI_example08",
+              "type": "ISSUE",
+              "isArchived": false,
+              "updatedAt": "2026-10-18T09:00:00Z",
+              "status": {
+                "name": "Done testing"
+              },
+              "priority": {
+                "name": "P3 Post-release"
+              },
+              "size": {
+                "name": "L"
+              },
+              "wave": {
+                "name": "W1"
+              },
+              "content": {
+                "__typename": "Issue",
+                "title": "Publish the library to the package registry",
+                "number": 3,
+                "url": "https://github.com/example-org/shared-lib/issues/3",
+                "state": "CLOSED",
+                "updatedAt": "2026-10-18T08:00:00Z",
+                "repository": {
+                  "nameWithOwner": "example-org/shared-lib",
+                  "visibility": "PUBLIC",
+                  "isPrivate": false
+                },
+                "labels": {
+                  "nodes": [
+                    {
+                      "name": "documentation"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
