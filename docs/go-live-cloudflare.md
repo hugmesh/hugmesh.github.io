@@ -362,6 +362,7 @@ longer — and if you do, add **both** of these, in this order, under Rules → 
 or (http.request.uri.path eq "/index.html")
 or (http.request.uri.path eq "/404.html")
 or (starts_with(http.request.uri.path, "/assets/content/"))
+or (http.request.uri.path eq "/assets/board.json")
 ```
 → Cache eligibility: **Bypass cache**
 
@@ -380,6 +381,13 @@ Why each entry is in that list:
   **deletes and regenerates the whole tree every time** under names that never change
   (`scripts/build-content.mjs:346-347`, `:423-425`, `:456-457`, `:470`). Caching it hard
   means a documentation change ships and is invisible.
+- `/assets/board.json` is the Project board page's data (`scripts/fetch-board.mjs`). It
+  keeps the same name in every build and changes on most hourly runs. The page asks for
+  it with `cache: 'no-cache'` (`src/app/board/board.service.ts`), so a browser revalidates
+  its copy every time, but that only helps if the edge does not answer from a stale copy
+  of its own. The file also carries a `schema` number: a page that loads a file in a
+  shape it was not written for says "this page is out of date, reload" instead of
+  rendering it, so a page and a file from two different deploys never show a wrong list.
 
 **Rule 2 — "docs: cache the hashed bundles"**
 

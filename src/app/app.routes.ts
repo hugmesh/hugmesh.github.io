@@ -36,6 +36,13 @@ export const routes: Routes = [
     title: 'Download HugMesh Studio — HugMesh Documentation',
   },
   {
+    // The organisation's GitHub project board, as a list: build-time data in
+    // assets/board.json (scripts/fetch-board.mjs), never fetched from GitHub here.
+    path: 'board',
+    loadComponent: () => import('./board/board.component').then((m) => m.BoardComponent),
+    title: 'Project board — HugMesh Documentation',
+  },
+  {
     // Section index, e.g. /tutorials. Guarded by the closed section list so a
     // typo'd URL takes the 404 route instead of rendering an empty section.
     path: ':section',

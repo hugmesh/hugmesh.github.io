@@ -2,7 +2,7 @@
   <header class="head">
     <h1>Project board</h1>
     <p class="lede">
-      The work on HugMesh in one list: every open task and bug across the repositories, and
+      The work on HugMesh in one list: the open tasks and bugs in the public repositories, and
       what is already done. It is a copy of the project board on GitHub, made each time this
       site is built.
     </p>
@@ -26,8 +26,7 @@
         <ul class="counts" data-testid="status-counts">
           @for (c of counts(); track c.label) {
             <li>
-              <span class="count-n">{{ c.count }}</span>
-              <span class="count-label">{{ c.label }}</span>
+              <span class="count-n">{{ c.count }}</span>&ngsp;<span class="count-label">{{ c.label }}</span>
             </li>
           }
         </ul>
@@ -123,7 +122,7 @@
                 <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
               <span class="group-name">{{ g.label }}</span>
-              <span class="group-count" data-testid="group-count">{{ countText(g) }}<span class="sr"> {{ g.rows.length === 1 ? 'item' : 'items' }}</span></span>
+              <span class="group-count" data-testid="group-count">{{ countText(g) }}<span class="visually-hidden"> {{ g.rows.length === 1 ? 'item' : 'items' }}</span></span>
             </button>
           </h2>
           <div class="group-body" [id]="g.id" [hidden]="!open">
@@ -138,7 +137,7 @@
                         <span class="kind">pull request</span>
                       }
                       @if (row.item.priority; as p) {
-                        <span class="tag"><span class="sr">Priority: </span>{{ p }}</span>
+                        <span class="tag"><span class="visually-hidden">Priority: </span>{{ p }}</span>
                       }
                       @if (row.item.size; as s) {
                         <span class="tag">Size {{ s }}</span>
@@ -148,7 +147,7 @@
                       }
                       @if (row.item.labels.length) {
                         <span class="labels">
-                          <span class="sr">Labels: </span>
+                          <span class="visually-hidden">Labels: </span>
                           @for (label of row.item.labels; track label) {
                             <span class="label">{{ label }}</span>
                           }

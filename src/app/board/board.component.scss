@@ -278,6 +278,9 @@
 .row-title {
   font-weight: 700;
   line-height: 1.35;
+  // A title can be one long word (a path, an address): it wraps instead of
+  // pushing the page sideways on a phone.
+  overflow-wrap: anywhere;
 }
 
 .row-meta {
@@ -293,6 +296,7 @@
 
 .ref {
   font-family: t.$font-mono;
+  overflow-wrap: anywhere;
 }
 
 .tag {
@@ -307,6 +311,10 @@
   display: inline-flex;
   flex-wrap: wrap;
   gap: 0.3rem 0.6rem;
+}
+
+.label {
+  overflow-wrap: anywhere;
 }
 
 .label::before {

@@ -161,7 +161,9 @@
     <p class="section-lede">
       Every service is a separate repository with its own build and its own release.
       Start with the generator if you are standing up a cluster; the
-      <a routerLink="/reference">Reference section</a> has a page per service.
+      <a routerLink="/reference">Reference section</a> has a page per service. The
+      <a routerLink="/board" data-testid="home-board">project board</a> lists what is
+      being worked on across them.
     </p>
     <ul class="repo-grid">
       @for (repo of repos; track repo.name) {

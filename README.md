@@ -142,6 +142,69 @@ recorded commit.
 short name, with no dashes, slashes, repository names, ticket numbers or shouting.
 `npm run test:releases` runs one failing fixture per rule (`scripts/manifest.test.mjs`).
 
+## The project board
+
+The Project board page (`/board`) lists the issues and pull requests on the
+organisation's GitHub Project, *Hugmesh Launch* (`github.com/orgs/hugmesh/projects/1`),
+grouped by their Status. A browser cannot read an organisation Project without signing
+in to the GitHub API, so the page never talks to GitHub. Like the release data on the
+Downloads page, the list is made during the Pages build and served as a file:
+
+```
+GitHub Project (GraphQL)  ──►  scripts/fetch-board.mjs  ──►  src/assets/board.json  ──►  /board
+                               (pages.yml, every build)       (not committed)
+```
+
+**What is published.** Per item: title, issue or pull request, repository, number,
+address, open/closed/merged, Status, Priority, Size, Wave, label names and the time it
+last changed. The query asks GitHub for nothing else, so these never reach the build:
+bodies, comments, assignees, the free-text Code/branch field, Team, Iteration and the
+dates. An item is **left out and counted** when it is a draft note (no address), when
+its repository is not public (the same query asks each repository's visibility, and an
+item the token cannot see arrives with no content), or when it contains a word from
+the private denylist on a machine that has one. `src/app/board/board-data.ts` is the
+one validator for the file; the build refuses to write, and the page refuses to show,
+a file with a key it does not know.
+
+**When there is no board.** With no token (a fork, a local build, or this repository
+until the secret below is added) the step writes a small file that says
+`"state": "unavailable"` with a reason, the build stays green, and the page says the
+board is not published here yet and links to GitHub. A board that cannot be read
+**whole** (a network error, a refusal, GraphQL errors beside partial data, a page with
+a hole in it, a count that does not add up) is never published as if it were all of
+it: the file says "unavailable" with the reason and the run log shows a `::warning::`.
+On the hourly run a temporary failure (`fetch-failed`, `incomplete`) does not replace a
+good live board; `scripts/published-data-changed.mjs` holds that rule.
+
+**The one secret the operator adds.** `BOARD_READ_TOKEN`, as an Actions secret:
+
+- Where: this repository, *Settings → Secrets and variables → Actions → New repository
+  secret* (or an organisation secret that is granted to this repository only).
+- What: a token that can read Projects and nothing else. Either
+  - a **fine-grained** token with *Resource owner* `hugmesh`, *Repository access*
+    "Public repositories", and *Organization permissions → Projects: Read-only*
+    (the organisation may have to approve it), or
+  - a **classic** token with only the `read:project` scope.
+- Its account must be able to see the board. A token that can also read the private
+  repository is not needed: those items are dropped either way.
+
+Only the "Fetch the project board" step in `.github/workflows/pages.yml` receives the
+secret, in its own environment, before `npm ci` has put any third-party code on the
+runner. `scripts/pages-workflow.test.mjs` fails if that changes. The token is never an
+argument and is never printed, and the public file and log hold fixed reason words,
+never GitHub's own error text.
+
+To try it locally, without putting the token in shell history:
+
+```bash
+read -rs BOARD_READ_TOKEN && export BOARD_READ_TOKEN
+npm run fetch:board        # writes src/assets/board.json (git-ignored)
+unset BOARD_READ_TOKEN
+```
+
+Without the variable it writes the "unavailable" file. With no file at all (a plain
+`npm start`) the page says the same: the board is not published here yet.
+
 ## Local development
 
 ```bash
@@ -183,6 +246,8 @@ starting with an underscore — which is how Angular names some chunks) and veri
 | `scripts/build-content.mjs` | renders `content/` → `src/assets/content/` |
 | `scripts/spa-fallback.mjs` | post-build: `404.html`, `.nojekyll`, CNAME assertion |
 | `scripts/serve-dist.mjs` | local preview with Pages semantics |
+| `scripts/fetch-board.mjs` | Pages build: the project board → `src/assets/board.json` |
+| `src/app/board/` | the Project board page, and the one validator for its data |
 | `docs/go-live-cloudflare.md` | the Cloudflare + Pages go-live runbook |
 | `src/app/content/` | the document renderer, section index and content service |
 | `src/app/layout/` | header, section rail, footer |

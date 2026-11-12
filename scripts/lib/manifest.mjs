@@ -44,7 +44,7 @@ export const SECTION_IDS = new Set(SECTIONS.map((s) => s.id));
 
 /** Routes the app serves that are not documents or section indexes. A group may
  *  list them (Get started lists /downloads as its first step). */
-export const STANDALONE_ROUTES = ['/', '/search', '/downloads'];
+export const STANDALONE_ROUTES = ['/', '/search', '/downloads', '/board'];
 
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const GROUP_ID_RE = SLUG_RE;
