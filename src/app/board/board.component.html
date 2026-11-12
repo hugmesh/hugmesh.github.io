@@ -1,0 +1,209 @@
+<main id="maincontent" class="board">
+  <header class="head">
+    <h1>Project board</h1>
+    <p class="lede">
+      The work on HugMesh in one list: every open task and bug across the repositories, and
+      what is already done. It is a copy of the project board on GitHub, made each time this
+      site is built.
+    </p>
+  </header>
+
+  @switch (state()) {
+    @case ('loading') {
+      <p class="state" role="status" aria-live="polite">Loading the board…</p>
+    }
+    @case ('ready') {
+      @let d = data()!;
+      <p class="how">
+        Open work comes first, and finished work is folded away at the end. Each title opens its
+        issue or pull request on GitHub in a new tab. Beside it are the repository and number,
+        then the item's priority, its size (a rough estimate of the work) and its wave (a batch
+        of work planned together).
+      </p>
+
+      <section class="glance" aria-labelledby="glance-title">
+        <h2 id="glance-title">Items in each status</h2>
+        <ul class="counts" data-testid="status-counts">
+          @for (c of counts(); track c.label) {
+            <li>
+              <span class="count-n">{{ c.count }}</span>
+              <span class="count-label">{{ c.label }}</span>
+            </li>
+          }
+        </ul>
+        <p class="facts" data-testid="board-facts">
+          {{ listed() }}
+          @if (updated(); as u) {
+            Updated <time [attr.datetime]="u.iso" data-testid="board-updated">{{ u.text }}</time>.
+          }
+          @if (d.project.public) {
+            <a [href]="d.project.url" target="_blank" rel="noopener noreferrer" data-testid="board-on-github">The board on GitHub</a>
+            is always current.
+          }
+        </p>
+        @if (leftOut(); as note) {
+          <p class="facts" data-testid="board-left-out">{{ note }}</p>
+        }
+      </section>
+
+      <section class="filters" aria-labelledby="filters-title">
+        <h2 id="filters-title" class="visually-hidden">Filter the list</h2>
+        <div class="filter-grid">
+          <div class="field field-find">
+            <label for="board-find">Find</label>
+            <input
+              #find
+              id="board-find"
+              type="search"
+              autocomplete="off"
+              spellcheck="false"
+              placeholder="A word from a title, a repository or a label"
+              [value]="filters().q"
+              (input)="setFilter('q', find.value)"
+              data-testid="board-find"
+            />
+          </div>
+          <div class="field">
+            <label for="board-status">Status</label>
+            <select #status id="board-status" (change)="setFilter('status', status.value)" data-testid="board-status">
+              @for (o of statusOptions(); track o.value) {
+                <option [value]="o.value" [selected]="filters().status === o.value">{{ o.label }}</option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label for="board-priority">Priority</label>
+            <select #priority id="board-priority" (change)="setFilter('priority', priority.value)" data-testid="board-priority">
+              @for (o of priorityOptions(); track o.value) {
+                <option [value]="o.value" [selected]="filters().priority === o.value">{{ o.label }}</option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label for="board-wave">Wave</label>
+            <select #wave id="board-wave" (change)="setFilter('wave', wave.value)" data-testid="board-wave">
+              @for (o of waveOptions(); track o.value) {
+                <option [value]="o.value" [selected]="filters().wave === o.value">{{ o.label }}</option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label for="board-repo">Repository</label>
+            <select #repo id="board-repo" (change)="setFilter('repo', repo.value)" data-testid="board-repo">
+              @for (o of repoOptions(); track o.value) {
+                <option [value]="o.value" [selected]="filters().repo === o.value">{{ o.label }}</option>
+              }
+            </select>
+          </div>
+        </div>
+        <div class="filter-foot">
+          <p class="filter-summary" role="status" aria-live="polite" data-testid="board-summary">{{ summary() }}</p>
+          @if (active()) {
+            <button type="button" class="clear" (click)="clear(find)" data-testid="board-clear">Clear filters</button>
+          }
+        </div>
+      </section>
+
+      @if (groups().length === 0) {
+        <p class="state" data-testid="board-empty">Nothing on the board matches these filters.</p>
+      }
+
+      @for (g of groups(); track g.id) {
+        @let open = isOpen(g);
+        <section class="group" [attr.data-status]="g.label">
+          <h2>
+            <button
+              type="button"
+              class="group-toggle"
+              [attr.aria-expanded]="open"
+              [attr.aria-controls]="g.id"
+              (click)="toggle(g)"
+            >
+              <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              <span class="group-name">{{ g.label }}</span>
+              <span class="group-count" data-testid="group-count">{{ countText(g) }}<span class="sr"> {{ g.rows.length === 1 ? 'item' : 'items' }}</span></span>
+            </button>
+          </h2>
+          <div class="group-body" [id]="g.id" [hidden]="!open">
+            @if (open) {
+              <ul class="rows">
+                @for (row of g.rows; track row.item.url) {
+                  <li class="row">
+                    <a class="row-title" [href]="row.item.url" target="_blank" rel="noopener noreferrer">{{ row.item.title }}</a>
+                    <p class="row-meta">
+                      <span class="ref">{{ row.ref }}</span>
+                      @if (row.item.type === 'pull') {
+                        <span class="kind">pull request</span>
+                      }
+                      @if (row.item.priority; as p) {
+                        <span class="tag"><span class="sr">Priority: </span>{{ p }}</span>
+                      }
+                      @if (row.item.size; as s) {
+                        <span class="tag">Size {{ s }}</span>
+                      }
+                      @if (row.item.wave; as w) {
+                        <span class="tag">Wave {{ w }}</span>
+                      }
+                      @if (row.item.labels.length) {
+                        <span class="labels">
+                          <span class="sr">Labels: </span>
+                          @for (label of row.item.labels; track label) {
+                            <span class="label">{{ label }}</span>
+                          }
+                        </span>
+                      }
+                    </p>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        </section>
+      }
+    }
+    @case ('other-version') {
+      <div class="notice" data-testid="board-other-version">
+        <h2>This page is out of date</h2>
+        <p>
+          The board on this site was written for a different version of this page than the one
+          your browser has loaded, so nothing is shown rather than a wrong list. Reload the page
+          to see the board.
+        </p>
+        <p>
+          If this message stays,
+          <a [href]="boardUrl" target="_blank" rel="noopener noreferrer">open the project board on GitHub</a>.
+        </p>
+      </div>
+    }
+    @case ('invalid') {
+      <div class="notice" data-testid="board-invalid">
+        <h2>The board could not be shown</h2>
+        <p>
+          The board data on this site is damaged, so nothing is shown rather than a wrong list.
+          <a [href]="boardUrl" target="_blank" rel="noopener noreferrer">Open the project board on GitHub</a>,
+          where it is always current.
+        </p>
+      </div>
+    }
+    @default {
+      <div class="notice" data-testid="board-unavailable">
+        @if (neverFetched()) {
+          <h2>The board is not published here yet</h2>
+          <p>This copy of the site was built without the project board, so there is no list to show.</p>
+        } @else {
+          <h2>The board could not be read</h2>
+          <p>
+            The board could not be read when this site was last built, so no list is shown rather
+            than part of one.
+          </p>
+        }
+        <p>
+          <a [href]="boardUrl" target="_blank" rel="noopener noreferrer">Open the project board on GitHub</a>,
+          where it is always current.
+        </p>
+      </div>
+    }
+  }
+</main>

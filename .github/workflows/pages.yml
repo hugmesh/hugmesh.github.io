@@ -44,6 +44,14 @@
 #     from the Actions tab if that happens.
 #   * workflow_dispatch: a person asks for a refresh.
 # The payload of a dispatch is never trusted: the fetch step re-reads GitHub itself.
+#
+# THE PROJECT BOARD (the Project board page). The page reads assets/board.json, which
+# the "Fetch the project board" step below builds on every run from the organisation's
+# GitHub Project. That is the one thing here that needs a secret IN THIS REPOSITORY:
+# BOARD_READ_TOKEN, a token that can read Projects and nothing else (the README says
+# how to make it and where to put it). Without it the build still passes and the page
+# says the board is not shown here. The hourly run redeploys when the board changed,
+# exactly as it does for a release.
 name: Deploy Pages
 
 on:
@@ -62,6 +70,8 @@ on:
 #           configure-pages writes only with `enablement: true`, which is not set).
 #           It runs npm ci, the release fetch and ng build hourly and on every
 #           dispatch, so it must never hold a write scope or an OIDC token.
+#           Its one secret, BOARD_READ_TOKEN, is not a token scope: it is handed to
+#           a single step, in that step's environment, before npm ci has run.
 #   deploy: pages: write and id-token: write, nothing else; it runs no repository code.
 # Uploading the Pages artifact and deploy-pages' artifact lookup use the Actions
 # runtime token, not GITHUB_TOKEN, so neither job needs `actions: read`.
@@ -83,7 +93,7 @@ jobs:
       pages: read
     outputs:
       pages_ready: ${{ steps.probe.outputs.ready }}
-      release_data_changed: ${{ steps.changed.outputs.changed }}
+      data_changed: ${{ steps.changed.outputs.changed }}
     steps:
       - uses: actions/checkout@v4
 
@@ -91,6 +101,29 @@ jobs:
         with:
           node-version: '24.x'
           cache: npm
+
+      - name: Fetch the project board (read-only, before any dependency is installed)
+        # Writes src/assets/board.json for the Project board page; the build copies it
+        # to assets/. An organisation Project cannot be read with this workflow's own
+        # token, so this is the ONE step that is handed a secret: BOARD_READ_TOKEN, a
+        # token that can only read Projects (README, "The project board").
+        #
+        # It runs HERE, before `npm ci`, on purpose. Nothing from node_modules has
+        # run yet, and the script imports only Node itself and files of this
+        # repository, so no third-party code is ever in a process that holds the
+        # token. The token is in the environment of this step alone: never an
+        # argument, never echoed, and no later step can read it.
+        #
+        # This step does not fail the build over the board. With no secret (a fork,
+        # or this repository until the secret is added) it writes a small file that
+        # says "unavailable", and the page says the board is not shown here and
+        # links to GitHub. If the board cannot be read WHOLE it does the same and
+        # emits a ::warning::, because half a board must never be published as if it
+        # were all of it. Items from a repository that is not public are left out
+        # and counted; the script header lists exactly what is published.
+        env:
+          BOARD_READ_TOKEN: ${{ secrets.BOARD_READ_TOKEN }}
+        run: node scripts/fetch-board.mjs
 
       - run: npm ci
 
@@ -169,6 +202,18 @@ jobs:
             const n = data.images.filter((i) => i.version).length;
             console.log('releases.json OK · Studio ' + (data.studio ? data.studio.version : 'not published') + ' · images ' + n + '/' + data.images.length + ' published');
           "
+          # The Project board page's data must be in the artifact too, and must be what
+          # the page can read (the same validator). A file that says "unavailable" is
+          # valid: the page then says the board is not shown here.
+          [ -f assets/board.json ] || { echo "::error::assets/board.json missing from the Pages artifact"; exit 1; }
+          node --input-type=module -e "
+            import { readFileSync } from 'node:fs';
+            import { validateBoardData } from '../../src/app/board/board-data.ts';
+            const data = JSON.parse(readFileSync('assets/board.json', 'utf8'));
+            const errors = validateBoardData(data);
+            if (errors.length) { for (const e of errors) console.log('::error::board.json: ' + e); process.exit(1); }
+            console.log('board.json OK · ' + (data.state === 'ok' ? data.items.length + ' items' : 'not published (' + data.reason + ')'));
+          "
 
       - id: probe
         name: Is Pages configured on this repository?
@@ -214,25 +259,28 @@ jobs:
           fi
 
       - id: changed
-        name: On the hourly run, did the release data change?
-        # A scheduled run exists only to pick up new releases. If what it fetched
-        # equals what the live site already serves (ignoring the generation time),
-        # do not redeploy an identical site every hour. Any doubt (live file
-        # unreachable, unparsable) counts as changed, so the failure mode is one
-        # redundant deploy, never a missed release.
+        name: On the hourly run, did the release data or the board change?
+        # A scheduled run exists only to pick up new releases and board changes. If
+        # what it fetched equals what the live site already serves (ignoring the
+        # generation times), do not redeploy an identical site every hour. Any doubt
+        # (a live file unreachable or unparsable, the script failing) counts as
+        # changed, so the failure mode is one redundant deploy, never a missed
+        # release. The rule, and its one exception (a build that could not reach
+        # GitHub for the board does not replace a good live board), is
+        # scripts/published-data-changed.mjs.
         if: github.event_name == 'schedule' && steps.probe.outputs.ready == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           base="$(gh api "repos/${GITHUB_REPOSITORY}/pages" --jq .html_url)"
-          if curl -fsSL --max-time 30 "${base%/}/assets/releases.json" -o "$RUNNER_TEMP/live.json" &&
-             node -e '
-               const fs = require("node:fs");
-               const strip = (f) => { const d = JSON.parse(fs.readFileSync(f, "utf8")); delete d.generated; return JSON.stringify(d); };
-               process.exit(strip(process.argv[1]) === strip(process.argv[2]) ? 0 : 1);
-             ' "$RUNNER_TEMP/live.json" dist/browser/assets/releases.json; then
+          live="$RUNNER_TEMP/live"
+          mkdir -p "$live"
+          for f in releases.json board.json; do
+            curl -fsSL --max-time 30 "${base%/}/assets/$f" -o "$live/$f" || rm -f "$live/$f"
+          done
+          if node scripts/published-data-changed.mjs "$live" dist/browser/assets; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Release data unchanged since the last deploy; skipping this hourly deploy."
+            echo "::notice::Release data and project board unchanged since the last deploy; skipping this hourly deploy."
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
@@ -247,7 +295,7 @@ jobs:
 
   deploy:
     needs: build
-    if: needs.build.outputs.pages_ready == 'true' && needs.build.outputs.release_data_changed != 'false'
+    if: needs.build.outputs.pages_ready == 'true' && needs.build.outputs.data_changed != 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

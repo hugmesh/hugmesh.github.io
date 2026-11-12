@@ -1,0 +1,295 @@
+{
+  "data": {
+    "organization": {
+      "projectV2": {
+        "title": "Example work tracker",
+        "url": "https://github.com/orgs/hugmesh/projects/1",
+        "public": true,
+        "statusField": {
+          "options": [
+            {
+              "name": "Proposed"
+            },
+            {
+              "name": "Todo"
+            },
+            {
+              "name": "In progress"
+            },
+            {
+              "name": "Ready for testing"
+            },
+            {
+              "name": "Done testing"
+            },
+            {
+              "name": "Accepted"
+            }
+          ]
+        },
+        "priorityField": {
+          "options": [
+            {
+              "name": "P0 Release blocker"
+            },
+            {
+              "name": "P1 High"
+            },
+            {
+              "name": "P2 Medium"
+            },
+            {
+              "name": "P3 Post-release"
+            }
+          ]
+        },
+        "sizeField": {
+          "options": [
+            {
+              "name": "XS"
+            },
+            {
+              "name": "S"
+            },
+            {
+              "name": "M"
+            },
+            {
+              "name": "L"
+            },
+            {
+              "name": "XL"
+            }
+          ]
+        },
+        "waveField": {
+          "options": [
+            {
+              "name": "W1"
+            },
+            {
+              "name": "W2"
+            },
+            {
+              "name": "W3"
+            }
+          ]
+        },
+        "items": {
+          "totalCount": 14,
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "Y3Vyc29yOmV4YW1wbGUxNA=="
+          },
+          "nodes": [
+            {
+              "id": "PVTI_example09",
+              "type": "ISSUE",
+              "isArchived": false,
+              "updatedAt": "2026-10-19T09:00:00Z",
+              "status": null,
+              "priority": null,
+              "size": null,
+              "wave": null,
+              "content": {
+                "__typename": "Issue",
+                "title": "Explain the error when the disk is full",
+                "number": 15,
+                "url": "https://github.com/hugmesh/example-api/issues/15",
+                "state": "OPEN",
+                "updatedAt": "2026-10-19T08:00:00Z",
+                "repository": {
+                  "nameWithOwner": "hugmesh/example-api",
+                  "visibility": "PUBLIC",
+                  "isPrivate": false
+                },
+                "labels": {
+                  "nodes": []
+                }
+              }
+            },
+            {
+              "id": "PVTI_example10",
+              "type": "ISSUE",
+              "isArchived": false,
+              "updatedAt": "2026-10-20T09:00:00Z",
+              "status": {
+                "name": "Accepted"
+              },
+              "priority": {
+                "name": "P1 High"
+              },
+              "size": {
+                "name": "XL"
+              },
+              "wave": {
+                "name": "W1"
+              },
+              "content": {
+                "__typename": "Issue",
+                "title": "Rotate the signing key every ninety days",
+                "number": 2,
+                "url": "https://github.com/hugmesh/example-api/issues/2",
+                "state": "CLOSED",
+                "updatedAt": "2026-10-20T08:00:00Z",
+                "repository": {
+                  "nameWithOwner": "hugmesh/example-api",
+                  "visibility": "PUBLIC",
+                  "isPrivate": false
+                },
+                "labels": {
+                  "nodes": []
+                }
+              }
+            },
+            {
+              "id": "PVTI_example11",
+              "type": "ISSUE",
+              "isArchived": false,
+              "updatedAt": "2026-10-21T09:00:00Z",
+              "status": {
+                "name": "In progress"
+              },
+              "priority": {
+                "name": "P0 Release blocker"
+              },
+              "size": null,
+              "wave": {
+                "name": "W2"
+              },
+              "content": {
+                "__typename": "Issue",
+                "title": "Keyboard focus is lost after closing the menu",
+                "number": 40,
+                "url": "https://github.com/hugmesh/example-ui/issues/40",
+                "state": "OPEN",
+                "updatedAt": "2026-10-21T08:00:00Z",
+                "repository": {
+                  "nameWithOwner": "hugmesh/example-ui",
+                  "visibility": "PUBLIC",
+                  "isPrivate": false
+                },
+                "labels": {
+                  "nodes": [
+                    {
+                      "name": "bug"
+                    },
+                    {
+                      "name": "good first issue"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "id": "PVTI_example12",
+              "type": "ISSUE",
+              "isArchived": false,
+              "updatedAt": "2026-10-22T09:00:00Z",
+              "status": {
+                "name": "Todo"
+              },
+              "priority": {
+                "name": "P2 Medium"
+              },
+              "size": {
+                "name": "M"
+              },
+              "wave": {
+                "name": "W2"
+              },
+              "content": {
+                "__typename": "Issue",
+                "title": "A title from an internal repository that must never be published",
+                "number": 9,
+                "url": "https://github.com/hugmesh/example-internal/issues/9",
+                "state": "OPEN",
+                "updatedAt": "2026-10-22T08:00:00Z",
+                "repository": {
+                  "nameWithOwner": "hugmesh/example-internal",
+                  "visibility": "INTERNAL",
+                  "isPrivate": true
+                },
+                "labels": {
+                  "nodes": []
+                }
+              }
+            },
+            {
+              "id": "PVTI_example13",
+              "type": "ISSUE",
+              "isArchived": false,
+              "updatedAt": "2026-10-23T09:00:00Z",
+              "status": {
+                "name": "Proposed"
+              },
+              "priority": {
+                "name": "P3 Post-release"
+              },
+              "size": {
+                "name": "S"
+              },
+              "wave": {
+                "name": "W3"
+              },
+              "content": {
+                "__typename": "Issue",
+                "title": "Offer a light theme in the header",
+                "number": 41,
+                "url": "https://github.com/hugmesh/example-ui/issues/41",
+                "state": "OPEN",
+                "updatedAt": "2026-10-23T08:00:00Z",
+                "repository": {
+                  "nameWithOwner": "hugmesh/example-ui",
+                  "visibility": "PUBLIC",
+                  "isPrivate": false
+                },
+                "labels": {
+                  "nodes": [
+                    {
+                      "name": "enhancement"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "id": "PVTI_example14",
+              "type": "ISSUE",
+              "isArchived": false,
+              "updatedAt": "2026-10-30T12:30:00Z",
+              "status": {
+                "name": "Done testing"
+              },
+              "priority": {
+                "name": "P2 Medium"
+              },
+              "size": {
+                "name": "M"
+              },
+              "wave": {
+                "name": "W2"
+              },
+              "content": {
+                "__typename": "Issue",
+                "title": "The export of a large room times out before the archive is complete, and the page then shows a spinner that never ends instead of an error the member can act on",
+                "number": 16,
+                "url": "https://github.com/hugmesh/example-api/issues/16",
+                "state": "CLOSED",
+                "updatedAt": "2026-10-24T08:00:00Z",
+                "repository": {
+                  "nameWithOwner": "hugmesh/example-api",
+                  "visibility": "PUBLIC",
+                  "isPrivate": false
+                },
+                "labels": {
+                  "nodes": []
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

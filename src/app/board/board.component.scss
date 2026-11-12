@@ -1,0 +1,315 @@
+@use 'tokens' as t;
+
+:host {
+  display: block;
+  position: relative;
+  z-index: t.$z-content;
+}
+
+// Colours are the runtime --hug-* tokens only, so the page follows whatever theme the
+// site has. The layout has NO viewport media queries: columns wrap by the width they
+// are given, so a narrow container and a narrow phone lay out the same way.
+.board {
+  box-sizing: border-box;
+  max-width: 60rem;
+  margin: 1.5rem auto 0;
+  margin-inline: max(clamp(0.75rem, 2vw, 1.5rem), calc((100% - 60rem) / 2));
+  padding: clamp(1rem, 3vw, 2.25rem);
+  // The page sits over a moving background: a near-opaque panel keeps 250 rows readable.
+  background: var(--hug-bg-1);
+  background: color-mix(in srgb, var(--hug-bg-0) 86%, transparent);
+  border: 1px solid var(--hug-border);
+  border-radius: t.$radius-page;
+}
+
+// The reader asked for more contrast or less motion: nothing moving behind the text.
+@media (prefers-contrast: more), (prefers-reduced-motion: reduce) {
+  .board {
+    background: var(--hug-bg-0);
+  }
+}
+
+.head h1 {
+  margin: 0 0 0.5rem;
+}
+
+.lede {
+  max-width: 68ch;
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.how {
+  max-width: 68ch;
+  margin: 0.75rem 0 0;
+  color: var(--hug-text-muted);
+}
+
+.state {
+  margin: 2rem 0 0;
+  color: var(--hug-text-muted);
+}
+
+.notice {
+  margin-top: 1.5rem;
+  padding: 1rem 1.25rem;
+  background: var(--hug-bg-1);
+  border: 1px solid var(--hug-border);
+  border-radius: t.$radius-card;
+
+  h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.15rem;
+  }
+
+  p {
+    max-width: 66ch;
+    margin: 0 0 0.6rem;
+  }
+
+  p:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// ── the board at a glance ────────────────────────────────────────────────────
+.glance {
+  margin-top: 1.5rem;
+
+  h2 {
+    margin: 0 0 0.5rem;
+    color: var(--hug-text-muted);
+    font-family: t.$font-sans;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+}
+
+.counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    padding: 0.3rem 0.7rem;
+    background: var(--hug-bg-1);
+    border: 1px solid var(--hug-border);
+    border-radius: t.$radius-sm;
+  }
+}
+
+.count-n {
+  font-family: t.$font-fancy;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.count-label {
+  color: var(--hug-text-muted);
+  font-size: 0.875rem;
+}
+
+.facts {
+  max-width: 72ch;
+  margin: 0.75rem 0 0;
+  color: var(--hug-text-muted);
+  font-size: 0.9rem;
+}
+
+// ── filters ──────────────────────────────────────────────────────────────────
+.filters {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: var(--hug-bg-1);
+  border: 1px solid var(--hug-border);
+  border-radius: t.$radius-card;
+}
+
+.filter-grid {
+  display: grid;
+  // Two columns on a phone, four on a desktop, with no breakpoint.
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.25rem), 1fr));
+  gap: 0.75rem;
+}
+
+.field {
+  min-width: 0;
+
+  label {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--hug-text-muted);
+    font-size: 0.8125rem;
+    font-weight: 700;
+  }
+
+  input,
+  select {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    // 44px: a touch target on every pointer, not only a coarse one.
+    min-height: 2.75rem;
+    padding: 0.45rem 0.65rem;
+    background: var(--hug-bg-2);
+    border: 1px solid var(--hug-border);
+    border-radius: t.$radius-sm;
+    color: var(--hug-text);
+    font: inherit;
+    // 16px: below that iOS zooms the page when the field takes focus.
+    font-size: 1rem;
+  }
+
+  input::placeholder {
+    color: var(--hug-text-muted);
+    opacity: 1;
+  }
+}
+
+.field-find {
+  grid-column: 1 / -1;
+}
+
+.filter-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-top: 0.75rem;
+}
+
+.filter-summary {
+  margin: 0;
+  color: var(--hug-text-muted);
+  font-size: 0.9rem;
+}
+
+.clear {
+  min-height: 2.75rem;
+  padding: 0.4rem 0.9rem;
+  background: var(--hug-bg-2);
+  border: 1px solid var(--hug-accent-soft);
+  border-radius: t.$radius-sm;
+  color: var(--hug-text);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+// ── groups ───────────────────────────────────────────────────────────────────
+.group {
+  margin-top: 1.5rem;
+
+  h2 {
+    margin: 0;
+    font-size: 1.2rem;
+  }
+}
+
+.group-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.5rem;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--hug-border);
+  color: var(--hug-text);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--hug-bg-1);
+  }
+}
+
+.chevron {
+  flex: 0 0 auto;
+  width: 1.1rem;
+  height: 1.1rem;
+  color: var(--hug-accent-soft);
+  transition: transform t.$transition-base;
+}
+
+.group-toggle[aria-expanded='true'] .chevron {
+  transform: rotate(90deg);
+}
+
+.group-name {
+  min-width: 0;
+}
+
+.group-count {
+  flex: 0 0 auto;
+  margin-inline-start: auto;
+  color: var(--hug-text-muted);
+  font-family: t.$font-sans;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+// ── rows ─────────────────────────────────────────────────────────────────────
+.rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  // Room on every side for the focus ring of the title link.
+  padding: 0.7rem 0.5rem;
+  border-bottom: 1px solid var(--hug-border);
+}
+
+.row-title {
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.6rem;
+  margin: 0.35rem 0 0;
+  color: var(--hug-text-muted);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.ref {
+  font-family: t.$font-mono;
+}
+
+.tag {
+  padding: 0 0.5rem;
+  border: 1px solid var(--hug-border);
+  border-radius: 999px;
+  color: var(--hug-text);
+  white-space: nowrap;
+}
+
+.labels {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.6rem;
+}
+
+.label::before {
+  content: '#';
+  opacity: 0.6;
+}
