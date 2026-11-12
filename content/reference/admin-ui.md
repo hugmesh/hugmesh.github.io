@@ -17,6 +17,8 @@ Its screens cover, among others:
 - the gateways' route access rules and route definitions;
 - backups and restores, including cloud backups;
 - announcements, per-domain themes, and appeals against moderation decisions;
+- mesh join tokens: issuing a signed token that lets a device join, and the list of
+  tokens issued;
 - the ArgoCD dashboard, usage figures and test reports.
 
 ## Where it appears
@@ -29,4 +31,4 @@ Members with the `admin` role. Some screens are for `superadmin` only.
 
 ## More detail
 
-The [`hugmesh-admin-ui` README](https://github.com/hugmesh/hugmesh-admin-ui/blob/main/README.md) has the architecture, the full API and how to build and test it.
+For how it is put together and how to build and test it, see the [`hugmesh-admin-ui` README](https://github.com/hugmesh/hugmesh-admin-ui/blob/main/README.md).

@@ -872,35 +872,54 @@
       "slug": "start-here",
       "title": "Your first mesh, step by step",
       "summary": "The whole path in order, from installing the Studio to your devices joining the mesh. Each step ends with a check.",
-      "authored": "site"
+      "authored": "site",
+      "basis": [
+        {
+          "repo": "hugmesh-generator",
+          "path": "keys-template/provision.json"
+        },
+        {
+          "repo": "hugmesh-generator",
+          "path": "studio/hugmesh_studio/core/platform_info.py"
+        }
+      ]
     },
     {
       "section": "developer-guide",
       "slug": "expanding-the-mesh",
       "title": "Add a service to the mesh",
       "summary": "How a new service reaches a running cluster: the two GitOps lanes and what must change together.",
-      "authored": "site"
+      "authored": "site",
+      "basis": []
     },
     {
       "section": "troubleshooting",
       "slug": "build-failures",
       "title": "Build failures by symptom",
       "summary": "Find the error text you see, then the cause and the fix.",
-      "authored": "site"
+      "authored": "site",
+      "basis": []
     },
     {
       "section": "overview",
       "slug": "what-is-hugmesh",
       "title": "What HugMesh is",
       "summary": "What you get, who it is for, the three ways to run it, and what is still experimental.",
-      "authored": "site"
+      "authored": "site",
+      "basis": [
+        {
+          "repo": ".github",
+          "path": "profile/README.md"
+        }
+      ]
     },
     {
       "section": "overview",
       "slug": "how-it-works",
       "title": "How it works",
       "summary": "The pieces in order: Studio, images, KEYS sticks, the private network, the cluster, the services and sign-in.",
-      "authored": "site"
+      "authored": "site",
+      "basis": []
     },
     {
       "section": "tutorials",
@@ -995,7 +1014,13 @@
       "slug": "gateway",
       "title": "Gateways",
       "summary": "One gateway image in three roles (identity, backend, frontend), and what each overlay adds.",
-      "authored": "site"
+      "authored": "site",
+      "basis": [
+        {
+          "repo": "hugmesh-gateway",
+          "path": "README.md"
+        }
+      ]
     },
     {
       "section": "architecture",
@@ -1202,7 +1227,13 @@
       "slug": "scaffold-archetypes",
       "title": "Starter repos and archetypes",
       "summary": "The starter repositories the Service Store hands out, and the templates they come from.",
-      "authored": "site"
+      "authored": "site",
+      "basis": [
+        {
+          "repo": "hugmesh-admin-bff-api",
+          "path": "src/main/resources/scaffold/README.md"
+        }
+      ]
     },
     {
       "section": "developer-guide",
@@ -1273,7 +1304,8 @@
       "slug": "end-to-end-tests",
       "title": "End-to-end tests",
       "summary": "The browser test pattern every web app shares, then what each repository covers.",
-      "authored": "site"
+      "authored": "site",
+      "basis": []
     },
     {
       "section": "studio",
@@ -1440,7 +1472,13 @@
       "slug": "overview",
       "title": "About the Game Studio",
       "summary": "What the Game Studio is: a browser portal of 20 games, multiplayer sessions, and the RPG and visual-novel makers.",
-      "authored": "site"
+      "authored": "site",
+      "basis": [
+        {
+          "repo": "hugmesh-games",
+          "path": "README.md"
+        }
+      ]
     },
     {
       "section": "games",
@@ -2015,175 +2053,328 @@
       "slug": "login-ui",
       "title": "Sign-in web app",
       "summary": "Sign-in, registration, multi-factor sign-in, and the ban and suspension screens.",
-      "authored": "site"
+      "authored": "site",
+      "basis": [
+        {
+          "repo": "hugmesh-login-ui",
+          "path": "README.md"
+        }
+      ]
     },
     {
       "section": "reference",
       "slug": "mesh-bff",
       "title": "Meshtastic device API",
       "summary": "The Meshtastic node directory and its cache.",
-      "authored": "site"
+      "authored": "site",
+      "basis": [
+        {
+          "repo": "hugmesh-mesh-bff-api",
+          "path": "README.md"
+        }
+      ]
     },
     {
       "section": "reference",
       "slug": "user-mesh-ui",
       "title": "Meshtastic device dashboard",
-      "summary": "Each member's view of their Meshtastic radios. Its screens are not built yet.",
-      "authored": "site"
+      "summary": "Each member's view of their Meshtastic radios. Built, but not yet mounted in the host shell.",
+      "authored": "site",
+      "basis": [
+        {
+          "repo": "hugmesh-user-mesh-ui",
+          "path": "README.md"
+        },
+        {
+          "repo": "hugmesh-host-shell",
+          "path": "src/assets/federation.manifest.prod.json"
+        }
+      ]
     },
     {
       "section": "reference",
       "slug": "character-studio-ui",
       "title": "Avatar creator (2D)",
       "summary": "Build a layered 2D avatar: species, class, colours and expressions.",
-      "authored": "site"
+      "authored": "site",
+      "basis": [
+        {
+          "repo": "hugmesh-character-studio-ui",
+          "path": "README.md"
+        }
+      ]
     },
     {
       "section": "reference",
       "slug": "forum-api",
       "title": "Forum phpBB extension",
       "summary": "A phpBB extension that adds the routes the forum API calls.",
-      "authored": "site"
+      "authored": "site",
+      "basis": [
+        {
+          "repo": "hugmesh-forum-api",
+          "path": "README.md"
+        }
+      ]
     },
     {
       "section": "reference",
       "slug": "character-forge-bff",
       "title": "Character forge (3D)",
       "summary": "Map a 2D visual-novel character onto a 3D character.",
-      "authored": "site"
+      "authored": "site",
+      "basis": [
+        {
+          "repo": "hugmesh-character-forge-bff-api",
+          "path": "README.md"
+        }
+      ]
     },
     {
       "section": "reference",
       "slug": "tube-bff",
       "title": "Video API (LocalTube)",
       "summary": "Who may use LocalTube, and how it is controlled.",
-      "authored": "site"
+      "authored": "site",
+      "basis": [
+        {
+          "repo": "hugmesh-tube-bff-api",
+          "path": "README.md"
+        }
+      ]
     },
     {
       "section": "reference",
       "slug": "owncast-ui",
       "title": "Live streaming console (Owncast)",
       "summary": "Manage the optional Owncast live-streaming server.",
-      "authored": "site"
+      "authored": "site",
+      "basis": [
+        {
+          "repo": "hugmesh-owncast-ui",
+          "path": "README.md"
+        }
+      ]
     },
     {
       "section": "reference",
       "slug": "owncast-bff",
       "title": "Live streaming API (Owncast)",
       "summary": "Who may broadcast on Owncast.",
-      "authored": "site"
+      "authored": "site",
+      "basis": [
+        {
+          "repo": "hugmesh-owncast-bff-api",
+          "path": "README.md"
+        }
+      ]
     },
     {
       "section": "reference",
       "slug": "wiki-ui",
       "title": "Wiki web app",
       "summary": "The wiki and who may read it. Admins, and moderators with the wiki role, can open it.",
-      "authored": "site"
+      "authored": "site",
+      "basis": [
+        {
+          "repo": "hugmesh-wiki-ui",
+          "path": "README.md"
+        }
+      ]
     },
     {
       "section": "reference",
       "slug": "service-catalog-ui",
       "title": "Service catalog console",
       "summary": "The superadmin console for the service catalog.",
-      "authored": "site"
+      "authored": "site",
+      "basis": [
+        {
+          "repo": "hugmesh-superadmin-service-catalog-ui",
+          "path": "README.md"
+        }
+      ]
     },
     {
       "section": "reference",
       "slug": "mod-ui",
       "title": "Moderator console",
       "summary": "Moderation queue, findings, bans, domain lock and the audit trail.",
-      "authored": "site"
+      "authored": "site",
+      "basis": [
+        {
+          "repo": "hugmesh-mod-ui",
+          "path": "README.md"
+        }
+      ]
     },
     {
       "section": "reference",
       "slug": "tube-ui",
       "title": "Video console (LocalTube)",
       "summary": "Manage LocalTube, the optional personal video archive.",
-      "authored": "site"
+      "authored": "site",
+      "basis": [
+        {
+          "repo": "hugmesh-tube-ui",
+          "path": "README.md"
+        }
+      ]
     },
     {
       "section": "reference",
       "slug": "forum-ui",
       "title": "Forum web app",
       "summary": "The forum, backed by a headless phpBB.",
-      "authored": "site"
+      "authored": "site",
+      "basis": [
+        {
+          "repo": "hugmesh-forum-ui",
+          "path": "README.md"
+        }
+      ]
     },
     {
       "section": "reference",
       "slug": "wiki-bff",
       "title": "Wiki API",
       "summary": "The wiki's write path and content store.",
-      "authored": "site"
+      "authored": "site",
+      "basis": [
+        {
+          "repo": "hugmesh-wiki-bff-api",
+          "path": "README.md"
+        }
+      ]
     },
     {
       "section": "reference",
       "slug": "user-ui",
       "title": "User console",
       "summary": "Where members edit their profile, avatar and mini-cards.",
-      "authored": "site"
+      "authored": "site",
+      "basis": [
+        {
+          "repo": "hugmesh-user-ui",
+          "path": "README.md"
+        }
+      ]
     },
     {
       "section": "reference",
       "slug": "admin-ui",
       "title": "Admin console",
       "summary": "The admin console, loaded by the host shell.",
-      "authored": "site"
+      "authored": "site",
+      "basis": [
+        {
+          "repo": "hugmesh-admin-ui",
+          "path": "README.md"
+        }
+      ]
     },
     {
       "section": "reference",
       "slug": "mastodon-ui",
       "title": "Fediverse web app (Mastodon and Akkoma)",
       "summary": "A fediverse client for the mesh's Mastodon or Akkoma server.",
-      "authored": "site"
+      "authored": "site",
+      "basis": [
+        {
+          "repo": "hugmesh-mastodon-ui",
+          "path": "README.md"
+        }
+      ]
     },
     {
       "section": "reference",
       "slug": "actions",
       "title": "Role reconciliation service",
       "summary": "Scheduled jobs that keep roles in step across services, and the registration grant endpoint.",
-      "authored": "site"
+      "authored": "site",
+      "basis": [
+        {
+          "repo": "hugmesh-actions",
+          "path": "README.md"
+        },
+        {
+          "repo": "hugmesh-actions",
+          "path": "src/main/resources/application.yml"
+        }
+      ]
     },
     {
       "section": "reference",
       "slug": "forum-bff",
       "title": "Forum API",
       "summary": "The only path to phpBB. No browser or gateway reaches it directly.",
-      "authored": "site"
+      "authored": "site",
+      "basis": [
+        {
+          "repo": "hugmesh-forum-bff-api",
+          "path": "README.md"
+        }
+      ]
     },
     {
       "section": "reference",
       "slug": "mod-bff",
       "title": "Moderator API",
       "summary": "The moderator API, a deliberately narrow version of the admin API.",
-      "authored": "site"
+      "authored": "site",
+      "basis": [
+        {
+          "repo": "hugmesh-mod-bff-api",
+          "path": "README.md"
+        }
+      ]
     },
     {
       "section": "reference",
       "slug": "matrix-ui",
       "title": "Chat web app (Matrix)",
       "summary": "An Element-like Matrix chat client inside the host shell.",
-      "authored": "site"
+      "authored": "site",
+      "basis": [
+        {
+          "repo": "hugmesh-matrix-ui",
+          "path": "README.md"
+        }
+      ]
     },
     {
       "section": "reference",
       "slug": "user-bff",
       "title": "User API",
       "summary": "The API behind the user console, for any signed-in user.",
-      "authored": "site"
+      "authored": "site",
+      "basis": [
+        {
+          "repo": "hugmesh-user-bff-api",
+          "path": "README.md"
+        }
+      ]
     },
     {
       "section": "reference",
       "slug": "admin-bff",
       "title": "Admin API",
       "summary": "The API behind the admin console: the platform's control plane.",
-      "authored": "site"
+      "authored": "site",
+      "basis": [
+        {
+          "repo": "hugmesh-admin-bff-api",
+          "path": "README.md"
+        }
+      ]
     },
     {
       "section": "reference",
       "slug": "third-party-licences",
       "title": "Third-party assets and licences",
       "summary": "Third-party art, models and code in HugMesh, their licences, and where each attribution file lives.",
-      "authored": "site"
+      "authored": "site",
+      "basis": []
     }
   ]
 }

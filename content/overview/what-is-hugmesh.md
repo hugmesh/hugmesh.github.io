@@ -73,7 +73,7 @@ Some of HugMesh is not finished, and the pages say so:
 - **Per-domain service choices.** The Studio records which services each domain wants,
   but the cluster does not yet enforce a different choice per domain. See
   [Choose which services run](/operations/optional-services).
-- **The Meshtastic dashboard** has its back end but not yet its screens. See
+- **The Meshtastic dashboard** is built, but the host shell does not load it yet. See
   [Meshtastic device dashboard](/reference/user-mesh-ui).
 
 HugMesh is MIT licensed. The source is at [github.com/hugmesh](https://github.com/hugmesh).

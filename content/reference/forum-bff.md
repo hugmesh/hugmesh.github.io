@@ -16,8 +16,11 @@ In the backend namespace, behind the gateway, at `/bff/forum/`.
 
 ## Who can use it
 
-Members with the forum role. Each operation then checks the role it needs, and the
-privileged ones ask for a second sign-in factor.
+Members with the `forum` role, and admins. Each operation then checks the role it
+needs: moderation needs `admin`, or `mod` together with `forum`, and paths under
+`/bff/forum/admin/` need `admin`. The privileged ones ask for a second sign-in factor.
+Paths under `/bff/forum/system/` accept only the `system` role, which another service
+uses to send a member a forum message.
 
 ## Settings
 

@@ -29,4 +29,4 @@ The [wiki API](/reference/wiki-bff).
 
 ## More detail
 
-The [`hugmesh-wiki-ui` README](https://github.com/hugmesh/hugmesh-wiki-ui/blob/main/README.md) has the architecture, the full API and how to build and test it.
+For how it is put together and how to build and test it, see the [`hugmesh-wiki-ui` README](https://github.com/hugmesh/hugmesh-wiki-ui/blob/main/README.md).

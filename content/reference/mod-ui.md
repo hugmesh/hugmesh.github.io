@@ -28,4 +28,4 @@ The [moderator API](/reference/mod-bff), which checks every action again.
 
 ## More detail
 
-The [`hugmesh-mod-ui` README](https://github.com/hugmesh/hugmesh-mod-ui/blob/main/README.md) has the architecture, the full API and how to build and test it.
+For how it is put together and how to build and test it, see the [`hugmesh-mod-ui` README](https://github.com/hugmesh/hugmesh-mod-ui/blob/main/README.md).

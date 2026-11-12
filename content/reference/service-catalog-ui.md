@@ -33,4 +33,4 @@ The service catalog in the [admin API](/reference/admin-bff).
 
 ## More detail
 
-The [`hugmesh-superadmin-service-catalog-ui` README](https://github.com/hugmesh/hugmesh-superadmin-service-catalog-ui/blob/main/README.md) has the architecture, the full API and how to build and test it.
+For how it is put together and how to build and test it, see the [`hugmesh-superadmin-service-catalog-ui` README](https://github.com/hugmesh/hugmesh-superadmin-service-catalog-ui/blob/main/README.md).

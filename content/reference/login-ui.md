@@ -47,4 +47,4 @@ Which languages the page offers is decided when the image is built (`HUG_WEB_LOC
 
 ## More detail
 
-The [`hugmesh-login-ui` README](https://github.com/hugmesh/hugmesh-login-ui/blob/main/README.md) has the architecture, the full API and how to build and test it.
+For how it is put together and how to build and test it, see the [`hugmesh-login-ui` README](https://github.com/hugmesh/hugmesh-login-ui/blob/main/README.md).

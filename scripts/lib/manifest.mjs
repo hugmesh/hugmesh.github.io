@@ -19,6 +19,7 @@
  */
 import { readFile, access } from 'node:fs/promises';
 import path from 'node:path';
+import { basisDeclProblems } from './basis.mjs';
 
 /** Sections are a CLOSED set: it is the site's top-level navigation, and the
  *  router has a hand-written route per section. A typo'd section in the manifest
@@ -101,6 +102,8 @@ export function lintSummary(summary, title) {
  * @property {string} [repo]    origin repo, e.g. "hugmesh-generator" (omit for site-authored)
  * @property {string} [path]    path of the source file inside that repo
  * @property {string} [authored] set to "site" for pages written here, with no upstream source
+ * @property {{repo: string, path: string}[]} [basis] required on a site-written page: the
+ *           upstream files its facts come from ([] when there is none). See lib/basis.mjs.
  */
 
 const exists = (p) => access(p).then(() => true, () => false);
@@ -156,6 +159,11 @@ export function validateManifest(parsed) {
       throw new Error(
         `${where}: needs either { repo, path } (vendored from a code repo) or authored:"site"`,
       );
+    }
+
+    const basisProblems = basisDeclProblems(entry);
+    if (basisProblems.length) {
+      throw new Error(`${where}: ${basisProblems.join('; ')}`);
     }
 
     const key = `${entry.section}/${entry.slug}`;

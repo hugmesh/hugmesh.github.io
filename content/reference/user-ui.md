@@ -12,8 +12,8 @@ notifications. It works on the member's own account and no one else's.
 
 ## Where it appears
 
-It is the member's home in the host shell. The first view is a getting-started guide;
-the others are the profile editor, the card manager and the block list, among others.
+The host shell mounts it at `/user`. The first view is a getting-started guide; the
+others are the profile editor, the card manager and the block list, among others.
 
 ## Who can open it
 
@@ -27,4 +27,4 @@ every request that the member owns what they are changing.
 
 ## More detail
 
-The [`hugmesh-user-ui` README](https://github.com/hugmesh/hugmesh-user-ui/blob/main/README.md) has the architecture, the full API and how to build and test it.
+For how it is put together and how to build and test it, see the [`hugmesh-user-ui` README](https://github.com/hugmesh/hugmesh-user-ui/blob/main/README.md).

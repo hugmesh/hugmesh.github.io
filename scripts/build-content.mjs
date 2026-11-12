@@ -21,6 +21,7 @@ import sanitizeHtml from 'sanitize-html';
 import hljs from 'highlight.js';
 import { loadManifest, groupBySection, fragmentProblems, SECTIONS, STANDALONE_ROUTES } from './lib/manifest.mjs';
 import { parseFrontMatter } from './lib/frontmatter.mjs';
+import { BASIS_LOCK_PATH } from './lib/basis.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = path.join(ROOT, 'src/assets/content');
@@ -392,6 +393,12 @@ async function main() {
   );
   const routeFor = (repo, p) => routeIndex.get(`${repo}:${p}`) ?? null;
 
+  // What each site-written page was checked against (lib/basis.mjs): page -> the
+  // recorded upstream files. check:integrity has already required a record for every
+  // declared file, so a page missing here simply declares no basis.
+  const basisLock = await readFile(path.join(ROOT, BASIS_LOCK_PATH), 'utf8').then(JSON.parse, () => ({ pages: [] }));
+  const basisByPage = new Map((basisLock.pages ?? []).map((p) => [p.page, p.sources ?? []]));
+
   // Everything this site actually serves: every published document, every section
   // index, and the handful of standalone pages the router declares itself. A
   // redirect source is deliberately NOT here: a page written in this repository
@@ -464,6 +471,18 @@ async function main() {
         }
       : null;
 
+    // A site-written page has no source file, but it was checked against some: link
+    // each at the exact commit recorded, so the link shows what the page was read
+    // against even after the file moves on.
+    const basis = entry.authored
+      ? (basisByPage.get(entry.contentPath) ?? []).map((s) => ({
+          repo: s.repo,
+          path: s.path,
+          ref: s.ref,
+          url: sourcesArePublic ? `${ORG_URL}/${s.repo}/blob/${s.ref}/${s.path}` : null,
+        }))
+      : [];
+
     const page = {
       section: entry.section,
       slug: entry.slug,
@@ -477,6 +496,7 @@ async function main() {
       readingMinutes: Math.max(1, Math.round(plain.split(' ').length / 220)),
       toc,
       source,
+      basis,
       html,
     };
 

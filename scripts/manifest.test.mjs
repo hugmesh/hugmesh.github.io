@@ -23,6 +23,7 @@ function fixture() {
     title: `First page of ${s.id}`,
     summary: `What the first page of ${s.id} is about.`,
     authored: 'site',
+    basis: [],
   }));
   const sections = Object.fromEntries(
     SECTIONS.map((s) => [s.id, { start: `/${s.id}/first`, groups: [{ id: 'main', title: 'Main', pages: [`/${s.id}/first`] }] }]),
@@ -55,7 +56,7 @@ test('a page can be listed in another tab than its URL prefix (nav home)', () =>
 
 test('rule: every page is listed in a group', () => {
   const f = fixture();
-  f.docs.push({ section: 'overview', slug: 'orphan', title: 'Orphan page', summary: 'Nobody lists it.', authored: 'site' });
+  f.docs.push({ section: 'overview', slug: 'orphan', title: 'Orphan page', summary: 'Nobody lists it.', authored: 'site', basis: [] });
   fails(f, /orphan: not listed in any group/);
 });
 
@@ -172,8 +173,8 @@ test('rule: titles are unique across the site, ignoring case', () => {
 test('rule: decision numbers are unique in their group', () => {
   const f = fixture();
   f.docs.push(
-    { section: 'games', slug: 'd1', title: '001: One way', summary: 'The first record.', authored: 'site' },
-    { section: 'games', slug: 'd2', title: '001: Another way', summary: 'The clashing record.', authored: 'site' },
+    { section: 'games', slug: 'd1', title: '001: One way', summary: 'The first record.', authored: 'site', basis: [] },
+    { section: 'games', slug: 'd2', title: '001: Another way', summary: 'The clashing record.', authored: 'site', basis: [] },
   );
   f.sections.games.groups.push({ id: 'decisions', title: 'Decisions', pages: ['/games/d1', '/games/d2'] });
   fails(f, /decision number 001 is also used/);

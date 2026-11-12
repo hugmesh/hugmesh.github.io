@@ -24,4 +24,4 @@ Signed-in members who also hold the fediverse role (`mastodon`).
 
 ## More detail
 
-The [`hugmesh-mastodon-ui` README](https://github.com/hugmesh/hugmesh-mastodon-ui/blob/main/README.md) has the architecture, the full API and how to build and test it.
+For how it is put together and how to build and test it, see the [`hugmesh-mastodon-ui` README](https://github.com/hugmesh/hugmesh-mastodon-ui/blob/main/README.md).

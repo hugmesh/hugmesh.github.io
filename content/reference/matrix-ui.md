@@ -9,9 +9,14 @@ The chat web app is a Matrix client in the style of Element, built into the host
 The mesh's Matrix server is tuwunel, which is on by default and can talk to the wider
 Matrix network.
 
-Besides rooms and messages, it renders members' visual-novel characters, with stickers
-and character voices, and hosts *Shadows of the Net*, a 3D chat room. A moderator or
-admin can keep a member's chat local-only, so it does not federate outside the mesh.
+Besides rooms and messages, it renders members' visual-novel characters, with stickers.
+A moderator or admin can keep a member's chat local-only, so it does not federate
+outside the mesh.
+
+Two features are written but do not work on a deployed mesh yet. Character voices wait
+for a speech service that has not been built, and stay off. *Shadows of the Net*, a 3D
+chat room, loads its scene from the games service's address, and no deployment serves
+that address yet.
 
 ## Where it appears
 
@@ -25,4 +30,4 @@ controls. The APIs check the same roles on the server.
 
 ## More detail
 
-The [`hugmesh-matrix-ui` README](https://github.com/hugmesh/hugmesh-matrix-ui/blob/main/README.md) has the architecture, the full API and how to build and test it.
+For how it is put together and how to build and test it, see the [`hugmesh-matrix-ui` README](https://github.com/hugmesh/hugmesh-matrix-ui/blob/main/README.md).

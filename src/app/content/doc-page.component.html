@@ -125,6 +125,21 @@
           — that file is the source of truth, and corrections belong there rather than
           here, because this site re-renders from it.
         </p>
+      } @else if (doc.basis?.length) {
+        <p class="source-note field-help" data-testid="basis-note">
+          This page was written for this site and last checked against
+          @for (b of doc.basis; track b.repo + '/' + b.path; let last = $last) {
+            @if (b.url) {
+              <a [href]="b.url" target="_blank" rel="noopener noreferrer">{{ b.repo }}/{{ b.path }}</a>
+            } @else {
+              <code>{{ b.repo }}/{{ b.path }}</code>
+            }
+            @if (!last) {
+              <span>, </span>
+            }
+          }
+          . If the two disagree, that file is right.
+        </p>
       }
     }
   </main>

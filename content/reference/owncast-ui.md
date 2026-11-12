@@ -20,9 +20,10 @@ role allows it.
 
 ## Who can open it
 
-Members with the `owncast` role. Broadcasting itself also needs a grant from an admin;
+Members with the `owncast` role, and admins and superadmins. Broadcasting itself also
+needs a grant from an admin;
 see the [live streaming API](/reference/owncast-bff).
 
 ## More detail
 
-The [`hugmesh-owncast-ui` README](https://github.com/hugmesh/hugmesh-owncast-ui/blob/main/README.md) has the architecture, the full API and how to build and test it.
+For how it is put together and how to build and test it, see the [`hugmesh-owncast-ui` README](https://github.com/hugmesh/hugmesh-owncast-ui/blob/main/README.md).

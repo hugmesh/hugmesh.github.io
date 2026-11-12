@@ -17,6 +17,18 @@ export interface DocSource {
   readonly url: string | null;
 }
 
+/**
+ * An upstream file a page written for this site was last checked against, and the
+ * commit it was read at. `url` links the file at that commit, or is `null` under
+ * the same rule as DocSource.url.
+ */
+export interface DocBasis {
+  readonly repo: string;
+  readonly path: string;
+  readonly ref: string;
+  readonly url: string | null;
+}
+
 export interface TocEntry {
   readonly id: string;
   readonly level: 2 | 3;
@@ -34,6 +46,9 @@ export interface DocPage {
   readonly readingMinutes: number;
   readonly toc: readonly TocEntry[];
   readonly source: DocSource | null;
+  /** For a page written here: the upstream files it was checked against. Empty for
+   *  a vendored page (it has `source`) and for a page that tracks no upstream file. */
+  readonly basis?: readonly DocBasis[];
   /** Sanitised at BUILD time (scripts/build-content.mjs). */
   readonly html: string;
 }

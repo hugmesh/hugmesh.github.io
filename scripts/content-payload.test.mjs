@@ -80,6 +80,22 @@ test('no link points at an org or repository name that does not exist', () => {
   assert.deepEqual(bad, []);
 });
 
+test('a page written for the site links each file it was checked against, at the recorded commit', () => {
+  const declared = manifest.docs.filter((d) => d.authored && d.basis.length > 0);
+  assert.ok(declared.length > 20, `only ${declared.length} site-written pages declare a basis`);
+  for (const d of declared) {
+    const route = `/${d.section}/${d.slug}`;
+    const p = pages.find((x) => x.route === route);
+    assert.equal(p.source, null, route);
+    assert.deepEqual(p.basis.map((b) => `${b.repo}/${b.path}`), d.basis.map((b) => `${b.repo}/${b.path}`), route);
+    for (const b of p.basis) {
+      assert.match(b.ref, /^[0-9a-f]{40}$/, route);
+      assert.equal(b.url, `https://github.com/hugmesh/${b.repo}/blob/${b.ref}/${b.path}`, route);
+    }
+  }
+  for (const p of pages.filter((x) => x.source)) assert.deepEqual(p.basis, [], p.route);
+});
+
 test('the repositories are public, so every page links its source file', () => {
   const vendored = pages.filter((p) => p.source);
   assert.equal(vendored.length, manifest.docs.filter((d) => d.repo).length);

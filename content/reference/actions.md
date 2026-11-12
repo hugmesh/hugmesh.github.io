@@ -12,9 +12,12 @@ the other side.
 
 | Job | What it does |
 |---|---|
-| Game master sync | Gives a member who holds `game-master` in the main sign-in service the `admin` role in the games sign-in service, and takes it away again. |
+| Game master sync | Copies the members who hold `game-master` in the main sign-in service into `mesh-games-admin`, a role in the games sign-in service that only this job writes. It counts a member only when their two accounts each name the other. It never writes the games service's own `admin` role. Off by default. |
 | GitHub organisation admin | Gives admins of the configured GitHub organisations the admin role, and a scheduled job revokes it when they leave. Off by default. |
 | Default roles for new sign-ups | Applies the roles an outside sign-in provider should give new members. Off by default. |
+
+Game master sync has no visible effect yet: nothing writes the account links it
+needs, and the games service does not act on `mesh-games-admin`.
 
 ## Where it runs
 
@@ -30,8 +33,9 @@ schedule; nobody calls them.
 
 | Variable | What it does |
 |---|---|
+| `GM_SYNC_ENABLED` | Turns on game master sync. Default `false`. |
 | `GM_SYNC_SYSTEMS_ROLE` | The role to copy from the main sign-in service. Default `game-master`. |
-| `GM_SYNC_GAMES_ROLE` | The role it becomes in the games sign-in service. Default `admin`. |
+| `GM_SYNC_GAMES_ROLE` | The role it becomes in the games sign-in service. Default `mesh-games-admin`. The name must start with `mesh-`; any other value, `admin` included, is refused and the job writes nothing. |
 | `GH_ORG_ADMIN_ENABLED` | Turns on the GitHub organisation admin job. Default `false`. |
 | `APP_OIDC_DEFAULT_ROLES_ENABLED` | Turns on default roles for new sign-ups. Default `false`. |
 

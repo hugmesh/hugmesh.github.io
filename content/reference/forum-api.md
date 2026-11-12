@@ -20,7 +20,9 @@ built in.
 
 ## Who can use it
 
-The forum API, on behalf of a signed-in member. Admin routes need the admin role.
+The forum API, on behalf of a signed-in member. Admin routes need the admin role. The
+route that sends a private message from the system account accepts only the `system`
+role.
 
 ## Settings
 

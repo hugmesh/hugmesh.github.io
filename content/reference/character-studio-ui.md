@@ -22,4 +22,4 @@ Any signed-in member. It has no role gates; it is the same tool for everyone.
 
 ## More detail
 
-The [`hugmesh-character-studio-ui` README](https://github.com/hugmesh/hugmesh-character-studio-ui/blob/main/README.md) has the architecture, the full API and how to build and test it.
+For how it is put together and how to build and test it, see the [`hugmesh-character-studio-ui` README](https://github.com/hugmesh/hugmesh-character-studio-ui/blob/main/README.md).

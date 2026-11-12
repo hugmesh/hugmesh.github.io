@@ -2,17 +2,23 @@
 title: "Meshtastic device dashboard"
 section: "reference"
 slug: "user-mesh-ui"
-summary: "Each member's view of their Meshtastic radios. Its screens are not built yet."
+summary: "Each member's view of their Meshtastic radios. Built, but not yet mounted in the host shell."
 ---
 
 HugMesh can bridge Meshtastic LoRa radio networks into Matrix chat, so a community can
-keep talking over radio when the internet is down. This dashboard is meant to show each
-member which radio nodes are reachable, which radios they have claimed, and which chat
-rooms are bridged onto the radio mesh.
+keep talking over radio when the internet is down. This dashboard shows each member the
+radio mesh in three views:
 
-**It is not built yet.** Its back-end client, formatting and route guards exist, but the
-three views are not written, so the web app does not build. The host shell does not load
-it, and the frontend gateway has no route for it. The
+| View | What it shows |
+|---|---|
+| Nodes | every radio the bridge has heard, with a filter |
+| My devices | the radios the member has claimed: claim, release, visibility and live status |
+| Channels | the chat rooms bridged onto the radio mesh, grouped by radio channel |
+
+**It is built, but not yet mounted.** The web app builds, its tests run and its image can
+be produced. What is missing is on the platform side: the host shell has no entry for it,
+the frontend gateway has no `/user-mesh` route, and the route access rules have no row
+for it. Until those land it runs only on its own, for development. The
 [Meshtastic device API](/reference/mesh-bff) behind it is in place.
 
 ## Who will be able to open it
@@ -33,4 +39,4 @@ A radio nobody has claimed is listed without an owner.
 
 ## More detail
 
-The [`hugmesh-user-mesh-ui` README](https://github.com/hugmesh/hugmesh-user-mesh-ui/blob/main/README.md) has the architecture, the full API and how to build and test it.
+For how it is put together and how to build and test it, see the [`hugmesh-user-mesh-ui` README](https://github.com/hugmesh/hugmesh-user-mesh-ui/blob/main/README.md).

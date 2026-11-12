@@ -136,6 +136,31 @@ describe('DocPageComponent', () => {
     expect(gh!.rel).toContain('noopener');
   });
 
+  it('a page written for the site links the files it was checked against, at the recorded commit', () => {
+    const ref = 'f'.repeat(40);
+    setup(
+      page({
+        source: null,
+        basis: [
+          { repo: 'hugmesh-actions', path: 'README.md', ref, url: `https://github.com/hugmesh/hugmesh-actions/blob/${ref}/README.md` },
+          { repo: 'hugmesh-actions', path: 'src/main/resources/application.yml', ref, url: null },
+        ],
+      }),
+    );
+    const note = fixture.nativeElement.querySelector('[data-testid="basis-note"]') as HTMLElement;
+    expect(note).toBeTruthy();
+    expect(note.textContent).toContain('hugmesh-actions/README.md');
+    expect(note.textContent).toContain('hugmesh-actions/src/main/resources/application.yml');
+    const links = [...note.querySelectorAll('a')] as HTMLAnchorElement[];
+    expect(links.map((a) => a.getAttribute('href'))).toEqual([`https://github.com/hugmesh/hugmesh-actions/blob/${ref}/README.md`]);
+    expect(links[0].rel).toContain('noopener');
+  });
+
+  it('a page with neither a source nor a basis shows no provenance note', () => {
+    setup(page({ source: null, basis: [] }));
+    expect(fixture.nativeElement.querySelector('.source-note')).toBeNull();
+  });
+
   it('offers previous and next in the reading order of the tab', () => {
     setup();
     const pager = fixture.nativeElement.querySelector('.pager') as HTMLElement;

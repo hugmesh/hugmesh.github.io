@@ -25,4 +25,4 @@ admins and superadmins, and ask for a second sign-in factor.
 
 ## More detail
 
-The [`hugmesh-tube-ui` README](https://github.com/hugmesh/hugmesh-tube-ui/blob/main/README.md) has the architecture, the full API and how to build and test it.
+For how it is put together and how to build and test it, see the [`hugmesh-tube-ui` README](https://github.com/hugmesh/hugmesh-tube-ui/blob/main/README.md).
