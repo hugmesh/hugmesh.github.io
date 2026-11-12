@@ -115,3 +115,10 @@ All three run the same `make` targets underneath:
 | ArgoCD, GitOps | ArgoCD installs the services and keeps the cluster matching its configuration. |
 | domain | One community on the mesh, with its own address, users and roles. |
 | go live | Making the mesh reachable from outside your network. |
+
+## Where to go next
+
+[Get started](/tutorials) has the path in order: download the Studio, then follow
+[Your first mesh, step by step](/tutorials/start-here). To see every service on one
+computer before you build anything, use
+[Run the whole stack on one computer](/tutorials/local-docker-stack).

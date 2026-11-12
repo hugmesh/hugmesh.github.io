@@ -34,8 +34,9 @@ you the clone line.
 What a package can and cannot do:
 
 - It builds images, using Docker on the same machine, and can generate each node's keys.
-- Writing an image to a USB device, and native (sudo) Gentoo builds, need the Studio run
-  from a checkout. The Flatpak refuses them.
+- Writing an image to a device works on Linux, from the tarball or from a checkout. The
+  Flatpak and the Windows MSI cannot write to a device.
+- A native Gentoo build, without Docker, needs a Gentoo host. The Flatpak refuses it.
 - A KEYS stick is written with a script from a checkout (step 4).
 
 [Install the Studio](/studio/installers) covers each package and the checkout. If you
@@ -141,6 +142,12 @@ Two defaults of the key generator: no root password is set (root is locked), and
 admin user's `sudo` asks for a password. `--root-password` and `--sudo-nopasswd` change
 them.
 
+A third default decides step 6. The `provision.json` generated for the `pki`, `backend`
+and `frontend` roles has `"bootstrap": false` in its `kubernetes` block, which means the
+node only prepares its Kubernetes configuration and leaves `kubeadm` to you. For a node
+to create or join the cluster by itself at first boot, change that value to `true` in the
+node's `provision.json` before you write its stick.
+
 `make-keys-usb.sh` runs on Linux only. On Windows, format a USB stick of 32 GB or less as
 FAT32 (not exFAT or NTFS, which some nodes cannot mount) with the label `KEYS`, and copy
 the node's keys folder onto it, leaving out its `vault-seed` folder.
@@ -148,10 +155,11 @@ the node's keys folder onto it, leaving out its `vault-seed` folder.
 A worker stick does not carry the user accounts. It does need `certs/cluster-ca.crt` and
 `keystores/truststore.jks` copied from the `pki` keys, and the cluster join token, the CA
 certificate hash and the private-network key filled in. A worker stick without them joins
-nothing.
+nothing. The join token and the hash do not exist until the `pki` node has created the
+cluster, so write the `pki` stick now and finish the worker sticks in step 7.
 
-**Done when:** each node has a stick, and `provision.json` on each one names the right
-hostname and role.
+**Done when:** the `pki` node has its stick, every other node has a keys folder, and
+`provision.json` in each one names the right hostname and role.
 
 ---
 
@@ -164,8 +172,7 @@ command line, `scripts/flash-disk.sh` (or `make flash`) does the same, and `--li
 what it would write without root.
 
 Insert the node's KEYS stick and power it on. At first boot it reads the stick: users,
-SSH keys, hostname, certificates, the private network and, on the `pki` node, the
-Kubernetes control plane. A node booted without a stick still starts, with a console
+SSH keys, hostname, certificates, the private network and its Kubernetes settings. A node booted without a stick still starts, with a console
 user, so you are never locked out.
 
 **Done when:** you can log in to the node over SSH with the key from its stick, for
@@ -175,9 +182,20 @@ example `ssh -i keys-pki/ssh/admin_ed25519 admin@<node>`.
 
 ## 6. Bring up the cluster
 
-When the `pki` stick's `provision.json` turns GitOps on, the first boot runs
-`kubeadm init` and installs ArgoCD, which then installs every service from the
-configuration baked into the image. Watch it settle from the `pki` node:
+The `pki` node creates the cluster at first boot when two settings in its
+`provision.json` are on: `kubernetes.bootstrap` (step 4; off unless you changed it) and
+`hugmesh.gitops.enabled` (on in a generated `pki` folder). It then runs `kubeadm init`
+and installs ArgoCD, which installs every service from the configuration baked into the
+image.
+
+If you left `kubernetes.bootstrap` off, the node has only prepared its configuration,
+and it will not read the stick again by itself. Set the value to `true` in
+`provision.json` on the stick, put an empty file named `.provision-force` beside it, and
+restart the node with the stick in. The other way is to run `kubeadm init` and then the
+bootstrap script by hand;
+[What the cluster deploys](/operations/gitops-payload#bootstrapping) has that command.
+
+Watch the cluster settle from the `pki` node:
 
 ```bash
 export KUBECONFIG=/etc/kubernetes/admin.conf
@@ -185,7 +203,8 @@ kubectl -n devops get applications
 kubectl get pods -A
 ```
 
-[What the cluster deploys](/operations/gitops-payload) describes that configuration.
+[What the cluster deploys](/operations/gitops-payload) describes that configuration, and
+[The KEYS stick](/operations/keys-usb) lists every `provision.json` setting.
 
 **Done when:** `kubectl -n devops get applications` lists the platform's applications.
 
@@ -193,9 +212,20 @@ kubectl get pods -A
 
 ## 7. Join the other nodes and your own devices
 
-Flash and boot the `backend` and `frontend` nodes the same way, each with its own stick.
-They join the cluster by themselves at first boot, because the join token rides on their
-sticks.
+First finish the worker sticks. On the `pki` node, print a join command:
+
+```bash
+sudo kubeadm token create --print-join-command
+```
+
+It shows the API server address, a token and a `sha256:` hash. Put the token and the hash
+into `kubernetes.join` in each worker's `provision.json`, set `kubernetes.bootstrap` to
+`true` there too, and write the sticks as in step 4. A node that created the cluster by
+itself also keeps one such command in `/etc/hugmesh/kubeadm-join.cmd`.
+
+Then flash and boot the `backend` and `frontend` nodes the same way, each with its own
+stick. With `kubernetes.bootstrap` on, each joins the cluster at first boot. With it off,
+run the printed `kubeadm join` command on the node yourself.
 
 Your own computers and phones join as clients, not cluster nodes:
 

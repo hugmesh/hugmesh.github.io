@@ -843,7 +843,7 @@
     },
     {
       "from": "/tutorials/first-run-bootstrap",
-      "to": "/studio/overview"
+      "to": "/studio/installers#developer-run-the-studio-from-a-checkout"
     },
     {
       "from": "/tutorials/generator-overview",
