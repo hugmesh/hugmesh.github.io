@@ -3,7 +3,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DomSanitizer, SafeHtml, Title, Meta } from '@angular/platform-browser';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
-import { ContentService } from './content.service';
+import { ContentService, RELOAD_PAGE } from './content.service';
 import { sectionMeta } from './sections';
 import { navMap, resolveGroups } from './nav';
 
@@ -43,6 +43,14 @@ export class SectionPageComponent {
    *  broken" state. */
   readonly indexLoaded = computed(() => this.index() !== undefined);
 
+  /** Whether the index is this app's build. "Nothing is published" is only ever
+   *  said about a current index (or the honest failed one): an index from another
+   *  build without this tab's groups proves nothing about the tab
+   *  (hugmesh.github.io#42). */
+  readonly payload = this.content.payload;
+
+  private readonly reloadPage = inject(RELOAD_PAGE);
+
   readonly section = computed(() => this.index()?.sections.find((s) => s.id === this.id()));
 
   private readonly map = computed(() => navMap(this.index()));
@@ -56,6 +64,11 @@ export class SectionPageComponent {
 
   /** Jump links only pay for themselves on a long tab. */
   readonly showJumps = computed(() => this.groups().length >= 4);
+
+  reload(event: Event): void {
+    event.preventDefault();
+    this.reloadPage();
+  }
 
   constructor() {
     effect(() => {
