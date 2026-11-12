@@ -44,8 +44,9 @@ mesh can serve several communities, each under its own domain.
 1. **Try it on one computer.** The whole stack runs in Docker on one x86_64 machine.
    Nothing to flash. See [Run the whole stack on one computer](/tutorials/local-docker-stack).
 2. **Build a mesh on your own hardware.** The Studio, a desktop app, builds a hardened
-   Gentoo image for each node. Each node then reads its keys from a USB stick at first
-   boot and joins the cluster. See [Your first mesh, step by step](/tutorials/start-here).
+   Gentoo image for each node. Each node then reads its keys and settings from a USB
+   stick at first boot, and joins the cluster if the stick tells it to. See
+   [Your first mesh, step by step](/tutorials/start-here).
 3. **Join a mesh someone else runs.** Laptops, desktops and Docker hosts join as
    clients, and phones are enrolled with MDM. See
    [Devices and images](/devices).

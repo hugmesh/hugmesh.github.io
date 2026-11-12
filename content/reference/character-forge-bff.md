@@ -7,8 +7,9 @@ summary: "Map a 2D visual-novel character onto a 3D character."
 
 Character Forge turns a member's 2D visual-novel character into a 3D one. The member
 picks a character from a card pack, maps it onto an adjustable 3D figure, edits it in a
-Godot maker, and marks one character as active. The *Shadows of the Net* chat room then
-dresses them in it.
+Godot maker, and marks one character as active. The *Shadows of the Net* chat room is
+built to dress them in it, but that room does not load on a deployed mesh yet; see the
+[chat web app](/reference/matrix-ui).
 
 The repository holds the API, its web app, and the pipeline that builds the 3D model
 packs. The Godot maker itself now lives in `hugmesh-games` and is a game in the

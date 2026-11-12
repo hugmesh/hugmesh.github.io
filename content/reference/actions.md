@@ -16,8 +16,9 @@ the other side.
 | GitHub organisation admin | Gives admins of the configured GitHub organisations the admin role, and a scheduled job revokes it when they leave. Off by default. |
 | Default roles for new sign-ups | Applies the roles an outside sign-in provider should give new members. Off by default. |
 
-Game master sync has no visible effect yet: nothing writes the account links it
-needs, and the games service does not act on `mesh-games-admin`.
+Game master sync is off unless `GM_SYNC_ENABLED` is set, and it never writes the games
+service's own `admin` role. Turned on, it has no visible effect yet: nothing writes the
+account links it needs, and the games service does not act on `mesh-games-admin`.
 
 ## Where it runs
 

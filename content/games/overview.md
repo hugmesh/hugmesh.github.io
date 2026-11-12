@@ -14,9 +14,10 @@ It lives in the [`hugmesh-games`](https://github.com/hugmesh/hugmesh-games) repo
 - **A catalog of 20 games**, loaded on demand into an Angular page frame.
 - **Multiplayer sessions.** Players create or join a session, and each session gets its
   own live event stream (server-sent events) from the games API, a Spring Boot service.
-- **The mesh's sign-in.** On a mesh, the host shell loads the games screens at `/games`
-  for members with the `games` role, and they play with their mesh account. The
-  web-native games play inside the shell, and the Godot games open in a new tab.
+- **The mesh's sign-in.** Games are optional and off by default. On a mesh that has
+  them turned on, the host shell loads the games screens at `/games` for members with
+  the `games` role, and they play with their mesh account. The web-native games play
+  inside the shell, and the Godot games open in a new tab.
 - **A standalone portal.** The repository also holds a portal that runs on its own,
   with its own sign-in service. Uploading a game, granting publisher and moderator
   roles, and kicking or banning a player are done there.

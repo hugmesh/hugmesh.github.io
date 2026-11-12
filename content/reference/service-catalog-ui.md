@@ -21,7 +21,10 @@ Where a button does less than it looks, the console says so.
 
 ## Where it appears
 
-The host shell mounts it at `/superadmin/service-catalog`.
+A separate superadmin gateway serves it at `/superadmin/service-catalog`, and that
+gateway is reachable only over the mesh's private network. The cluster configuration
+also describes it as a web app for the host shell at the same path, but the federation
+API does not register it yet, so the host shell may not list it.
 
 ## Who can open it
 
