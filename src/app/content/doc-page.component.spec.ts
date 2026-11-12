@@ -151,6 +151,10 @@ describe('DocPageComponent', () => {
     expect(note).toBeTruthy();
     expect(note.textContent).toContain('hugmesh-actions/README.md');
     expect(note.textContent).toContain('hugmesh-actions/src/main/resources/application.yml');
+    // One sentence, with no space before the comma or the full stop.
+    expect(note.textContent!.replace(/\s+/g, ' ')).toContain(
+      'checked against hugmesh-actions/README.md, hugmesh-actions/src/main/resources/application.yml. Where the page and those files disagree',
+    );
     const links = [...note.querySelectorAll('a')] as HTMLAnchorElement[];
     expect(links.map((a) => a.getAttribute('href'))).toEqual([`https://github.com/hugmesh/hugmesh-actions/blob/${ref}/README.md`]);
     expect(links[0].rel).toContain('noopener');

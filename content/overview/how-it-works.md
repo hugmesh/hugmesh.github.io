@@ -43,9 +43,10 @@ cluster. That is what makes it safe to build one image and use it on many nodes.
 
 At first boot a node finds its KEYS stick, reads it, and applies what is there. It joins
 the mesh's private network, which runs on headscale, a self-hosted Tailscale control
-server. Then it joins the Kubernetes cluster: the `pki` node creates the cluster with
-`kubeadm init`, and every other node joins it with the token from its own stick. A node
-booted without a stick still starts with a console user, so you are never locked out.
+server. Then, if its stick turns that on, it joins the Kubernetes cluster: the `pki` node
+creates the cluster with `kubeadm init`, and every other node joins it with the token
+from its own stick. A node booted without a stick still starts with a console user, so
+you are never locked out.
 
 ## 4. ArgoCD installs the services
 
