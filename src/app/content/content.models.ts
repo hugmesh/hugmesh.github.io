@@ -99,6 +99,10 @@ export interface SectionIndex {
 
 /** assets/content/index.json */
 export interface ContentIndex {
+  /** The payload's build id (a hash over every payload file), the same value the
+   *  app was compiled with as CONTENT_BUILD_ID. Absent from an index written
+   *  before the field existed, which is then another build by definition. */
+  readonly buildId?: string;
   readonly generatedFrom: string;
   readonly sectionOrder: readonly string[];
   readonly sections: readonly SectionIndex[];

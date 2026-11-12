@@ -9,6 +9,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -103,4 +104,27 @@ test('the repositories are public, so every page links its source file', () => {
   for (const p of vendored) {
     assert.equal(p.source.url, `https://github.com/hugmesh/${p.source.repo}/blob/main/${p.source.path}`, p.route);
   }
+});
+
+test('index.json and the app carry the same build id: a hash of the payload (hugmesh.github.io#42)', async () => {
+  // The app asks for <file>?v=<CONTENT_BUILD_ID> and trusts an index only when its
+  // buildId matches. The two must come from the same build-content run.
+  const mod = await readFile(path.join(ROOT, 'src/app/content/content-build.ts'), 'utf8');
+  const m = mod.match(/^export const CONTENT_BUILD_ID = '([0-9a-f]{16})';$/m);
+  assert.ok(m, `src/app/content/content-build.ts does not export a 16-hex CONTENT_BUILD_ID:\n${mod}`);
+  assert.match(index.buildId, /^[0-9a-f]{16}$/, 'index.json has no buildId');
+  assert.equal(index.buildId, m[1], 'index.json buildId and CONTENT_BUILD_ID differ: re-run npm run build:content');
+  assert.equal(Object.keys(index)[0], 'buildId');
+
+  // And it is the payload's hash, not a constant: recompute it from the files on disk
+  // (index.json without its own id), in path order, exactly as the build does.
+  const { buildId, ...indexBody } = index;
+  const files = (await readdir(OUT, { recursive: true })).filter((f) => f.endsWith('.json'))
+    .map((f) => f.split(path.sep).join('/')).sort();
+  const hash = createHash('sha256');
+  for (const rel of files) {
+    const body = rel === 'index.json' ? JSON.stringify(indexBody) : await readFile(path.join(OUT, rel), 'utf8');
+    hash.update(`${rel}\0${body}\0`);
+  }
+  assert.equal(buildId, hash.digest('hex').slice(0, 16), 'buildId is not the hash of the payload on disk');
 });

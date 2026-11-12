@@ -378,8 +378,30 @@ Why each entry is in that list:
   stops covering the shell and must be widened first.
 - `/assets/content/**` is `index.json`, `search.json` and one JSON per page. The build
   **deletes and regenerates the whole tree every time** under names that never change
-  (`scripts/build-content.mjs:346-347`, `:423-425`, `:456-457`, `:470`). Caching it hard
-  means a documentation change ships and is invisible.
+  (`scripts/build-content.mjs:423-424`, `:523`, `:611-612`). Caching it hard means a
+  documentation change ships and is invisible. Keep it **bypassed** (or, at most,
+  short-cached the way Pages already sends it) even though the app now asks for every
+  file as `<file>?v=<build id>`. The query does not make these files immutable: the path
+  is the same on every build, and an old cached shell still asks for the bare path. Never
+  give this path a cache key that ignores the query string.
+
+**What keeps a new app off an old index is the build id, not the edge.** The edge was
+never the whole story. On 2026-11-12, right after the restructure deploy (#39), Pages'
+own `cache-control: max-age=600` let *browsers* keep the old-shape `index.json` and hand
+it to the new app, and every tab said "Nothing is published in this section yet" for ten
+minutes (hugmesh.github.io#42). No Cloudflare rule reaches a browser's cache. So:
+
+- `scripts/build-content.mjs` hashes the whole payload into one build id. It writes the id
+  into `index.json` as `buildId` and compiles it into the app as `CONTENT_BUILD_ID`
+  (`src/app/content/content-build.ts`, generated, not committed).
+- The app requests `index.json`, `search.json` and each page as `…json?v=<id>`, so a
+  browser cache entry from another build is a different URL and is not reused.
+- The app does not trust the query to have worked. If the index's `buildId` differs from
+  its own (or is missing), it reads the index once more with `cache: 'reload'` and a
+  fresh query value, which gets past the browser and the edge. If that read is still
+  another build, the server has moved on and the app is the stale side, so it reloads the
+  page once (a sessionStorage guard stops a loop). A tab page says "Nothing is published"
+  only about an index from its own build.
 
 **Rule 2 — "docs: cache the hashed bundles"**
 
@@ -432,9 +454,14 @@ curl -sS https://hugmesh.net/developer-guide/argocd-gitops | grep -c '<hug-root>
 # expect: 1   (the HTTP status is 404 by design — Pages serves 404.html, which IS
 #              index.html; the router then renders the real page)
 
-# 4. the content payload is reachable, JSON, and not being cached
+# 4. the content payload is reachable, JSON, not being cached, and build-stamped
 curl -sSI https://hugmesh.net/assets/content/index.json | head -12
 # expect: 200, application/json, and cf-cache-status: BYPASS if Rule 1 is in place
+id=$(curl -sS https://hugmesh.net/assets/content/index.json | grep -o '"buildId":"[0-9a-f]*"' | cut -d'"' -f4); echo "$id"
+# expect: 16 hex characters. Empty means the deployed build predates hugmesh.github.io#42.
+curl -sSI "https://hugmesh.net/assets/content/index.json?v=$id" | grep -iE '^(HTTP|content-type|cf-cache-status)'
+# expect: 200, application/json, and the same cf-cache-status as the bare path. The
+#         stamped address is what the app requests; the query must not change the answer.
 
 # 5. www redirects to the apex and no longer 1016s
 curl -sS -o /dev/null -D - https://www.hugmesh.net/ | grep -iE '^(HTTP|location)'
