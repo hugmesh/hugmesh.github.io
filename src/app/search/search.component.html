@@ -42,7 +42,7 @@
       @for (hit of hits(); track hit.doc.route) {
         <li>
           <a [routerLink]="hit.doc.route">
-            <p class="crumb">{{ sectionTitle(hit.doc.section) }}</p>
+            <p class="crumb">{{ sectionTitle(hit.doc.navSection ?? hit.doc.section) }}</p>
             <h2>{{ hit.doc.title }}</h2>
             <p class="excerpt">{{ hit.excerpt }}</p>
           </a>

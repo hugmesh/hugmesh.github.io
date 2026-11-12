@@ -45,6 +45,15 @@ jobs:
         # desyncs the site from the code it documents.
         run: npm run check:integrity
 
+      - name: Check site-written pages against upstream
+        # Reads, from GitHub and with no credential, each upstream file a page
+        # written in this repository was checked against, and compares it with the
+        # recorded sha256 (content/.basis.lock.json). A file that has changed is a
+        # WARNING on the run, naming the page to re-read: it does not fail the job,
+        # because the page may well still be right. The step fails only when it
+        # could not read a single file, since that run checked nothing.
+        run: npm run check:basis
+
       - name: Render the content payload
         # Fails loudly if docs.manifest.json lists a page whose Markdown is missing
         # from content/, or if a section id in the manifest is not one the router

@@ -114,6 +114,14 @@ jobs:
         run: npm run check:content
         continue-on-error: true
 
+      - name: Check site-written pages against upstream
+        # ADVISORY here: a deploy must not wait on it. It fetches each upstream file
+        # a site-written page was checked against (public repositories, no
+        # credential) and warns when one has changed since, naming the page to
+        # re-read. ci.yml runs the same command on every pull request.
+        run: npm run check:basis
+        continue-on-error: true
+
       - name: Fetch release data (Studio releases, GHCR images)
         # Writes src/assets/releases.json; the build copies it to assets/. Not-yet-
         # published items (404, or a package the registry will not list anonymously)

@@ -16,6 +16,12 @@
  *   node scripts/sync-content.mjs --check        # exit 1 if anything is stale
  *   node scripts/sync-content.mjs --from-github  # refresh via the gh CLI
  *   node scripts/sync-content.mjs --only developer-guide/argocd-gitops
+ *   node scripts/sync-content.mjs --only studio/installers --update-lock
+ *
+ * --update-lock with --only re-vendors ONE page and replaces just that page's lock
+ * record (path, source, sourceRef, sha256), leaving every other record exactly as
+ * it was. That is how a single upstream fix reaches the site without a full sync,
+ * and it cannot narrow the lock: records it did not touch are kept, not dropped.
  */
 import { readFile, writeFile, mkdir, access } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
@@ -47,6 +53,7 @@ const CHECK = flag('check');
 const FROM_GITHUB = flag('from-github');
 const WORKSPACE = path.resolve(ROOT, value('workspace', '..'));
 const ONLY = value('only', null);
+const UPDATE_LOCK = flag('update-lock');
 
 const exists = (p) => access(p).then(() => true, () => false);
 
@@ -98,8 +105,19 @@ function normaliseBody(text) {
   return `${body.trimEnd()}\n`;
 }
 
+/**
+ * The lock after re-vendoring a few pages: every existing record is kept, and the
+ * record of each updated path is replaced (or added, for a page new to the lock).
+ * Pure, so scripts/sync-content.test.mjs can check it never drops a record.
+ */
+export function mergeLockRecords(existing, updates) {
+  const byPath = new Map(existing.map((r) => [r.path, r]));
+  for (const u of updates) byPath.set(u.path, u);
+  return [...byPath.values()].sort((a, b) => a.path.localeCompare(b.path));
+}
+
 /** Merge new records into the lock, preserving order and stamping the sync time. */
-async function writeLock(entries) {
+async function writeLock(entries, syncedAt = new Date().toISOString()) {
   const dest = path.join(ROOT, LOCK_PATH);
   const body = {
     // A human reading a diff of this file needs to know what it is for.
@@ -108,13 +126,17 @@ async function writeLock(entries) {
       'scripts/check-content-integrity.mjs verifies every file against it WITHOUT network ' +
       'access, which is what makes hand-editing a vendored document a build failure rather ' +
       'than silent drift. Do not edit by hand.',
-    syncedAt: new Date().toISOString(),
+    syncedAt,
     docs: entries.sort((a, b) => a.path.localeCompare(b.path)),
   };
   await writeFile(dest, `${JSON.stringify(body, null, 2)}\n`, 'utf8');
 }
 
 async function main() {
+  if (UPDATE_LOCK && (!ONLY || CHECK)) {
+    console.error('--update-lock replaces the records of the pages it re-vendors, so it needs --only <section/slug> and no --check');
+    process.exit(2);
+  }
   const { docs } = await loadManifest(ROOT);
   const targets = docs.filter(
     (d) => d.repo && d.path && (!ONLY || `${d.section}/${d.slug}` === ONLY),
@@ -188,6 +210,12 @@ async function main() {
   if (!CHECK && !ONLY && failed.length === 0 && lockEntries.length === targets.length) {
     await writeLock(lockEntries);
     console.log(`  lock   ${LOCK_PATH}  (${lockEntries.length} entries)`);
+  } else if (UPDATE_LOCK && failed.length === 0 && lockEntries.length === targets.length) {
+    // A targeted update: replace the records of the pages just synced and keep the
+    // rest, including the full sync's timestamp, which this run does not renew.
+    const current = JSON.parse(await readFile(path.join(ROOT, LOCK_PATH), 'utf8'));
+    await writeLock(mergeLockRecords(current.docs ?? [], lockEntries), current.syncedAt);
+    console.log(`  lock   ${LOCK_PATH}  (${lockEntries.length} record(s) replaced, ${current.docs?.length ?? 0} before)`);
   } else if (!CHECK) {
     console.log(
       `\n  lock   NOT rewritten — a partial or incomplete sync must not narrow it.` +
@@ -212,7 +240,10 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+// Run only as a script, so the test can import mergeLockRecords without syncing.
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}

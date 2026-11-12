@@ -26,20 +26,43 @@ const page = (over: Partial<DocPage> = {}): DocPage => ({
 
 const index: ContentIndex = {
   generatedFrom: 'test',
-  sectionOrder: ['tutorials'],
+  sectionOrder: ['tutorials', 'studio', 'operations'],
   sections: [
     {
       id: 'tutorials',
-      title: 'Tutorials',
+      title: 'Get started',
       blurb: 'b',
+      groups: [{ id: 'main', title: 'Main', blurb: null, routes: ['/downloads', '/tutorials/one', '/tutorials/two', '/tutorials/three'] }],
       docs: [
-        { slug: 'one', route: '/tutorials/one', title: 'Step one', summary: '', readingMinutes: 1 },
-        { slug: 'two', route: '/tutorials/two', title: 'Step two', summary: '', readingMinutes: 4 },
-        { slug: 'three', route: '/tutorials/three', title: 'Step three', summary: '', readingMinutes: 2 },
+        { slug: 'one', route: '/tutorials/one', title: 'Step one', summary: '', readingMinutes: 1, navSection: 'tutorials', navGroup: 'main' },
+        { slug: 'two', route: '/tutorials/two', title: 'Step two', summary: '', readingMinutes: 4, navSection: 'tutorials', navGroup: 'main' },
+        { slug: 'three', route: '/tutorials/three', title: 'Step three', summary: '', readingMinutes: 2, navSection: 'tutorials', navGroup: 'main' },
+      ],
+    },
+    {
+      // Studio LISTS a page whose URL is under /operations/: its nav home.
+      id: 'studio',
+      title: 'Studio',
+      blurb: 'b',
+      groups: [{ id: 'use', title: 'Use the Studio', blurb: null, routes: ['/studio/install', '/operations/limits', '/studio/guide'] }],
+      docs: [
+        { slug: 'install', route: '/studio/install', title: 'Install the Studio', summary: '', readingMinutes: 1, navSection: 'studio', navGroup: 'use' },
+        { slug: 'guide', route: '/studio/guide', title: 'Studio user guide', summary: '', readingMinutes: 1, navSection: 'studio', navGroup: 'use' },
+      ],
+    },
+    {
+      id: 'operations',
+      title: 'Run a mesh',
+      blurb: 'b',
+      groups: [{ id: 'manage', title: 'Manage', blurb: null, routes: ['/operations/consoles'] }],
+      docs: [
+        { slug: 'consoles', route: '/operations/consoles', title: 'Admin consoles', summary: '', readingMinutes: 1, navSection: 'operations', navGroup: 'manage' },
+        { slug: 'limits', route: '/operations/limits', title: 'Limit builds', summary: '', readingMinutes: 1, navSection: 'studio', navGroup: 'use' },
       ],
     },
   ],
-  totals: { sections: 1, pages: 3 },
+  redirects: { '/tutorials/old-step': '/tutorials/three', '/operations/old-tuning': '/operations/limits#caps' },
+  totals: { sections: 3, pages: 6 },
 };
 
 describe('DocPageComponent', () => {
@@ -47,15 +70,19 @@ describe('DocPageComponent', () => {
   let params: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
   let pageSubject: BehaviorSubject<DocPage | null>;
 
-  function setup(initial: DocPage | null = page()): void {
-    params = new BehaviorSubject(convertToParamMap({ section: 'tutorials', slug: 'two' }));
+  function setup(
+    initial: DocPage | null = page(),
+    at: { section: string; slug: string } = { section: 'tutorials', slug: 'two' },
+    fragment: string | null = null,
+  ): void {
+    params = new BehaviorSubject(convertToParamMap(at));
     pageSubject = new BehaviorSubject<DocPage | null>(initial);
 
     TestBed.configureTestingModule({
       imports: [DocPageComponent],
       providers: [
         provideRouter([]),
-        { provide: ActivatedRoute, useValue: { paramMap: params.asObservable() } },
+        { provide: ActivatedRoute, useValue: { paramMap: params.asObservable(), fragment: of(fragment) } },
         {
           provide: ContentService,
           useValue: {
@@ -109,11 +136,110 @@ describe('DocPageComponent', () => {
     expect(gh!.rel).toContain('noopener');
   });
 
-  it('offers previous and next within the section', () => {
+  it('a page written for the site links the files it was checked against, at the recorded commit', () => {
+    const ref = 'f'.repeat(40);
+    setup(
+      page({
+        source: null,
+        basis: [
+          { repo: 'hugmesh-actions', path: 'README.md', ref, url: `https://github.com/hugmesh/hugmesh-actions/blob/${ref}/README.md` },
+          { repo: 'hugmesh-actions', path: 'src/main/resources/application.yml', ref, url: null },
+        ],
+      }),
+    );
+    const note = fixture.nativeElement.querySelector('[data-testid="basis-note"]') as HTMLElement;
+    expect(note).toBeTruthy();
+    expect(note.textContent).toContain('hugmesh-actions/README.md');
+    expect(note.textContent).toContain('hugmesh-actions/src/main/resources/application.yml');
+    // One sentence, with no space before the comma or the full stop.
+    expect(note.textContent!.replace(/\s+/g, ' ')).toContain(
+      'checked against hugmesh-actions/README.md, hugmesh-actions/src/main/resources/application.yml. Where the page and those files disagree',
+    );
+    const links = [...note.querySelectorAll('a')] as HTMLAnchorElement[];
+    expect(links.map((a) => a.getAttribute('href'))).toEqual([`https://github.com/hugmesh/hugmesh-actions/blob/${ref}/README.md`]);
+    expect(links[0].rel).toContain('noopener');
+  });
+
+  it('a page with neither a source nor a basis shows no provenance note', () => {
+    setup(page({ source: null, basis: [] }));
+    expect(fixture.nativeElement.querySelector('.source-note')).toBeNull();
+  });
+
+  it('offers previous and next in the reading order of the tab', () => {
     setup();
     const pager = fixture.nativeElement.querySelector('.pager') as HTMLElement;
     expect(pager.textContent).toContain('Step one');
     expect(pager.textContent).toContain('Step three');
+  });
+
+  it('never offers the Downloads page as "previous", although the tab lists it first', () => {
+    setup(page({ section: 'tutorials', slug: 'one', route: '/tutorials/one', title: 'Step one' }), { section: 'tutorials', slug: 'one' });
+    expect(fixture.nativeElement.querySelector('[data-testid="pager-prev"]')).toBeNull();
+    expect((fixture.nativeElement.querySelector('[data-testid="pager-next"]') as HTMLElement).textContent).toContain('Step two');
+  });
+
+  describe('a page listed under another tab than its URL prefix', () => {
+    const limits = () =>
+      setup(
+        page({ section: 'operations', slug: 'limits', route: '/operations/limits', title: 'Limit builds' }),
+        { section: 'operations', slug: 'limits' },
+      );
+
+    it('takes its breadcrumb from the tab that lists it', () => {
+      limits();
+      const crumb = fixture.nativeElement.querySelector('[data-testid="crumb-section"]') as HTMLAnchorElement;
+      expect(crumb.textContent!.trim()).toBe('Studio');
+      expect(crumb.getAttribute('href')).toBe('/studio');
+    });
+
+    it('walks prev and next through that tab, not through its URL section', () => {
+      limits();
+      expect((fixture.nativeElement.querySelector('[data-testid="pager-prev"]') as HTMLElement).textContent).toContain('Install the Studio');
+      expect((fixture.nativeElement.querySelector('[data-testid="pager-next"]') as HTMLElement).textContent).toContain('Studio user guide');
+    });
+
+    it('shows that tab\'s pages in the rail, with this page marked current', () => {
+      limits();
+      const rail = fixture.nativeElement.querySelector('hug-sidebar') as HTMLElement;
+      expect(rail.textContent).toContain('Install the Studio');
+      expect(rail.textContent).not.toContain('Admin consoles');
+      expect(rail.querySelector('[aria-current="page"]')!.textContent!.trim()).toBe('Limit builds');
+    });
+  });
+
+  it('shows reading time only for a page of five minutes or more', () => {
+    setup();
+    expect(fixture.nativeElement.querySelector('[data-testid="reading-time"]')).toBeNull();
+    TestBed.resetTestingModule();
+    setup(page({ readingMinutes: 7 }));
+    expect((fixture.nativeElement.querySelector('[data-testid="reading-time"]') as HTMLElement).textContent).toContain('7 min read');
+  });
+
+  describe('a retired URL', () => {
+    it('is replaced by the page its content moved to', () => {
+      const navigate = spyOn(Router.prototype, 'navigateByUrl').and.resolveTo(true);
+      setup(null, { section: 'tutorials', slug: 'old-step' });
+      expect(navigate).toHaveBeenCalledWith('/tutorials/three', { replaceUrl: true });
+      // While it is sent on, it does not first claim the page is missing.
+      expect(fixture.nativeElement.querySelector('.missing')).toBeNull();
+    });
+
+    it('keeps the #fragment the old link carried, unless the redirect names its own', () => {
+      const navigate = spyOn(Router.prototype, 'navigateByUrl').and.resolveTo(true);
+      setup(null, { section: 'tutorials', slug: 'old-step' }, 'step-3');
+      expect(navigate).toHaveBeenCalledWith('/tutorials/three#step-3', { replaceUrl: true });
+      navigate.calls.reset();
+      TestBed.resetTestingModule();
+      setup(null, { section: 'operations', slug: 'old-tuning' }, 'ignored');
+      expect(navigate).toHaveBeenCalledWith('/operations/limits#caps', { replaceUrl: true });
+    });
+
+    it('a URL that never existed still says the page is not here', () => {
+      const navigate = spyOn(Router.prototype, 'navigateByUrl').and.resolveTo(true);
+      setup(null, { section: 'tutorials', slug: 'never' });
+      expect(navigate).not.toHaveBeenCalled();
+      expect(fixture.nativeElement.querySelector('.missing')).toBeTruthy();
+    });
   });
 
   it('shows a distinct state for a document that does not exist', () => {

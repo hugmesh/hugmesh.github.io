@@ -19,8 +19,9 @@ import { Marked } from 'marked';
 import GithubSlugger from 'github-slugger';
 import sanitizeHtml from 'sanitize-html';
 import hljs from 'highlight.js';
-import { loadManifest, groupBySection, SECTIONS } from './lib/manifest.mjs';
+import { loadManifest, groupBySection, fragmentProblems, SECTIONS, STANDALONE_ROUTES } from './lib/manifest.mjs';
 import { parseFrontMatter } from './lib/frontmatter.mjs';
+import { BASIS_LOCK_PATH } from './lib/basis.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = path.join(ROOT, 'src/assets/content');
@@ -381,7 +382,8 @@ function textOf(html) {
 }
 
 async function main() {
-  const { docs, meta } = await loadManifest(ROOT);
+  const manifest = await loadManifest(ROOT);
+  const { docs, meta } = manifest;
   sourcesArePublic = meta.sourcesArePublic === true;
 
   // repo+path -> site route, so cross-document links between two PUBLISHED docs
@@ -391,9 +393,16 @@ async function main() {
   );
   const routeFor = (repo, p) => routeIndex.get(`${repo}:${p}`) ?? null;
 
+  // What each site-written page was checked against (lib/basis.mjs): page -> the
+  // recorded upstream files. check:integrity has already required a record for every
+  // declared file, so a page missing here simply declares no basis.
+  const basisLock = await readFile(path.join(ROOT, BASIS_LOCK_PATH), 'utf8').then(JSON.parse, () => ({ pages: [] }));
+  const basisByPage = new Map((basisLock.pages ?? []).map((p) => [p.page, p.sources ?? []]));
+
   // Everything this site actually serves: every published document, every section
-  // index, and the handful of standalone pages the router declares itself.
-  const STANDALONE_ROUTES = ['/', '/search', '/downloads'];
+  // index, and the handful of standalone pages the router declares itself. A
+  // redirect source is deliberately NOT here: a page written in this repository
+  // must link the page as it is now, not a URL that only survives as a redirect.
   const siteRoutes = new Set([
     ...STANDALONE_ROUTES,
     ...SECTIONS.map((s) => `/${s.id}`),
@@ -462,6 +471,18 @@ async function main() {
         }
       : null;
 
+    // A site-written page has no source file, but it was checked against some: link
+    // each at the exact commit recorded, so the link shows what the page was read
+    // against even after the file moves on.
+    const basis = entry.authored
+      ? (basisByPage.get(entry.contentPath) ?? []).map((s) => ({
+          repo: s.repo,
+          path: s.path,
+          ref: s.ref,
+          url: sourcesArePublic ? `${ORG_URL}/${s.repo}/blob/${s.ref}/${s.path}` : null,
+        }))
+      : [];
+
     const page = {
       section: entry.section,
       slug: entry.slug,
@@ -475,6 +496,7 @@ async function main() {
       readingMinutes: Math.max(1, Math.round(plain.split(' ').length / 220)),
       toc,
       source,
+      basis,
       html,
     };
 
@@ -486,6 +508,7 @@ async function main() {
     searchIndex.push({
       route: entry.route,
       section: entry.section,
+      navSection: entry.navSection,
       title: entry.title,
       summary: page.summary,
       headings: toc.map((t) => t.text),
@@ -495,21 +518,60 @@ async function main() {
     });
   }
 
-  const sections = groupBySection(docs).map((section) => ({
-    id: section.id,
-    title: section.title,
-    blurb: section.blurb,
-    docs: section.docs.map((d) => {
-      const page = pages.find((p) => p.route === d.route);
-      return {
-        slug: d.slug,
-        route: d.route,
-        title: d.title,
-        summary: page?.summary ?? '',
-        readingMinutes: page?.readingMinutes ?? 1,
-      };
-    }),
-  }));
+  // Every '#fragment' a start link, a group or a redirect names must be a real
+  // heading on the target page (lib/manifest.mjs fragmentProblems).
+  const tocByRoute = new Map(pages.map((p) => [p.route, new Set(p.toc.map((t) => t.id))]));
+  broken.push(...fragmentProblems(manifest, tocByRoute));
+
+  // ── the tab intros (landings/<id>.md), site-authored, so a link to anything this
+  // site does not serve fails the build exactly as it does on an authored page.
+  const intros = new Map();
+  for (const s of SECTIONS) {
+    const raw = await readFile(path.join(ROOT, 'landings', `${s.id}.md`), 'utf8');
+    const entry = { section: s.id, slug: '', route: `/${s.id}` };
+    const warn = (msg) => {
+      const line = `landings/${s.id}.md: ${msg}`;
+      (msg.startsWith('BROKEN LINK') ? broken : warnings).push(line);
+    };
+    const { marked } = createRenderer({ routeFor, isSiteRoute, entry, warn });
+    intros.set(s.id, sanitizeHtml(marked.parse(parseFrontMatter(raw).body), SANITIZE));
+  }
+
+  const summaryOf = (d) => {
+    const page = pages.find((p) => p.route === d.route);
+    return {
+      slug: d.slug,
+      route: d.route,
+      title: d.title,
+      summary: page?.summary ?? '',
+      readingMinutes: page?.readingMinutes ?? 1,
+      navSection: d.navSection,
+      navGroup: d.navGroup,
+    };
+  };
+  const titleOf = (route) => docs.find((d) => d.route === route)?.title ?? null;
+  const urlSections = new Map(groupBySection(manifest).map((s) => [s.id, s]));
+
+  // sections[].docs stays URL-keyed (every doc whose URL starts /<id>/), because the
+  // page payload lives at <url-section>/<slug>.json and the static pages, the
+  // payload test and search all walk it that way. What a TAB shows is `groups`:
+  // route references only, resolved by the app through one route -> doc map.
+  const sections = manifest.sections.map((s) => {
+    const indexPage = s.index ? pages.find((p) => p.route === s.index) : null;
+    return {
+      id: s.id,
+      title: s.title,
+      blurb: s.blurb,
+      cluster: s.cluster,
+      introHtml: intros.get(s.id),
+      start: s.start ? { route: s.start, title: titleOf(s.start.split('#')[0]) ?? s.start } : null,
+      ...(indexPage
+        ? { index: { route: indexPage.route, entries: indexPage.toc.map((t) => ({ id: t.id, text: t.text, level: t.level })) } }
+        : {}),
+      groups: s.groups.map((g) => ({ id: g.id, title: g.title, blurb: g.blurb, routes: g.pages })),
+      docs: (urlSections.get(s.id)?.docs ?? []).map(summaryOf),
+    };
+  });
 
   await writeFile(
     path.join(OUT, 'index.json'),
@@ -517,6 +579,9 @@ async function main() {
       generatedFrom: meta.description ?? 'docs.manifest.json',
       sectionOrder: SECTIONS.map((s) => s.id),
       sections,
+      // Retired URLs: the app follows these when a page file is gone, and
+      // spa-fallback writes a static redirect page for each.
+      redirects: Object.fromEntries(manifest.redirects.map((r) => [r.from, r.to])),
       totals: {
         sections: sections.length,
         pages: pages.length,
@@ -559,7 +624,7 @@ async function main() {
   // nothing this site serves is a mistake this repository can and should fix now —
   // unlike a cross-reference into a private repo, which is a fact about the world.
   if (broken.length) {
-    console.error(`\n${broken.length} broken link(s) in site-authored pages:`);
+    console.error(`\n${broken.length} broken link(s) in site-authored pages, tab intros or navigation:`);
     for (const b of broken) console.error(`  ${b}`);
     throw new Error('site-authored pages must not link to routes that do not exist');
   }

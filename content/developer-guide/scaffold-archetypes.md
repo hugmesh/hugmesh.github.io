@@ -1,96 +1,55 @@
 ---
-title: "Embedded scaffold archetype codebases"
+title: "Starter repos and archetypes"
 section: "developer-guide"
 slug: "scaffold-archetypes"
-summary: "The embedded starter codebases the Service Store scaffold surface renders and hands to a brand as a downloadable ZIP."
-source_repo: "hugmesh-admin-bff-api"
-source_path: "src/main/resources/scaffold/README.md"
-source_ref: "59a498d"
+summary: "The starter repositories the Service Store hands out, and the templates they come from."
 ---
 
-This directory holds the **example starter codebases** the SUPERADMIN Service-Store
-*scaffold* surface renders and hands to a brand as a downloadable ZIP
-(`GET /bff/superadmin/service-store/{domain}/scaffold/{id}/archive`).
+A new HugMesh service starts from an archetype: a template for one kind of repository,
+such as a Spring API or an Angular web app. Archetypes live in two places, and this page
+explains both.
 
-Each sub-directory is one archetype:
+## Starter ZIPs from the Service Store
 
-| archetype        | what it renders                                                         |
-|------------------|-------------------------------------------------------------------------|
-| `spring-bff`     | a minimal, runnable Spring Boot 4 WebFlux BFF (Java 25, hugmesh-parent) |
-| `angular-mfe`    | an Angular 22 native-federation **remote** exposing `./routes`           |
-| `angular-host`   | an Angular 22 native-federation **host shell** (dynamic manifest union)  |
-| `remote-fragment`| a pointer README to the real base as the fragment example                |
-
-## Provenance — VENDORED, not hand-authored
-
-These trees are a **build-time copy** of the source of truth in the generator repo:
+A superadmin can download a starter codebase for a new service from the Service Store in
+the [Service catalog console](/reference/service-catalog-ui). The admin API renders it as
+a ZIP for one domain:
 
 ```
-hugmesh-generator  templates/archetypes/<archetype>/_skeleton/
+GET /bff/superadmin/service-store/{domain}/scaffold/{id}/archive
 ```
 
-The first copy came from generator commit `05fcab39ef09d8265eb60888fbac999cf9fa1a58`.
-That commit is not in the generator's history today (a fetch of `origin/main` on
-2026-10-07 does not have it).
+| Archetype | What you get |
+|---|---|
+| `spring-bff` | A minimal Spring Boot 4 WebFlux API (Java 25, built with the HugMesh parent POM) that builds, tests and runs. |
+| `angular-mfe` | An Angular 22 native-federation web app that exposes `./routes`, ready for the host shell to load. |
+| `angular-host` | An Angular 22 native-federation host shell that loads the web apps listed in its manifest. |
+| `remote-fragment` | A pointer to the real base repository, which serves published web app bundles. There is no runnable skeleton for this one, on purpose. |
 
-The copy rule:
+The `{{TOKEN}}` placeholders in the files are filled in when the ZIP is requested, and
+the Java sources are moved into the package for your service. The templates are in
+[`hugmesh-admin-bff-api`](https://github.com/hugmesh/hugmesh-admin-bff-api/tree/main/src/main/resources/scaffold).
 
-- every `<file>.hbs` becomes `<file>` (the `.hbs` suffix is stripped);
-- the `{{TOKEN}}` placeholders stay as the generator wrote them. `TokenRenderer`
-  fills them at request time, not at copy time;
-- the Java sources sit under the neutral `src/main/java/net/hugmesh/app/` directory,
-  and `ScaffoldArchiveRenderer` moves them into the real package path per request.
+## The generator's archetypes
 
-The trees are no longer a clean copy. Compared with generator `main` on 2026-10-07:
+The generator renders the platform's own repositories for a new brand from one recipe
+per kind of repository, with each repository's identity filled in from the brand's
+configuration. The templates are in
+[`hugmesh-generator` `templates/archetypes/`](https://github.com/hugmesh/hugmesh-generator/tree/main/templates/archetypes).
 
-- The generator keeps the Java sources under `src/main/java/systems/hugmesh/app/` and
-  declares `systems.hugmesh`. This repo moved to `net.hugmesh` in commit `877de6e`
-  (`pom.xml`, `settings.xml`, the `Dockerfile`, the README and the Java files).
-- Other `spring-bff` files differ too. `deploy/deployment.yaml` and
-  `deploy/kustomization.yaml` fix the namespace to `hugmesh-backend` and the image to
-  `hugmesh-systems/`, where the generator uses `{{BRAND}}-backend` and `hugmesh/`. The
-  generator's `Dockerfile` also reads a `packages_read_token` secret, and the generator
-  has a `.github/maven-ci-settings.xml` that this copy lacks.
-- `angular-mfe` differs in `federation-base.js` and `src/styles.scss`, and
-  `angular-host` in `src/styles.scss`.
-- The `README.md` files here carry corrected pointers (`angular-host`,
-  `remote-fragment`, `spring-bff`). The generator's copies still carry the old ones.
+| Archetype | Kind of repository | Members today |
+|---|---|---|
+| `spring-bff` | A Spring Boot 4 Java API | the admin, user, mod, forum, owncast, tube and wiki APIs, and the federation API |
+| `angular-mfe` | An Angular native-federation web app | the login, admin, user, mod, matrix, mastodon, owncast, tube, wiki and forum web apps, the API documentation browser, the avatar creator and the service catalog console |
+| `angular-host` | The host shell that loads every web app | `hugmesh-host-shell` |
+| `gateway` | Gateways and infrastructure services | the gateways and `hugmesh-actions` |
+| `remote-fragment` | The pod that serves published web app bundles | `hugmesh-remote-fragment` |
 
-The `resources/catalog/*.json` vendoring (`ImageCatalogProvider`) follows the same
-idea: one source of truth in the generator, copied in.
+Each archetype changes only what differs per brand, such as the sign-in host and the CI
+settings. The code itself stays as the base repository has it.
 
-## Resync procedure
+## The two copies differ
 
-When the generator archetype skeletons change, re-vendor them:
-
-```sh
-GEN=<hugmesh-generator checkout>/templates/archetypes
-DST=src/main/resources/scaffold
-rm -rf "$DST"/{spring-bff,angular-mfe,angular-host,remote-fragment}
-for a in spring-bff angular-mfe angular-host remote-fragment; do
-  SRC="$GEN/$a/_skeleton"
-  while IFS= read -r f; do
-    rel="${f#"$SRC/"}"; out="$DST/$a/${rel%.hbs}"
-    mkdir -p "$(dirname "$out")"; cp "$f" "$out"
-  done < <(find "$SRC" -type f)
-done
-```
-
-**Do not run this as it stands.** It copies the generator's
-`systems/hugmesh/app/` Java path, and `ScaffoldArchiveRenderer` relocates only
-`net/hugmesh/app/`. After a resync, move the Java sources (main and test) back to
-`net/hugmesh/app/` and rename `systems.hugmesh` to `net.hugmesh`. Diff first: the
-`rm -rf` also drops every change made here.
-
-Then bump the generator commit hash recorded above, and re-run the scaffold render
-tests (`ScaffoldArchiveRendererTest`, `TokenRendererTest`, `ScaffoldServiceTest`).
-The render hard-fails on any unrendered `{{UPPER_SNAKE}}` residual, so a
-newly-introduced token is caught immediately (add it to the context that
-`ScaffoldRenderContext` builds).
-
-## No secrets
-
-The skeletons carry **no secret material** — every credential is an
-`${ENV:default}` seam with an empty default (config is injected at deploy time).
-`ScaffoldArchiveRendererTest` asserts the rendered output contains no PEM private-key
-blocks, so a future skeleton edit that leaks a secret fails the build.
+The Service Store templates started as a copy of the generator's archetype skeletons
+and have since drifted: for example, the Java package and some deployment defaults
+differ. The README in each location lists the differences.

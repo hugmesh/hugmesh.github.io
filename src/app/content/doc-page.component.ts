@@ -16,9 +16,10 @@ import { DomSanitizer, SafeHtml, Title, Meta } from '@angular/platform-browser';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map, of, switchMap } from 'rxjs';
 import { ContentService } from './content.service';
-import { DocPage, DocSummary } from './content.models';
+import { DocPage } from './content.models';
 import { SidebarComponent } from '../layout/sidebar.component';
 import { sectionMeta } from './sections';
+import { navMap, siblingsOf } from './nav';
 import { loadMermaid } from './mermaid-loader';
 import { type AnchorSettle, settleOnAnchor } from './anchor-settle';
 
@@ -77,30 +78,58 @@ export class DocPageComponent {
   );
 
   private readonly index = toSignal(this.content.index());
+  private readonly map = computed(() => navMap(this.index()));
 
+  /** The URL's section: where the page's JSON lives. */
   readonly section = computed(() => this.params().section);
-  readonly sectionTitle = computed(() => sectionMeta(this.section())?.title ?? this.section());
+  readonly path = computed(() => `/${this.params().section}/${this.params().slug}`);
+
+  /** The tab that LISTS this page, which is where the reader thinks they are: the
+   *  breadcrumb, the sidebar and prev/next follow it, not the URL prefix. A page
+   *  under /operations/ that Studio lists reads as part of Studio. */
+  readonly navSection = computed(() => this.map().get(this.path())?.navSection ?? this.section());
+  readonly sectionTitle = computed(() => sectionMeta(this.navSection())?.title ?? this.navSection());
 
   readonly body = computed<SafeHtml | null>(() => {
     const html = this.page()?.html;
     return html ? this.sanitizer.bypassSecurityTrustHtml(html) : null;
   });
 
-  /** Previous/next within the section, so a reader can walk a tutorial track
-   *  without going back to the index between every step. */
-  readonly siblings = computed(() => {
-    const docs = this.index()?.sections.find((s) => s.id === this.section())?.docs ?? [];
-    const i = docs.findIndex((d) => d.slug === this.params().slug);
-    return {
-      prev: i > 0 ? docs[i - 1] : (null as DocSummary | null),
-      next: i >= 0 && i < docs.length - 1 ? docs[i + 1] : (null as DocSummary | null),
-    };
-  });
+  /** Previous/next in the reading order of the page's tab, so a reader can walk a
+   *  tutorial track without going back to the index between every step. */
+  readonly siblings = computed(() => siblingsOf(this.path(), this.index(), this.map()));
+
+  /** Reading time only where it helps decide whether to start now. */
+  readonly showReadingTime = computed(() => (this.page()?.readingMinutes ?? 0) >= 5);
+
+  /** Set while a retired URL is being sent on to its replacement, so the "moved
+   *  or removed" state does not flash first. */
+  readonly redirecting = signal(false);
 
   readonly mermaidFailed = signal(false);
 
   constructor() {
     this.destroyRef.onDestroy(() => this.settle?.stop());
+
+    // A retired URL: the page file is gone, and index.json says where its content
+    // went. Follow it in place (replaceUrl, so Back does not bounce the reader
+    // into the redirect again), keeping a #fragment the link carried. The static
+    // redirect page in the build only matters for a cold load or a crawler.
+    effect(() => {
+      if (this.page() !== null) {
+        this.redirecting.set(false);
+        return;
+      }
+      const index = this.index();
+      if (!index) return;
+      const to = index.redirects?.[this.path()];
+      if (!to) return;
+      this.redirecting.set(true);
+      const fragment = untracked(this.fragment);
+      const target = to.includes('#') || !fragment ? to : `${to}#${fragment}`;
+      void this.router.navigateByUrl(target, { replaceUrl: true });
+    });
+
     effect(() => {
       const page = this.page();
       if (!page) return;

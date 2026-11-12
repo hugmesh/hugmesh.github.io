@@ -28,6 +28,8 @@
  *     vendored nor declared authored:"site"
  *   - a missing or unparseable lock               -> fail
  *   - a lock that covers zero documents           -> fail
+ *   - a site-written page whose declared upstream -> fail
+ *     files have no record in the basis lock
  *
  * A gate that can report "nothing to check" and still exit 0 is not a gate.
  * The single deliberate exception is check 5 when its private denylist file is
@@ -48,6 +50,7 @@ import { homedir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadManifest } from './lib/manifest.mjs';
+import { BASIS_LOCK_PATH, basisLockProblems } from './lib/basis.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LOCK = path.join(ROOT, 'content', '.sync.lock.json');
@@ -214,7 +217,11 @@ async function main() {
   if (denylist.error) {
     failures.push(denylist.error);
   } else if (denylist.entries) {
-    for (const rel of [...onDisk, 'docs.manifest.json']) {
+    // The tab intros are written here, outside content/, and published all the same.
+    const landings = (await readdir(path.join(ROOT, 'landings')).catch(() => []))
+      .filter((f) => f.endsWith('.md'))
+      .map((f) => `landings/${f}`);
+    for (const rel of [...onDisk, ...landings, 'docs.manifest.json']) {
       const text = (await readFile(path.join(ROOT, rel), 'utf8')).toLowerCase();
       for (const { word, line } of denylist.entries) {
         if (text.includes(word)) {
@@ -227,6 +234,19 @@ async function main() {
       }
     }
   }
+
+  // 6. Every upstream file a site-written page declares as its basis must have a
+  // record of the commit and content it was checked against (lib/basis.mjs). The
+  // comparison with upstream needs the network and lives in check:basis; what is
+  // checked here is that the record EXISTS, so a page cannot quietly go untracked.
+  let basisLock = null;
+  try {
+    basisLock = JSON.parse(await readFile(path.join(ROOT, BASIS_LOCK_PATH), 'utf8'));
+  } catch (err) {
+    if (err.code !== 'ENOENT') failures.push(`${BASIS_LOCK_PATH}: unreadable (${err.message})`);
+  }
+  failures.push(...basisLockProblems(docs, basisLock));
+  const tracked = docs.filter((d) => d.authored && d.basis?.length > 0).length;
 
   const checked = vendored.size + authored.size;
   if (failures.length) {
@@ -248,6 +268,7 @@ async function main() {
   }
   console.log(
     `content integrity OK — ${vendored.size} vendored + ${authored.size} authored documents verified` +
+      ` (${tracked} authored with a recorded upstream basis)` +
       (age === null ? '' : `; last full sync ${age} day(s) ago`) +
       (denylist.entries ? `; private denylist: ${denylist.entries.length} entr${denylist.entries.length === 1 ? 'y' : 'ies'} checked` : ''),
   );

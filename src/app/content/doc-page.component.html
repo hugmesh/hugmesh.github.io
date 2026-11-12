@@ -1,12 +1,12 @@
 <div class="doc-layout">
   <aside class="rail" aria-label="Section navigation">
-    <hug-sidebar [section]="section()" />
+    <hug-sidebar [section]="navSection()" [current]="path()" />
   </aside>
 
   <main id="maincontent" class="doc">
     @let doc = page();
 
-    @if (doc === undefined) {
+    @if (doc === undefined || (doc === null && redirecting())) {
       <!-- Skeleton, not a spinner: it holds the layout so the page does not jump
            when the content lands, and it carries a live region so a screen reader
            is told something is happening rather than meeting silence. -->
@@ -26,7 +26,7 @@
           merged into another page, or it may never have been published on this site.
         </p>
         <p>
-          <a [routerLink]="['/', section()]">Browse {{ sectionTitle() }}</a> ·
+          <a [routerLink]="['/', navSection()]">Browse {{ sectionTitle() }}</a> ·
           <a routerLink="/search">search the documentation</a>
         </p>
       </div>
@@ -34,29 +34,35 @@
       <nav class="crumbs" aria-label="Breadcrumb">
         <ol>
           <li><a routerLink="/">Docs</a></li>
-          <li><a [routerLink]="['/', doc.section]">{{ sectionTitle() }}</a></li>
+          <li><a [routerLink]="['/', navSection()]" data-testid="crumb-section">{{ sectionTitle() }}</a></li>
           <li aria-current="page">{{ doc.title }}</li>
         </ol>
       </nav>
 
       <header class="doc-head">
         <h1>{{ doc.title }}</h1>
-        <p class="meta">
-          <span>{{ doc.readingMinutes }} min read</span>
-          @if (doc.source; as src) {
-            <span aria-hidden="true">·</span>
-            <span class="provenance">
-              from
-              @if (src.url) {
-                <a [href]="src.url" target="_blank" rel="noopener noreferrer"
-                  >{{ src.repo }}/{{ src.path }}</a
-                >
-              } @else {
-                <code>{{ src.repo }}/{{ src.path }}</code>
+        @if (showReadingTime() || doc.source) {
+          <p class="meta">
+            @if (showReadingTime()) {
+              <span data-testid="reading-time">{{ doc.readingMinutes }} min read</span>
+            }
+            @if (doc.source; as src) {
+              @if (showReadingTime()) {
+                <span aria-hidden="true">·</span>
               }
-            </span>
-          }
-        </p>
+              <span class="provenance">
+                from
+                @if (src.url) {
+                  <a [href]="src.url" target="_blank" rel="noopener noreferrer"
+                    >{{ src.repo }}/{{ src.path }}</a
+                  >
+                } @else {
+                  <code>{{ src.repo }}/{{ src.path }}</code>
+                }
+              </span>
+            }
+          </p>
+        }
       </header>
 
       @if (doc.toc.length > 2) {
@@ -90,7 +96,7 @@
       @if (sib.prev || sib.next) {
         <nav class="pager" aria-label="Previous and next page">
           @if (sib.prev; as prev) {
-            <a class="pager-link prev" [routerLink]="prev.route">
+            <a class="pager-link prev" [routerLink]="prev.route" data-testid="pager-prev">
               <span class="pager-dir">← Previous</span>
               <span class="pager-title">{{ prev.title }}</span>
             </a>
@@ -98,7 +104,7 @@
             <span></span>
           }
           @if (sib.next; as next) {
-            <a class="pager-link next" [routerLink]="next.route">
+            <a class="pager-link next" [routerLink]="next.route" data-testid="pager-next">
               <span class="pager-dir">Next →</span>
               <span class="pager-title">{{ next.title }}</span>
             </a>
@@ -118,6 +124,21 @@
           }
           — that file is the source of truth, and corrections belong there rather than
           here, because this site re-renders from it.
+        </p>
+      } @else if (doc.basis?.length) {
+        <p class="source-note field-help" data-testid="basis-note">
+          This page was written for this site and last checked against
+          @for (b of doc.basis; track b.repo + '/' + b.path; let last = $last) {
+            @if (b.url) {
+              <a [href]="b.url" target="_blank" rel="noopener noreferrer">{{ b.repo }}/{{ b.path }}</a>
+            } @else {
+              <code>{{ b.repo }}/{{ b.path }}</code>
+            }
+            @if (!last) {
+              <span>, </span>
+            }
+          }
+          <span>. Where the page and {{ doc.basis.length > 1 ? 'those files' : 'that file' }} disagree, trust the {{ doc.basis.length > 1 ? 'files' : 'file' }}.</span>
         </p>
       }
     }

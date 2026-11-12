@@ -169,34 +169,45 @@ section {
   color: var(--hug-accent-soft);
 }
 
+// No line clamp: a summary is at most 160 characters (the manifest lint), and one
+// cut off mid-sentence reads as a bug. home.component.spec.ts measures the fit.
 .step-body em {
   display: block;
   margin-top: 0.15rem;
   color: var(--hug-text-muted);
   font-size: 0.85rem;
   font-style: normal;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
-// ── Section grid ─────────────────────────────────────────────────────────────
-.sections ul {
+// ── Browse: four columns, one per header cluster ────────────────────────────
+.cluster-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
-  gap: 0.75rem;
-  margin: 1.25rem 0 0;
-  padding: 0;
-  list-style: none;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+
+  h3 {
+    margin: 0 0 0.5rem;
+    color: var(--hug-text-muted);
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  ul {
+    display: grid;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
 
   a {
     display: flex;
     align-items: flex-start;
-    gap: 0.75rem;
+    gap: 0.65rem;
     height: 100%;
-    padding: 1rem 1.1rem;
+    padding: 0.8rem 0.9rem;
     background: rgba(t.$black, 0.7);
     border: 1px solid var(--hug-border);
     border-radius: t.$radius-card;
@@ -211,8 +222,8 @@ section {
 
   svg {
     flex: 0 0 auto;
-    width: 1.35rem;
-    height: 1.35rem;
+    width: 1.25rem;
+    height: 1.25rem;
     margin-top: 0.1rem;
     color: var(--hug-accent-soft);
   }
@@ -233,16 +244,6 @@ section {
     font-size: 0.85rem;
     font-style: normal;
   }
-}
-
-.count {
-  flex: 0 0 auto;
-  padding: 0.1rem 0.45rem;
-  background: var(--hug-bg-2);
-  border: 1px solid var(--hug-border);
-  border-radius: 999px;
-  color: var(--hug-text-muted);
-  font-size: 0.75rem;
 }
 
 // ── Platform grid ────────────────────────────────────────────────────────────
@@ -525,40 +526,3 @@ section {
   text-transform: uppercase;
 }
 
-// ── Docs strip ───────────────────────────────────────────────────────────────
-.strip {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-  flex-wrap: wrap;
-  padding: 1.75rem;
-  border: 1px solid var(--hug-border);
-  border-radius: t.$radius-lg;
-  background: var(--hug-bg-1);
-}
-
-.stat {
-  margin: 0;
-
-  .stat-n {
-    display: block;
-    color: var(--hug-text);
-    font-size: 2.25rem;
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: -0.02em;
-  }
-
-  .stat-l {
-    color: var(--hug-text-muted);
-    font-size: 0.875rem;
-  }
-}
-
-.strip-note {
-  flex: 1 1 20rem;
-  margin: 0;
-  color: var(--hug-text-muted);
-  font-size: 0.9rem;
-  line-height: 1.55;
-}

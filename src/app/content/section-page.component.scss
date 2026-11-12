@@ -6,10 +6,45 @@
   z-index: t.$z-content;
 }
 
+// One column at a reading measure, on the same translucent panel as a doc page,
+// so a tab reads as a page of its own rather than a wall of boxes.
 .section-page {
-  max-width: 76rem;
-  margin: 0 auto;
-  padding: 2rem clamp(0.75rem, 2vw, 1.5rem) 0;
+  box-sizing: border-box;
+  max-width: 50rem;
+  margin: 1.5rem auto 0;
+  margin-inline: max(clamp(0.75rem, 2vw, 1.5rem), calc((100% - 50rem) / 2));
+  padding: clamp(1rem, 3vw, 2.25rem);
+  background: rgba(t.$black, 0.72);
+  border: 1px solid var(--hug-border);
+  border-radius: t.$radius-page;
+}
+
+@supports (backdrop-filter: blur(8px)) or (-webkit-backdrop-filter: blur(8px)) {
+  .section-page {
+    background: rgba(t.$black, 0.6);
+    backdrop-filter: blur(10px) saturate(120%);
+    -webkit-backdrop-filter: blur(10px) saturate(120%);
+  }
+}
+
+// The reader asked for more contrast or less motion: no moving gradient behind text.
+@media (prefers-contrast: more), (prefers-reduced-motion: reduce) {
+  .section-page {
+    background: rgba(t.$black, 0.95);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+.head {
+  margin-bottom: 1rem;
+
+  h1 {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0;
+  }
 }
 
 .crumbs {
@@ -43,16 +78,6 @@
   }
 }
 
-.head {
-  margin-bottom: 2rem;
-
-  h1 {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-  }
-}
-
 .icon {
   width: 1.6rem;
   height: 1.6rem;
@@ -60,80 +85,193 @@
   color: var(--hug-accent-soft);
 }
 
+.intro {
+  font-size: 1.05rem;
+
+  :first-child {
+    margin-top: 0;
+  }
+
+  :last-child {
+    margin-bottom: 0;
+  }
+}
+
 .blurb {
-  max-width: 62ch;
-  margin: 0;
+  margin: 0 0 1rem;
   color: var(--hug-text-muted);
   font-size: 1.05rem;
 }
 
-.cards {
-  display: grid;
-  // auto-fill, not auto-fit: with auto-fit a section holding a single page gets
-  // one card stretched across the full width, which reads as a banner rather
-  // than as one item in a list.
-  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
-  gap: 1rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+// ── Start here ──────────────────────────────────────────────────────────────
+.start {
+  margin-top: 1.5rem;
+  margin-bottom: 0;
 }
 
-.card {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  padding: 1rem 1.15rem;
-  background: rgba(t.$black, 0.72);
-  border: 1px solid var(--hug-border);
-  border-radius: t.$radius-card;
-  color: inherit;
+.start-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--hug-accent-soft);
+  border-radius: t.$radius-md;
+  color: var(--hug-text);
   text-decoration: none;
-  transition: border-color t.$transition-base, transform t.$transition-base;
+
+  svg {
+    flex: 0 0 auto;
+    width: 1.1rem;
+    height: 1.1rem;
+    color: var(--hug-accent-soft);
+  }
 
   &:hover,
   &:focus-visible {
-    border-color: var(--hug-accent-soft);
-    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.04);
+
+    .start-title {
+      text-decoration: underline;
+    }
   }
+}
+
+.start-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hug-accent-soft);
+}
+
+.start-label {
+  flex: 0 0 auto;
+}
+
+.start-title {
+  min-width: 0;
+  font-weight: 700;
+}
+
+// ── jump links (long tabs only) ─────────────────────────────────────────────
+.jumps {
+  margin-top: 1.25rem;
+
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.875rem;
+  }
+
+  a {
+    color: var(--hug-text-muted);
+
+    &:hover,
+    &:focus-visible {
+      color: var(--hug-text);
+    }
+  }
+}
+
+// ── groups of rows ──────────────────────────────────────────────────────────
+.group {
+  margin-top: 2.25rem;
+  scroll-margin-top: calc(var(--hug-header-h) + 1rem);
 
   h2 {
-    margin: 0 0 0.4rem;
-    font-size: 1.05rem;
-    color: var(--hug-accent-soft);
+    margin: 0 0 0.25rem;
+    font-size: 1.2rem;
+    scroll-margin-top: calc(var(--hug-header-h) + 1rem);
   }
 }
 
-.summary {
-  flex: 1 1 auto;
-  margin: 0 0 0.6rem;
+.group-blurb {
+  margin: 0 0 0.5rem;
   color: var(--hug-text-muted);
-  font-size: 0.9rem;
-  // Long auto-generated summaries would otherwise make one card three times the
-  // height of its neighbours.
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  line-clamp: 4;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  font-size: 0.95rem;
 }
 
-.card-meta {
-  margin: 0;
+.rows {
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--hug-border);
+}
+
+.rows > li {
+  border-bottom: 1px solid var(--hug-border);
+}
+
+.row {
+  display: block;
+  padding: 0.65rem 0.25rem;
+  color: inherit;
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    background: rgba(255, 255, 255, 0.04);
+
+    .row-title {
+      text-decoration: underline;
+    }
+  }
+}
+
+.row-title {
+  display: block;
+  color: var(--hug-accent-soft);
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.row-summary {
+  display: block;
+  margin-top: 0.15rem;
   color: var(--hug-text-muted);
-  font-size: 0.75rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: 0.925rem;
+  line-height: 1.45;
+}
+
+// ── Troubleshooting's symptom index ─────────────────────────────────────────
+.symptom-list {
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.95rem;
+
+  li {
+    margin: 0.2rem 0;
+  }
+
+  li:not(.sub) {
+    margin-top: 0.8rem;
+    font-weight: 700;
+  }
+
+  li.sub {
+    padding-inline-start: 1rem;
+  }
+
+  a {
+    color: var(--hug-text);
+
+    &:hover,
+    &:focus-visible {
+      color: var(--hug-accent-soft);
+    }
+  }
+
+  // Symptoms quote error text, which can be one long unbroken token.
+  overflow-wrap: anywhere;
 }
 
 .empty {
-  max-width: 60ch;
   color: var(--hug-text-muted);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .card:hover,
-  .card:focus-visible {
-    transform: none;
-  }
 }
