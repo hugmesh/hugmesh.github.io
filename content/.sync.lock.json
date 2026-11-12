@@ -433,8 +433,8 @@
       "path": "content/games/add-an-sse-channel.md",
       "sourceRepo": "hugmesh-games",
       "sourcePath": "docs/wiki/howto/add-sse-channel.md",
-      "sourceRef": "443605d",
-      "sha256": "83be5f2f460e04fd522c19d6699e4aa2df309a06a46e310d65ca197063eeaeec"
+      "sourceRef": "7463db4",
+      "sha256": "08f4a8fd352582ad913010b79b3ba1f2f977a3350ab917cd8e7a88c90aa7b3dd"
     },
     {
       "path": "content/games/administration.md",
@@ -447,15 +447,15 @@
       "path": "content/games/api-reference.md",
       "sourceRepo": "hugmesh-games",
       "sourcePath": "docs/wiki/architecture/05-api-reference.md",
-      "sourceRef": "443605d",
-      "sha256": "bcd1d777c9a94f6d76b818c2c7c732780a80f97f9be99e6b1feb463d52424db2"
+      "sourceRef": "7463db4",
+      "sha256": "ae6c0bddfaeb68a9456ef64c9d46bbe8c09cc92a4eb4cf123e5c1437eb3712be"
     },
     {
       "path": "content/games/build-and-deploy.md",
       "sourceRepo": "hugmesh-games",
       "sourcePath": "docs/wiki/architecture/06-build-and-deploy.md",
-      "sourceRef": "443605d",
-      "sha256": "0328341de143743a2db6c79e356e63e430da2c503504383b26ac405cde6c3e2c"
+      "sourceRef": "7463db4",
+      "sha256": "3050d744e810ecd5865996a74ccc8c8a530da5d0c3ade0f712073fd3394b218f"
     },
     {
       "path": "content/games/create-or-join-a-session.md",
@@ -545,8 +545,8 @@
       "path": "content/games/moderator.md",
       "sourceRepo": "hugmesh-games",
       "sourcePath": "docs/wiki/guides/moderator.md",
-      "sourceRef": "443605d",
-      "sha256": "4900470c9ec71c68d4c3c5dc5262a6880df5e8e8f0a7e7a39ee50a1bc3e4954c"
+      "sourceRef": "7463db4",
+      "sha256": "379d16820c5b41f820fe34b4717d6c68166758433bfe1f50aaafd1db58cd6165"
     },
     {
       "path": "content/games/module-federation.md",
@@ -573,8 +573,8 @@
       "path": "content/games/publisher.md",
       "sourceRepo": "hugmesh-games",
       "sourcePath": "docs/wiki/guides/publisher.md",
-      "sourceRef": "443605d",
-      "sha256": "71022232577b44144ecaa668dfae09cdaf70e4df86cb5065cdbfdeda07f56f74"
+      "sourceRef": "7463db4",
+      "sha256": "95b71d9cbecfa9599b96483eb28b76c367e7c10fe7627e88e054f088cbf6d3af"
     },
     {
       "path": "content/games/realtime-server-authoritative.md",
